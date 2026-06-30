@@ -5,7 +5,7 @@ import axios from 'axios'
 import './index.css'
 import App from './App.jsx'
 
-axios.defaults.baseURL = 'http://localhost:5001'
+axios.defaults.baseURL = 'https://qr-app-api.vercel.app'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

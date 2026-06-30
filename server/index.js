@@ -5,8 +5,8 @@ import usersRouter from './routes/users.js';
 import adminsRouter from './routes/admins.js';
 
 const app = express();
-const PORT = 5001;
-const MONGO_URI = 'mongodb+srv://aishwaryzaveri_db_user:RIICoTtU05WsV24f@qr-app.okafjbt.mongodb.net/QRAPP?appName=QR-App';
+const PORT = process.env.PORT || 5001;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://aishwaryzaveri_db_user:RIICoTtU05WsV24f@qr-app.okafjbt.mongodb.net/QRAPP?appName=QR-App';
 
 app.use(cors());
 app.use(express.json());
