@@ -1,0 +1,667 @@
+.users-container {
+    @apply px-2 py-6 mx-auto;
+    width: 100%;
+    max-width: 1600px;
+    animation: fadeIn 0.5s ease-out;
+    background: transparent;
+}
+
+@media (min-width: 768px) {
+    .users-container {
+        @apply px-3 py-8;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.users-card {
+    background-color: rgba(15, 23, 42, 0.9);
+    border-radius: 2rem;
+    padding: 2rem;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(40px);
+    width: 100%;
+    transition: all 0.3s ease;
+    background-image: radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 30%), radial-gradient(circle at left center, rgba(59, 130, 246, 0.08), transparent 32%);
+}
+
+@media (min-width: 768px) {
+    .users-card {
+        padding: 2.5rem;
+    }
+}
+
+.gradient-text {
+    background-image: linear-gradient(125deg, #4ade80, #22d3ee, #facc15, #f97316);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: hue 12s infinite linear;
+}
+
+.dashboard-title {
+    @apply mb-10 font-bold text-3xl tracking-tight relative text-center;
+    padding-bottom: 1rem;
+    color: #f8fafc;
+}
+
+@media (min-width: 768px) {
+    .dashboard-title {
+        @apply text-4xl text-left;
+    }
+}
+
+.dashboard-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 4px;
+    width: 80px;
+    background: linear-gradient(90deg, #6366f1, #a855f7, #ec4899);
+    border-radius: 2px;
+    animation: slideIn 0.8s ease-out;
+}
+
+@media screen and (min-width: 768px) {
+    .dashboard-title::after {
+        left: 0;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        width: 0;
+        opacity: 0;
+    }
+    to {
+        width: 80px;
+        opacity: 1;
+    }
+}
+
+/* Header Styles */
+.table-header {
+    @apply flex flex-col flex-wrap items-start justify-between gap-4 mb-8;
+    padding: 0.75rem 1rem 0.25rem 1rem;
+}
+
+.table-header h4 {
+    @apply text-xs font-semibold uppercase tracking-[0.15em] text-slate-600;
+}
+
+.header-actions {
+    @apply flex flex-col items-stretch gap-3 w-full;
+}
+
+@media (min-width: 768px) {
+    .table-header {
+        @apply flex-row items-center gap-6;
+    }
+    .table-header h4 {
+        @apply text-base tracking-[0.2em];
+    }
+    .header-actions {
+        @apply flex-row items-center gap-6 w-auto;
+    }
+}
+
+/* Responsive table styling */
+.p-datatable-users {
+    @apply rounded-lg overflow-hidden;
+}
+
+.p-datatable-users .p-datatable-thead > tr > th {
+    background: rgba(30, 41, 59, 0.6) !important;
+    color: #f8fafc !important;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.p-datatable-users .p-datatable-tbody > tr {
+    background: rgba(15, 23, 42, 0.4) !important;
+    color: #e2e8f0 !important;
+    transition: all 0.2s ease;
+}
+
+.p-datatable-users .p-datatable-tbody > tr:hover {
+    background: rgba(30, 41, 59, 0.6) !important;
+}
+
+.p-datatable-users .p-datatable-tbody > tr > td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding: 1rem 0.5rem;
+}
+
+/* Input & Button Refinements */
+.p-inputtext {
+    @apply rounded-xl px-4 py-3 transition-all duration-200 font-sans;
+    background: rgba(15, 23, 42, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #f8fafc !important;
+}
+
+.p-inputtext:enabled:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3) !important;
+}
+
+.p-input-icon-left>i {
+    left: 1rem;
+    color: #94a3b8;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-top: 0;
+}
+
+.p-input-icon-left>.p-inputtext {
+    @apply pl-10 w-[250px] text-left;
+}
+
+.btn-action-add {
+    @apply rounded-xl px-6 py-3 font-semibold transition-transform duration-200;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    border: none;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+}
+
+.btn-action-add:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+}
+
+/* DataTable Refinements */
+.p-datatable-users .p-datatable-wrapper {
+    @apply rounded-3xl overflow-hidden min-h-[500px];
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(15, 23, 42, 0.2);
+}
+
+.p-datatable-users table {
+    table-layout: fixed !important;
+}
+
+.p-datatable-users .p-datatable-header {
+    @apply bg-transparent border-none p-0;
+}
+
+.p-datatable .p-datatable-thead>tr>th {
+    background: rgba(30, 41, 59, 0.7) !important;
+    color: #e2e8f0 !important;
+    padding: 1.25rem 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.p-datatable .p-datatable-tbody>tr {
+    background: rgba(15, 23, 42, 0.45) !important;
+    color: #e2e8f0 !important;
+    transition: all 0.2s ease;
+}
+
+.p-datatable .p-datatable-tbody>tr:hover {
+    background: rgba(30, 41, 59, 0.55) !important;
+    transform: scale(1.002);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 1;
+    position: relative;
+}
+
+.p-datatable .p-datatable-tbody>tr>td {
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    color: #e2e8f0 !important;
+    font-size: 0.875rem;
+    vertical-align: middle !important;
+}
+
+/* Action Buttons within DataTable */
+.action-buttons {
+    @apply flex justify-end items-center flex-nowrap;
+    gap: 0.625rem;
+    margin-right: 0.75rem;
+}
+
+.action-buttons .p-button {
+    @apply px-2 py-1.5 text-xs font-semibold transition-all duration-200;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+}
+
+@media (min-width: 768px) {
+    .action-buttons .p-button {
+        @apply px-2.5 py-2 text-xs;
+    }
+}
+
+@media (min-width: 1200px) {
+    .action-buttons .p-button {
+        @apply px-3 py-2 text-sm;
+    }
+}
+
+/* On smaller screens, hide button text labels in table actions to prevent layout break */
+@media (max-width: 1099px) {
+    .action-buttons .p-button .p-button-label {
+        display: none !important;
+    }
+    .action-buttons .p-button {
+        padding: 0.5rem !important;
+        min-width: 2.25rem;
+        height: 2.25rem;
+        justify-content: center;
+    }
+}
+
+.action-buttons .p-button-info.p-button-outlined {
+    color: #0ea5e9;
+    border-color: rgba(14, 165, 233, 0.3);
+    background: rgba(14, 165, 233, 0.05);
+}
+
+.action-buttons .p-button-info.p-button-outlined:hover {
+    background: rgba(14, 165, 233, 0.15);
+    border-color: #0ea5e9;
+    transform: translateY(-2px);
+}
+
+.action-buttons .p-button-success.p-button-outlined {
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.3);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.action-buttons .p-button-success.p-button-outlined:hover {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: #10b981;
+    transform: translateY(-2px);
+}
+
+.action-buttons .p-button-danger.p-button-outlined {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.action-buttons .p-button-danger.p-button-outlined:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: #ef4444;
+    transform: translateY(-2px);
+}
+
+.action-buttons .p-button-help.p-button-outlined {
+    color: #a855f7;
+    border-color: rgba(168, 85, 247, 0.3);
+    background: rgba(168, 85, 247, 0.05);
+}
+
+.action-buttons .p-button-help.p-button-outlined:hover {
+    background: rgba(168, 85, 247, 0.15);
+    border-color: #a855f7;
+    transform: translateY(-2px);
+}
+
+/* Paginator */
+.p-paginator {
+    background: transparent !important;
+    color: #94a3b8 !important;
+    border: none !important;
+    padding-top: 1.5rem !important;
+}
+
+.p-paginator .p-paginator-first,
+.p-paginator .p-paginator-prev,
+.p-paginator .p-paginator-next,
+.p-paginator .p-paginator-last {
+    color: #94a3b8 !important;
+    background: transparent !important;
+    transition: all 0.2s ease;
+    border-radius: 0.75rem !important; /* Curved square */
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.p-paginator .p-paginator-first:hover,
+.p-paginator .p-paginator-prev:hover,
+.p-paginator .p-paginator-next:hover,
+.p-paginator .p-paginator-last:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.p-paginator .p-paginator-pages .p-paginator-page {
+    color: #94a3b8 !important;
+    background: transparent !important;
+    border: none !important;
+    transition: all 0.2s ease;
+    border-radius: 0.75rem;
+    min-width: 2.5rem;
+    height: 2.5rem;
+    margin: 0 0.25rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.p-paginator .p-paginator-pages .p-paginator-page:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #ffffff !important;
+}
+
+.p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+    background: #16a34a !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+.p-paginator .p-paginator-current {
+    color: #94a3b8 !important;
+    margin-left: 2.5rem !important;
+}
+
+/* Dialog Forms */
+.p-dialog {
+    @apply rounded-3xl overflow-hidden;
+    background: #0f172a !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.p-dialog .p-dialog-header {
+    background: #0f172a !important;
+    color: #f8fafc !important;
+    padding: 1.5rem 2rem !important;
+    border-bottom: none !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.p-dialog .p-dialog-header .p-dialog-title {
+    @apply font-semibold text-xl;
+    color: #f8fafc !important;
+}
+
+.p-dialog .p-dialog-content {
+    background: #0f172a !important;
+    color: #f8fafc !important;
+    padding: 1.5rem !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    scrollbar-width: none !important;
+}
+
+.p-dialog .p-dialog-content::-webkit-scrollbar {
+    display: none !important;
+}
+
+.p-dialog .p-dialog-footer {
+    padding: 1.25rem 1.5rem !important;
+    border-top: none !important;
+    background: #0f172a !important;
+}
+
+.form-section {
+    background-color: #1e293b !important;
+    padding: 1.25rem !important;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.form-section:hover {
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    background-color: #1e293b !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.field {
+    margin-bottom: 1.2rem;
+}
+
+.field .p-inputtext {
+    width: 100%;
+    text-align: center;
+    padding: 0.6rem;
+}
+
+.field label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #94a3b8;
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.row {
+    --bs-gutter-x: 2.5rem;
+}
+
+.p-invalid {
+    border-color: #ef4444 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23ef4444'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.5h.4v3.5h-.4zM5.8 8h.4v.5h-.4z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+}
+
+.p-error {
+    color: #ef4444;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+.dialog-footer {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.dialog-footer .p-button {
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+}
+
+/* View Profile Dialog Specific Styles */
+.view-profile-card {
+    text-align: center;
+}
+
+.profile-header {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+    color: white;
+    font-size: 3rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin: 0 auto 1.25rem auto;
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+    border: 4px solid #1e293b;
+}
+
+.profile-header h3 {
+    margin: 0;
+    font-size: 1.75rem;
+    color: #f8fafc;
+    font-weight: 700;
+}
+
+.profile-username {
+    color: #94a3b8;
+    margin-top: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* Read-only Data Field Styling */
+.p-disabled {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    background: rgba(15, 23, 42, 0.5) !important;
+    color: #64748b !important;
+    cursor: not-allowed;
+}
+
+
+/* Responsive Adjustments */
+@media screen and (max-width: 991px) {
+    .users-card {
+        padding: 1.5rem;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .users-container {
+        padding: 1.5rem 1rem;
+    }
+
+    .dashboard-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .table-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 1rem;
+    }
+
+    .header-actions .p-input-icon-left,
+    .header-actions .p-input-icon-left .p-inputtext {
+        width: 100%;
+    }
+
+    .header-actions .btn-action-add {
+        width: 100%;
+    }
+
+    .p-datatable .p-datatable-tbody>tr>td {
+        padding: 0.75rem;
+    }
+
+    .action-buttons {
+        gap: 0.5rem;
+        margin-right: 0.25rem;
+    }
+}
+
+/* Exclude button elements and their children from gradient text overrides to ensure visibility */
+.p-button {
+  -webkit-text-fill-color: currentColor !important;
+  background-clip: initial !important;
+  background-image: none !important;
+  animation: none !important;
+}
+
+.p-button * {
+  -webkit-text-fill-color: currentColor !important;
+  color: inherit !important;
+  background-clip: initial !important;
+  background-image: none !important;
+  animation: none !important;
+}
+
+/* Custom paginator icon text styling for <<, <, >, >> */
+.p-paginator-icon-text {
+    -webkit-text-fill-color: currentColor !important;
+    color: inherit !important;
+    background-clip: initial !important;
+    background-image: none !important;
+    animation: none !important;
+    font-weight: bold;
+    font-size: 1.1rem;
+    display: inline-block;
+    line-height: 1;
+    user-select: none;
+}
+
+/* Dashboard Tab Button Styling */
+.tabs-container {
+    background: rgba(15, 23, 42, 0.4);
+    padding: 0.5rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    display: inline-flex;
+    margin: 0 auto 2.5rem;
+}
+
+.tab-btn {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 0.75rem 1.75rem !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+    color: #94a3b8 !important;
+    -webkit-text-fill-color: #94a3b8 !important;
+    background-image: none !important;
+    background-clip: initial !important;
+    animation: none !important;
+    transition: all 0.25s ease !important;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.tab-btn:hover {
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.tab-btn.active {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25) !important;
+}
+
+.tab-btn * {
+    -webkit-text-fill-color: currentColor !important;
+    color: inherit !important;
+    background-image: none !important;
+    background-clip: initial !important;
+    animation: none !important;
+}
