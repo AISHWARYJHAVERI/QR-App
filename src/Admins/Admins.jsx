@@ -34,13 +34,26 @@ function Admins({ showError, showSuccess }) {
     }, []);
 
     const fetchAdmins = async () => {
-        setFetching(true);
+        const cached = localStorage.getItem('admins_cache');
+        if (cached) {
+            try {
+                const parsed = JSON.parse(cached);
+                if (Array.isArray(parsed)) {
+                    setAdmins(parsed);
+                    setFetching(false);
+                }
+            } catch { }
+        }
+
         try {
             const response = await axios.get('/admins');
             setAdmins(response.data);
+            localStorage.setItem('admins_cache', JSON.stringify(response.data));
         } catch (error) {
             console.error("Error fetching admins: ", error);
-            showError("Could not load admins. Server is starting up — please wait a moment and refresh.");
+            if (!localStorage.getItem('admins_cache')) {
+                showError("Could not load admins. Server is starting up — please wait a moment and refresh.");
+            }
         } finally {
             setFetching(false);
         }
@@ -75,7 +88,9 @@ function Admins({ showError, showSuccess }) {
             setPhone('');
             setCity('');
             
-            setAdmins([...admins, saved]);
+            const updated = [...admins, saved];
+            setAdmins(updated);
+            localStorage.setItem('admins_cache', JSON.stringify(updated));
             
             setQrAdmin(saved);
             setQrDialog(true);
@@ -93,11 +108,14 @@ function Admins({ showError, showSuccess }) {
             const _admins = [...admins];
             _admins[index] = updatedAdmin;
             setAdmins(_admins);
+            localStorage.setItem('admins_cache', JSON.stringify(_admins));
         }
     };
 
     const handleAdminDeleted = (deletedAdminId) => {
-        setAdmins(admins.filter(a => a.id !== deletedAdminId));
+        const _admins = admins.filter(a => a.id !== deletedAdminId);
+        setAdmins(_admins);
+        localStorage.setItem('admins_cache', JSON.stringify(_admins));
     };
 
     const actionBodyTemplate = (rowData) => {

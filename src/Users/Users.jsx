@@ -32,13 +32,26 @@ function Users({ isLoggedIn }) {
     }, [isLoggedIn]);
 
     const fetchUsers = async () => {
-        setLoading(true);
+        const cached = localStorage.getItem('users_cache');
+        if (cached) {
+            try {
+                const parsed = JSON.parse(cached);
+                if (Array.isArray(parsed)) {
+                    setUsers(parsed);
+                    setLoading(false);
+                }
+            } catch { }
+        }
+
         try {
             const response = await axios.get('/users');
             setUsers(response.data);
+            localStorage.setItem('users_cache', JSON.stringify(response.data));
         } catch (error) {
             console.error("Error fetching data: ", error);
-            showError("Could not load users. Server is starting up — please wait a moment and refresh.");
+            if (!localStorage.getItem('users_cache')) {
+                showError("Could not load users. Server is starting up — please wait a moment and refresh.");
+            }
         } finally {
             setLoading(false);
         }
@@ -53,7 +66,9 @@ function Users({ isLoggedIn }) {
     };
 
     const handleUserAdded = (newUser) => {
-        setUsers([...users, newUser]);
+        const updated = [...users, newUser];
+        setUsers(updated);
+        localStorage.setItem('users_cache', JSON.stringify(updated));
     };
 
     const handleUserUpdated = (updatedUser) => {
@@ -62,11 +77,14 @@ function Users({ isLoggedIn }) {
             const _users = [...users];
             _users[index] = updatedUser;
             setUsers(_users);
+            localStorage.setItem('users_cache', JSON.stringify(_users));
         }
     };
 
     const handleUserDeleted = (deletedUserId) => {
-        setUsers(users.filter(u => u.id !== deletedUserId));
+        const updated = users.filter(u => u.id !== deletedUserId);
+        setUsers(updated);
+        localStorage.setItem('users_cache', JSON.stringify(updated));
     };
 
     const handleImported = () => {
