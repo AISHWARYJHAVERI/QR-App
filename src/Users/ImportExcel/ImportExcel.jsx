@@ -117,7 +117,7 @@ function ImportExcel({ onImported, showError, showSuccess }) {
         const payload = { name };
         if (phone) payload.phone = phone;
         if (city) payload.city = city;
-        await axios.post('http://localhost:5001/users', payload);
+        await axios.post('/users', payload);
         imported++;
       } catch {
         failed++;

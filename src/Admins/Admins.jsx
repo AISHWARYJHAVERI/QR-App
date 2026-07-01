@@ -24,7 +24,8 @@ function Admins({ showError, showSuccess }) {
     const [role, setRole] = useState('President');
     const [phone, setPhone] = useState('');
     const [city, setCity] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [fetching, setFetching] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [qrDialog, setQrDialog] = useState(false);
     const [qrAdmin, setQrAdmin] = useState(null);
 
@@ -33,12 +34,15 @@ function Admins({ showError, showSuccess }) {
     }, []);
 
     const fetchAdmins = async () => {
+        setFetching(true);
         try {
-            const response = await axios.get('http://localhost:5001/admins');
+            const response = await axios.get('/admins');
             setAdmins(response.data);
         } catch (error) {
             console.error("Error fetching admins: ", error);
-            showError("Failed to fetch admin list");
+            showError("Could not load admins. Server is starting up — please wait a moment and refresh.");
+        } finally {
+            setFetching(false);
         }
     };
 
@@ -56,10 +60,10 @@ function Admins({ showError, showSuccess }) {
             return;
         }
 
-        setLoading(true);
+        setSaving(true);
         try {
             const newAdmin = { name, username, password, role, phone, city };
-            const response = await axios.post('http://localhost:5001/admins', newAdmin);
+            const response = await axios.post('/admins', newAdmin);
             showSuccess("New Administrator registered successfully!");
             
             const saved = response.data;
@@ -78,6 +82,8 @@ function Admins({ showError, showSuccess }) {
         } catch (error) {
             console.error("Error creating admin: ", error);
             showError("Failed to register new administrator");
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -183,16 +189,16 @@ function Admins({ showError, showSuccess }) {
                         <button 
                             type="submit" 
                             className="btn-action-add"
-                            disabled={!name || !username || !password || !phone || !city}
+                            disabled={saving || !name || !username || !password || !phone || !city}
                         >
-                            Save Admin
+                            {saving ? 'Saving...' : 'Save Admin'}
                         </button>
                     </div>
                 </form>
             </div>
 
             {/* Admins Table */}
-            <DataTable value={admins} className="p-datatable-users shadow-sm" responsiveLayout="scroll" emptyMessage="No admins registered yet.">
+            <DataTable value={admins} className="p-datatable-users shadow-sm" responsiveLayout="scroll" emptyMessage="No admins registered yet." loading={fetching}>
                 <Column field="id" header="ID" align="center" style={{ width: '6%' }}></Column>
                 <Column field="name" header="Name" align="left" style={{ width: '16%' }} className="pl-6"></Column>
                 <Column field="username" header="Username" align="left" style={{ width: '14%' }} className="pl-6"></Column>

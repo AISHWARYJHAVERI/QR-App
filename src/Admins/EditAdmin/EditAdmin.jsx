@@ -37,7 +37,7 @@ const EditAdmin = ({ rowData, onAdminUpdated, showError, showSuccess }) => {
         if (admin.name.trim() && admin.username.trim() && admin.phone.trim() && admin.city.trim()) {
             let _admin = { ...admin };
             try {
-                await axios.put(`http://localhost:5001/admins/${admin.id}`, _admin);
+                await axios.put(`/admins/${admin.id}`, _admin);
                 showSuccess("Admin Updated Successfully");
                 onAdminUpdated(_admin);
                 setAdminDialog(false);

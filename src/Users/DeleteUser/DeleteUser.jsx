@@ -5,7 +5,7 @@ const DeleteUser = ({ rowData, onUserDeleted, showError, showSuccess }) => {
     const confirmDeleteUser = async () => {
         if (window.confirm(`Are you sure you want to delete ${rowData.name}?`)) {
             try {
-                await axios.delete(`http://localhost:5001/users/${rowData.id}`);
+                await axios.delete(`/users/${rowData.id}`);
                 showSuccess("User Deleted Successfully");
                 onUserDeleted(rowData.id);
             } catch (error) {

@@ -31,7 +31,7 @@ const EditUser = ({ rowData, onUserUpdated, showError, showSuccess }) => {
         if (user.name.trim() && user.phone.trim() && (user.city || '').trim()) {
             let _user = { ...user };
             try {
-                await axios.put(`http://localhost:5001/users/${user.id}`, _user);
+                await axios.put(`/users/${user.id}`, _user);
                 showSuccess("User Updated Successfully");
                 onUserUpdated(_user);
                 setUserDialog(false);

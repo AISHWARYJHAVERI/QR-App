@@ -34,7 +34,7 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
         if (user.name.trim() && user.phone.trim() && user.city.trim()) {
             let _user = { ...user };
             try {
-                const response = await axios.post('http://localhost:5001/users', _user);
+                const response = await axios.post('/users', _user);
                 showSuccess("User Created Successfully");
                 onUserAdded(response.data);
                 setUserDialog(false);

@@ -18,6 +18,7 @@ function Users({ isLoggedIn }) {
     const [users, setUsers] = useState([]);
     const [globalFilter, setGlobalFilter] = useState(null);
     const [activeTab, setActiveTab] = useState('users');
+    const [loading, setLoading] = useState(true);
     const toast = useRef(null);
 
     useEffect(() => {
@@ -31,12 +32,15 @@ function Users({ isLoggedIn }) {
     }, [isLoggedIn]);
 
     const fetchUsers = async () => {
+        setLoading(true);
         try {
-            const response = await axios.get('http://localhost:5001/users');
+            const response = await axios.get('/users');
             setUsers(response.data);
         } catch (error) {
             console.error("Error fetching data: ", error);
-            showError("Failed to fetch users");
+            showError("Could not load users. Server is starting up — please wait a moment and refresh.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -160,6 +164,7 @@ function Users({ isLoggedIn }) {
                             currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
                             className="p-datatable-users"
                             emptyMessage="No users found."
+                            loading={loading}
                             responsiveLayout="scroll">
                             <Column field="id" header="ID" align="center" style={{ width: '6%' }}></Column>
                             <Column field="name" header="Name" align="left" style={{ width: '22%' }} className="pl-6"></Column>

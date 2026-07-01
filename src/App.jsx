@@ -57,7 +57,7 @@ function App() {
 
     try {
       // Query json-server for matching admin username
-      const response = await axios.get(`http://localhost:5001/admins?username=${encodeURIComponent(username)}`);
+      const response = await axios.get(`/admins?username=${encodeURIComponent(username)}`);
       
       if (response.data.length > 0) {
         const adminUser = response.data[0];
@@ -106,7 +106,7 @@ function App() {
 
     try {
       // Check if username already exists
-      const checkResponse = await axios.get(`http://localhost:5001/admins?username=${encodeURIComponent(regUsername.trim())}`);
+      const checkResponse = await axios.get(`/admins?username=${encodeURIComponent(regUsername.trim())}`);
       if (checkResponse.data.length > 0) {
         setLoginError("Username already exists. Please choose another one.");
         setSubmitting(false);
@@ -124,7 +124,7 @@ function App() {
       };
 
       // Post to mock server
-      const response = await axios.post('http://localhost:5001/admins', newAdmin);
+      const response = await axios.post('/admins', newAdmin);
       const registeredAdmin = response.data;
 
       // Automatically log the new admin in

@@ -5,7 +5,7 @@ const DeleteAdmin = ({ rowData, onAdminDeleted, showError, showSuccess }) => {
     const confirmDeleteAdmin = async () => {
         if (window.confirm(`Are you sure you want to delete ${rowData.name}?`)) {
             try {
-                await axios.delete(`http://localhost:5001/admins/${rowData.id}`);
+                await axios.delete(`/admins/${rowData.id}`);
                 showSuccess("Admin Deleted Successfully");
                 onAdminDeleted(rowData.id);
             } catch (error) {

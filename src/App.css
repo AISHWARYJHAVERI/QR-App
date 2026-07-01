@@ -689,3 +689,18 @@
     gap: 0;
   }
 }
+
+.p-datatable .p-datatable-loading-overlay {
+  background: rgba(5, 8, 22, 0.85);
+}
+
+.p-datatable .p-datatable-loading-icon {
+  font-size: 2.5rem;
+  color: #6366f1;
+}
+
+.p-datatable .p-datatable-emptymessage {
+  color: #94a3b8;
+  font-size: 1.05rem;
+  padding: 2rem 0;
+}
