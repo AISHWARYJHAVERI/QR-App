@@ -163,3 +163,49 @@
     background: #1e293b;
     color: #f8fafc;
 }
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .admins-section .add-user-card {
+        padding: 1.25rem !important;
+    }
+    .admins-section .section-title {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .admins-section .add-user-card {
+        padding: 1rem !important;
+        border-radius: 16px;
+    }
+    .admins-section .section-title {
+        font-size: 1.1rem;
+    }
+    .admins-section .col-md-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    .admins-section .row.g-3 {
+        --bs-gutter-y: 0.5rem;
+    }
+    .admins-section .btn-action-add {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 375px) {
+    .admins-section .add-user-card {
+        padding: 0.75rem !important;
+        border-radius: 12px;
+    }
+    .admins-section .section-title {
+        font-size: 1rem;
+    }
+    .admins-section .p-inputtext,
+    .admin-role-select {
+        padding: 0.6rem 0.75rem !important;
+        font-size: 0.82rem;
+    }
+}

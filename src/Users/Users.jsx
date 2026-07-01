@@ -165,7 +165,8 @@ function Users({ isLoggedIn }) {
                             className="p-datatable-users"
                             emptyMessage="No users found."
                             loading={loading}
-                            responsiveLayout="scroll">
+                            responsiveLayout="stack"
+                            breakpoint="768px">
                             <Column field="id" header="ID" align="center" style={{ width: '6%' }}></Column>
                             <Column field="name" header="Name" align="left" style={{ width: '22%' }} className="pl-6"></Column>
                             <Column field="phone" header="Mobile Number" align="left" style={{ width: '18%' }} className="pl-6"></Column>

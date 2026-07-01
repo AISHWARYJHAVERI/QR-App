@@ -423,3 +423,20 @@
     justify-content: center;
   }
 }
+
+@media (max-width: 375px) {
+  .import-modal {
+    padding: 1rem;
+    border-radius: 16px;
+  }
+  .import-preview-table {
+    font-size: 0.72rem;
+  }
+  .import-preview-table th,
+  .import-preview-table td {
+    padding: 0.35rem 0.35rem;
+  }
+  .import-modal-heading {
+    font-size: 1.1rem;
+  }
+}

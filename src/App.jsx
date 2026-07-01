@@ -33,6 +33,7 @@ function App() {
   const [regRole, setRegRole] = useState('President');
   const [regPhone, setRegPhone] = useState('');
   const [regCity, setRegCity] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const appToast = useRef(null);
 
@@ -174,13 +175,34 @@ function App() {
         <Link className="brand" to="/">AJ</Link>
         
         <nav className="capsule-nav">
-          <Link to="/" className="nav-link">Home</Link>
-          <Link to="/features" className="nav-link">Features</Link>
-          <Link to="/solutions" className="nav-link">Solutions</Link>
-          <Link to="/developer" className="nav-link">Developer</Link>
-          <Link to="/about" className="nav-link">About Us</Link>
-          <Link to="/contact" className="nav-btn-solid">Contact Us</Link>
+          <button
+            className={`hamburger-btn ${mobileMenuOpen ? 'open' : ''}`}
+            onClick={() => setMobileMenuOpen(prev => !prev)}
+            aria-label="Toggle navigation menu"
+          >
+            <span></span><span></span><span></span>
+          </button>
+          <Link to="/" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Home</Link>
+          <Link to="/features" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Features</Link>
+          <Link to="/solutions" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Solutions</Link>
+          <Link to="/developer" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Developer</Link>
+          <Link to="/about" className="nav-link" onClick={() => setMobileMenuOpen(false)}>About Us</Link>
+          <Link to="/contact" className="nav-btn-solid" onClick={() => setMobileMenuOpen(false)}>Contact Us</Link>
         </nav>
+
+        {mobileMenuOpen && (
+          <div className="mobile-overlay" onClick={() => setMobileMenuOpen(false)}>
+            <nav className="mobile-panel" onClick={e => e.stopPropagation()}>
+              <button className="mobile-close" onClick={() => setMobileMenuOpen(false)}>✕</button>
+              <Link to="/" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Home</Link>
+              <Link to="/features" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Features</Link>
+              <Link to="/solutions" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Solutions</Link>
+              <Link to="/developer" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Developer</Link>
+              <Link to="/about" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>About Us</Link>
+              <Link to="/contact" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Contact Us</Link>
+            </nav>
+          </div>
+        )}
 
         <div className="header-right">
           {isLoggedIn ? (

@@ -482,6 +482,9 @@
   .page-section {
     padding: 2.5rem 1.25rem 3rem;
   }
+  .page-title {
+    font-size: 1.8rem;
+  }
 
   .dev-card {
     grid-template-columns: 1fr;
@@ -510,5 +513,52 @@
 
   .feature-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .page-section {
+    padding: 2rem 1rem 2.5rem;
+  }
+  .page-title {
+    font-size: 1.5rem;
+  }
+  .feature-card,
+  .about-card,
+  .contact-card {
+    padding: 1.25rem;
+  }
+  .feature-card h3,
+  .about-card h3,
+  .contact-card h3 {
+    font-size: 1.1rem;
+  }
+  .page-subtitle {
+    font-size: 0.9rem;
+  }
+  .step-list {
+    gap: 1.25rem;
+  }
+  .contact-form-wrapper {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .page-section {
+    padding: 1.5rem 0.75rem 2rem;
+  }
+  .page-title {
+    font-size: 1.3rem;
+  }
+  .feature-card,
+  .about-card,
+  .contact-card {
+    padding: 1rem;
+    border-radius: 14px;
+  }
+  .contact-form-wrapper {
+    padding: 1rem;
+    border-radius: 16px;
   }
 }
