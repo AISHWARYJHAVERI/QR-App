@@ -187,6 +187,33 @@
 }
 
 /* DataTable Refinements */
+.p-datatable-users,
+.p-datatable-users *,
+.p-datatable-users .p-datatable-wrapper,
+.p-datatable-users .p-datatable-wrapper * {
+    outline: none !important;
+    box-shadow: none !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.p-datatable-users .p-datatable-wrapper::-webkit-scrollbar,
+.p-datatable-users .p-datatable-wrapper *::-webkit-scrollbar,
+.p-datatable-users::-webkit-scrollbar,
+.p-datatable-users *::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+.p-datatable-users .p-datatable-wrapper::-webkit-scrollbar-track,
+.p-datatable-users .p-datatable-wrapper *::-webkit-scrollbar-track,
+.p-datatable-users .p-datatable-wrapper::-webkit-scrollbar-thumb,
+.p-datatable-users .p-datatable-wrapper *::-webkit-scrollbar-thumb {
+    background: transparent !important;
+    display: none !important;
+}
+
 .p-datatable-users .p-datatable-wrapper {
     @apply rounded-3xl overflow-hidden min-h-[500px];
     border: 1px solid rgba(255, 255, 255, 0.08);
