@@ -675,12 +675,16 @@
 
 @media screen and (max-width: 576px) {
     .users-container {
-        padding: 0.5rem;
+        padding: 0.25rem 0 !important;
     }
     .users-card,
     .users-card.shadow-sm {
-        padding: 1.25rem;
-        border-radius: 1.25rem;
+        padding: 1rem 0.75rem !important;
+        border-radius: 1.25rem !important;
+        width: 100% !important;
+        border-left: none !important;
+        border-right: none !important;
+        margin: 0 !important;
     }
     .dashboard-title {
         font-size: 1.35rem;
@@ -697,10 +701,13 @@
 }
 
 @media screen and (max-width: 480px) {
+    .users-container {
+        padding: 0.15rem 0 !important;
+    }
     .users-card,
     .users-card.shadow-sm {
-        padding: 1rem;
-        border-radius: 1rem;
+        padding: 0.875rem 0.6rem !important;
+        border-radius: 1rem !important;
     }
     .dashboard-title {
         font-size: 1.25rem;
