@@ -205,7 +205,7 @@
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 16px;
     margin-bottom: 0.75rem;
-    padding: 0.75rem 0.25rem;
+    padding: 0.75rem 1rem;
     transition: all 0.2s ease;
 }
 
@@ -220,7 +220,7 @@
     justify-content: space-between;
     align-items: center;
     border: none !important;
-    padding: 0.45rem 0.75rem;
+    padding: 0.35rem 0;
     gap: 0.5rem;
 }
 
@@ -231,12 +231,22 @@
     text-transform: uppercase;
     letter-spacing: 0.08em;
     white-space: nowrap;
+    min-width: 85px;
+    flex-shrink: 0;
+}
+
+.p-datatable-users.p-datatable-stack .p-datatable-tbody > tr > td > :not(.p-column-title) {
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    max-width: 65%;
 }
 
 .p-datatable-users.p-datatable-stack .p-datatable-tbody > tr > td:last-child {
     border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
     margin-top: 0.25rem;
-    padding-top: 0.75rem;
+    padding: 0.5rem 0 0.2rem;
     justify-content: center;
 }
 
@@ -665,12 +675,20 @@
         gap: 0.25rem;
         padding: 0.35rem;
     }
+}
+
+@media screen and (max-width: 480px) {
     .p-datatable-users.p-datatable-stack .p-datatable-tbody > tr {
-        padding: 0.5rem 0;
+        padding: 0.5rem 0.75rem;
         border-radius: 12px;
     }
     .p-datatable-users.p-datatable-stack .p-datatable-tbody > tr > td {
-        padding: 0.35rem 0.6rem;
+        padding: 0.25rem 0;
+        gap: 0.3rem;
+    }
+    .p-datatable-users.p-datatable-stack .p-datatable-tbody > tr > td .p-column-title {
+        font-size: 0.65rem;
+        min-width: 72px;
     }
 }
 
@@ -684,6 +702,24 @@
     }
     .p-input-icon-left>.p-inputtext {
         max-width: 100%;
+    }
+    .p-datatable-users.p-datatable-stack .p-datatable-tbody > tr {
+        padding: 0.35rem 0.5rem;
+        margin-bottom: 0.5rem;
+        border-radius: 10px;
+    }
+    .p-datatable-users.p-datatable-stack .p-datatable-tbody > tr > td {
+        padding: 0.2rem 0;
+        gap: 0.2rem;
+    }
+    .p-datatable-users.p-datatable-stack .p-datatable-tbody > tr > td .p-column-title {
+        font-size: 0.58rem;
+        min-width: 60px;
+    }
+    .p-datatable-users.p-datatable-stack .p-datatable-tbody > tr > td .action-buttons .p-button {
+        padding: 0.25rem !important;
+        min-width: 1.5rem;
+        height: 1.5rem;
     }
 }
 

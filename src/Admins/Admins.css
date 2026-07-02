@@ -164,6 +164,23 @@
     color: #f8fafc;
 }
 
+/* Stack card spacing for admin table (6 fields per card) */
+.admins-section .p-datatable-users.p-datatable-stack .p-datatable-tbody > tr {
+    padding: 0.5rem 0.75rem;
+}
+.admins-section .p-datatable-users.p-datatable-stack .p-datatable-tbody > tr > td {
+    padding: 0.3rem 0;
+}
+
+@media (max-width: 480px) {
+    .admins-section .p-datatable-users.p-datatable-stack .p-datatable-tbody > tr {
+        padding: 0.35rem 0.5rem;
+    }
+    .admins-section .p-datatable-users.p-datatable-stack .p-datatable-tbody > tr > td {
+        padding: 0.22rem 0;
+    }
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
     .admins-section .add-user-card {
