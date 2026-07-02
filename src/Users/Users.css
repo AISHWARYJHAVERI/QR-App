@@ -595,7 +595,8 @@
 
 /* Responsive Adjustments */
 @media screen and (max-width: 991px) {
-    .users-card {
+    .users-card,
+    .users-card.shadow-sm {
         padding: 1.5rem;
     }
 }
@@ -605,7 +606,8 @@
         padding: 0.75rem;
     }
 
-    .users-card {
+    .users-card,
+    .users-card.shadow-sm {
         border-radius: 1.5rem;
     }
 
@@ -648,7 +650,8 @@
     .users-container {
         padding: 0.5rem;
     }
-    .users-card {
+    .users-card,
+    .users-card.shadow-sm {
         padding: 1.25rem;
         border-radius: 1.25rem;
     }
@@ -667,7 +670,8 @@
 }
 
 @media screen and (max-width: 480px) {
-    .users-card {
+    .users-card,
+    .users-card.shadow-sm {
         padding: 1rem;
         border-radius: 1rem;
     }
@@ -677,7 +681,8 @@
 }
 
 @media screen and (max-width: 375px) {
-    .users-card {
+    .users-card,
+    .users-card.shadow-sm {
         padding: 0.875rem;
         border-radius: 0.875rem;
     }
