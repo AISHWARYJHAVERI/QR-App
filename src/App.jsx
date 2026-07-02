@@ -46,6 +46,13 @@ function App() {
     return () => { document.body.style.overflow = ''; };
   }, [showLogin]);
 
+  useEffect(() => {
+    const keepAlive = setInterval(() => {
+      axios.get('/').catch(() => {});
+    }, 4 * 60 * 1000);
+    return () => clearInterval(keepAlive);
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!username.trim() || !password.trim()) {
