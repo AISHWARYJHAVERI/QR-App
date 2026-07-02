@@ -232,13 +232,13 @@ function App() {
           <>
             <main className="hero">
               <div className="hero-copy">
-                <p className="eyebrow">Aishwary Jhaveri's Web App</p>
+                <p className="eyebrow">QR User Management Dashboard</p>
                 <h1 className="hero-title">
                   Aishwary Jhaveri's
-                  <span>Web App</span>
+                  <span>QR App</span>
                 </h1>
                 <p className="hero-description">
-                  Aishwary Jhaveri's Web App
+                  Full-stack user management with QR code generation, Excel import, and admin controls — powered by React, Express &amp; MongoDB.
                 </p>
               </div>
             </main>
