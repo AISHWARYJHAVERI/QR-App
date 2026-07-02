@@ -296,7 +296,6 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border-radius: 50%;
     }
     .action-buttons .p-button .p-button-icon {
         margin: 0;
