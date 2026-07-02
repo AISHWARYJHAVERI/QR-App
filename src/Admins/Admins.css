@@ -182,7 +182,12 @@
     .admins-section .p-datatable-users .p-datatable-tbody > tr > td,
     .admins-section .p-datatable-users .p-datatable-thead > tr > th {
         white-space: nowrap;
-        padding: 0.75rem 0.5rem;
+        padding: 1rem 0.625rem;
+    }
+
+    .admins-section .p-datatable-users .p-datatable-thead > tr > th {
+        font-size: 0.75rem;
+        letter-spacing: 0.06em;
     }
 }
 
@@ -198,11 +203,11 @@
 
 @media (max-width: 576px) {
     .admins-section .add-user-card {
-        padding: 1rem !important;
-        border-radius: 16px;
+        padding: 1.25rem !important;
+        border-radius: 20px;
     }
     .admins-section .section-title {
-        font-size: 1.1rem;
+        font-size: 1.15rem;
     }
     .admins-section .col-md-4 {
         flex: 0 0 100%;
@@ -219,11 +224,11 @@
 
 @media (max-width: 375px) {
     .admins-section .add-user-card {
-        padding: 0.75rem !important;
-        border-radius: 12px;
+        padding: 1rem !important;
+        border-radius: 16px;
     }
     .admins-section .section-title {
-        font-size: 1rem;
+        font-size: 1.05rem;
     }
     .admins-section .p-inputtext,
     .admin-role-select {

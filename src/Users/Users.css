@@ -215,7 +215,12 @@
     .p-datatable-users .p-datatable-tbody > tr > td,
     .p-datatable-users .p-datatable-thead > tr > th {
         white-space: nowrap;
-        padding: 0.75rem 0.625rem;
+        padding: 1rem 0.75rem;
+    }
+
+    .p-datatable-users .p-datatable-thead > tr > th {
+        font-size: 0.75rem;
+        letter-spacing: 0.06em;
     }
 
     .action-buttons {
@@ -316,19 +321,6 @@
     .action-buttons .p-button .p-button-icon,
     .action-buttons .p-button i {
         font-size: 0.9rem;
-        margin: 0 !important;
-    }
-}
-
-@media (max-width: 375px) {
-    .action-buttons .p-button {
-        min-width: 1.75rem;
-        width: 1.75rem;
-        height: 1.75rem;
-    }
-    .action-buttons .p-button .p-button-icon,
-    .action-buttons .p-button i {
-        font-size: 0.8rem;
         margin: 0 !important;
     }
 }
@@ -653,12 +645,12 @@
         padding: 1rem 0.75rem;
     }
     .users-card {
-        padding: 1rem;
-        border-radius: 1.25rem;
+        padding: 1.25rem;
+        border-radius: 1.5rem;
     }
     .dashboard-title {
-        font-size: 1.25rem;
-        margin-bottom: 1rem;
+        font-size: 1.35rem;
+        margin-bottom: 1.25rem;
     }
     .tab-btn {
         font-size: 0.82rem !important;
@@ -672,17 +664,17 @@
 
 @media screen and (max-width: 375px) {
     .users-card {
-        padding: 0.75rem;
-        border-radius: 1rem;
+        padding: 1rem;
+        border-radius: 1.25rem;
     }
     .dashboard-title {
-        font-size: 1.1rem;
+        font-size: 1.15rem;
     }
     .p-input-icon-left>.p-inputtext {
         max-width: 100%;
     }
     .p-datatable-users table {
-        min-width: 500px;
+        min-width: 550px;
     }
 }
 
