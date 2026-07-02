@@ -288,21 +288,22 @@
 
 /* On smaller screens, hide button text labels in table actions to prevent layout break */
 @media (max-width: 1099px) {
+    .action-buttons .p-button .p-button-label {
+        display: none !important;
+    }
     .action-buttons .p-button {
         padding: 0 !important;
         min-width: 2.25rem;
         width: 2.25rem;
         height: 2.25rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
-    .action-buttons .p-button .p-button-icon {
-        margin: 0;
-        font-size: 1rem;
-    }
-    .action-buttons .p-button .p-button-label {
-        display: none !important;
+    .action-buttons .p-button .p-button-icon,
+    .action-buttons .p-button i {
+        margin: 0 !important;
+        padding: 0 !important;
     }
 }
 
@@ -312,8 +313,10 @@
         width: 2rem;
         height: 2rem;
     }
-    .action-buttons .p-button .p-button-icon {
+    .action-buttons .p-button .p-button-icon,
+    .action-buttons .p-button i {
         font-size: 0.9rem;
+        margin: 0 !important;
     }
 }
 
@@ -323,8 +326,10 @@
         width: 1.75rem;
         height: 1.75rem;
     }
-    .action-buttons .p-button .p-button-icon {
+    .action-buttons .p-button .p-button-icon,
+    .action-buttons .p-button i {
         font-size: 0.8rem;
+        margin: 0 !important;
     }
 }
 
