@@ -185,7 +185,7 @@ function Users({ isLoggedIn }) {
                             loading={loading}
                             responsiveLayout="stack"
                             breakpoint="768px">
-                            <Column field="id" header="ID" align="center" style={{ width: '6%' }}></Column>
+                            <Column header="#" body={(rowData, options) => options.rowIndex + 1} align="center" style={{ width: '6%' }}></Column>
                             <Column field="name" header="Name" align="left" style={{ width: '22%' }} className="pl-6"></Column>
                             <Column field="phone" header="Mobile Number" align="left" style={{ width: '18%' }} className="pl-6"></Column>
                             <Column field="city" header="City" align="left" style={{ width: '16%' }} className="pl-6" body={(rowData) => rowData.city || rowData.address?.city || 'N/A'}></Column>
