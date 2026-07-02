@@ -164,20 +164,25 @@
     color: #f8fafc;
 }
 
-/* Stack card spacing for admin table (6 fields per card) */
-.admins-section .p-datatable-users.p-datatable-stack .p-datatable-tbody > tr {
-    padding: 0.5rem 0.75rem;
-}
-.admins-section .p-datatable-users.p-datatable-stack .p-datatable-tbody > tr > td {
-    padding: 0.3rem 0;
-}
-
-@media (max-width: 480px) {
-    .admins-section .p-datatable-users.p-datatable-stack .p-datatable-tbody > tr {
-        padding: 0.35rem 0.5rem;
+/* Mobile horizontal scroll for admin table */
+@media screen and (max-width: 768px) {
+    .admins-section .p-datatable-users .p-datatable-wrapper {
+        overflow-x: auto !important;
+        overflow-y: hidden;
+        min-height: auto;
+        border-radius: 16px;
     }
-    .admins-section .p-datatable-users.p-datatable-stack .p-datatable-tbody > tr > td {
-        padding: 0.22rem 0;
+
+    .admins-section .p-datatable-users table {
+        table-layout: auto !important;
+        min-width: 750px;
+        width: auto;
+    }
+
+    .admins-section .p-datatable-users .p-datatable-tbody > tr > td,
+    .admins-section .p-datatable-users .p-datatable-thead > tr > th {
+        white-space: nowrap;
+        padding: 0.75rem 0.5rem;
     }
 }
 

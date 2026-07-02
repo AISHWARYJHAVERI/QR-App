@@ -182,9 +182,7 @@ function Users({ isLoggedIn }) {
                             currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
                             className="p-datatable-users"
                             emptyMessage="No users found."
-                            loading={loading}
-                            responsiveLayout="stack"
-                            breakpoint="768px">
+                            loading={loading}>
                             <Column header="ID" body={(rowData, options) => options.rowIndex + 1} align="center" style={{ width: '6%' }}></Column>
                             <Column field="name" header="Name" align="left" style={{ width: '22%' }} className="pl-6"></Column>
                             <Column field="phone" header="Mobile Number" align="left" style={{ width: '18%' }} className="pl-6"></Column>

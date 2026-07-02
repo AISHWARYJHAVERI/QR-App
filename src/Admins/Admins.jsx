@@ -216,7 +216,7 @@ function Admins({ showError, showSuccess }) {
             </div>
 
             {/* Admins Table */}
-            <DataTable value={admins} className="p-datatable-users shadow-sm" responsiveLayout="stack" breakpoint="768px" emptyMessage="No admins registered yet." loading={fetching}>
+            <DataTable value={admins} className="p-datatable-users shadow-sm" emptyMessage="No admins registered yet." loading={fetching}>
                 <Column header="ID" body={(rowData, options) => options.rowIndex + 1} align="center" style={{ width: '6%' }}></Column>
                 <Column field="name" header="Name" align="left" style={{ width: '16%' }} className="pl-6"></Column>
                 <Column field="username" header="Username" align="left" style={{ width: '14%' }} className="pl-6"></Column>
