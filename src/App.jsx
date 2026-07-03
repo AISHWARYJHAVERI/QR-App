@@ -263,11 +263,11 @@ function App() {
       {showLogin && (
         <div className="login-overlay" onClick={() => setShowLogin(false)}>
           <div className="login-modal-card" onClick={(e) => e.stopPropagation()}>
-            <button className="login-close-btn" onClick={() => setShowLogin(false)}>
-              <i className="pi pi-times"></i>
-            </button>
-            
             <div className="login-modal-body">
+              <button className="login-close-btn" onClick={() => setShowLogin(false)}>
+                <i className="pi pi-times"></i>
+              </button>
+              
               <div className="login-tabs-container">
                 <button 
                   type="button" 
