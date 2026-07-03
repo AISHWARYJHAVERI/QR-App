@@ -624,18 +624,20 @@
 @media screen and (max-width: 991px) {
     .users-card,
     .users-card.shadow-sm {
-        padding: 1.5rem;
+        padding: 2rem;
+        border-radius: 2rem;
     }
 }
 
 @media screen and (max-width: 768px) {
     .users-container {
-        padding: 0.75rem;
+        padding: 0.5rem;
     }
 
     .users-card,
     .users-card.shadow-sm {
-        border-radius: 1.5rem;
+        padding: 2rem;
+        border-radius: 2rem;
     }
 
     .dashboard-title {
@@ -675,82 +677,58 @@
 
 @media screen and (max-width: 576px) {
     .users-container {
-        padding: 0.1rem 0 !important;
+        padding: 0.375rem;
     }
     .users-card,
     .users-card.shadow-sm {
-        padding: 1.75rem 1.15rem !important;
-        border-radius: 1.5rem !important;
-        width: 100% !important;
-        border-left: none !important;
-        border-right: none !important;
-        margin: 0 !important;
-        background: rgba(15, 23, 42, 0.72) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        box-shadow: 0 40px 120px rgba(0, 0, 0, 0.35) !important;
+        padding: 1.5rem;
+        border-radius: 1.5rem;
     }
     .dashboard-title {
-        font-size: 1.65rem !important;
-        margin-bottom: 1.5rem !important;
+        font-size: 1.35rem;
+        margin-bottom: 1.25rem;
     }
     .tab-btn {
-        font-size: 1rem !important;
-        padding: 0.75rem 1.25rem !important;
+        font-size: 0.82rem !important;
+        padding: 0.5rem 1rem !important;
     }
     .tabs-container {
-        gap: 0.5rem !important;
-        padding: 0.5rem !important;
-        width: 100% !important;
-        display: flex !important;
-    }
-    .form-label {
-        font-size: 1.05rem !important;
-        margin-bottom: 0.6rem !important;
-    }
-    .p-inputtext {
-        padding: 0.85rem 1.1rem !important;
-        font-size: 1.05rem !important;
-        border-radius: 12px !important;
-    }
-    .add-user-card .d-flex .p-button,
-    .btn-action-add {
-        padding: 0.85rem 1.5rem !important;
-        font-size: 1.05rem !important;
-        border-radius: 12px !important;
+        gap: 0.25rem;
+        padding: 0.35rem;
     }
 }
 
 @media screen and (max-width: 480px) {
     .users-container {
-        padding: 0.05rem 0 !important;
+        padding: 0.25rem;
     }
     .users-card,
     .users-card.shadow-sm {
-        padding: 1.5rem 1rem !important;
-        border-radius: 1.25rem !important;
+        padding: 1.25rem;
+        border-radius: 1.25rem;
     }
     .dashboard-title {
-        font-size: 1.5rem !important;
+        font-size: 1.25rem;
     }
 }
 
 @media screen and (max-width: 375px) {
+    .users-container {
+        padding: 0.25rem;
+    }
     .users-card,
     .users-card.shadow-sm {
-        padding: 1.25rem 0.85rem !important;
-        border-radius: 1rem !important;
+        padding: 1rem;
+        border-radius: 1rem;
     }
     .dashboard-title {
-        font-size: 1.35rem !important;
+        font-size: 1.15rem;
     }
     .p-input-icon-left>.p-inputtext {
         max-width: 100%;
     }
     .p-datatable-users table {
         min-width: 550px;
-    }
-    .users-container {
-        padding: 0.375rem;
     }
 }
 

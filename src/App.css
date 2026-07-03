@@ -743,6 +743,7 @@
   }
   .hero-copy {
     padding: 2rem;
+    border-radius: 2rem;
   }
 
   .header-right {
