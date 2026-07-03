@@ -189,11 +189,11 @@
 .footer-brand-section {
   background-color: transparent;
   width: 100%;
-  padding: 0.2rem 2rem 2.5rem;
+  padding: 3rem 2rem 4rem;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: -0.75rem;
+  margin-top: 2.5rem !important;
 }
 
 .footer-brand-text {
