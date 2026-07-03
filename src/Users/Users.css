@@ -624,8 +624,7 @@
 @media screen and (max-width: 991px) {
     .users-card,
     .users-card.shadow-sm {
-        padding: 2rem;
-        border-radius: 2rem;
+        padding: 1.5rem;
     }
 }
 
