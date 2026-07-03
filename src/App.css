@@ -563,7 +563,7 @@
   max-height: 90vh;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 3.75rem 2.25rem 2.25rem;
+  padding: 4.75rem 2.25rem 2.25rem;
   scrollbar-width: none;
 }
 
@@ -595,23 +595,14 @@
   border-radius: 12px !important;
   width: 2.2rem;
   height: 2.2rem;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease !important;
   cursor: pointer;
   box-shadow: none !important;
   transform: none !important;
   padding: 0 !important;
-}
-
-.login-close-btn * {
-  margin: 0 !important;
-  padding: 0 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  line-height: 1 !important;
 }
 
 .login-close-btn:hover {
@@ -906,7 +897,7 @@
   }
 
   .login-modal-body {
-    padding: 3rem 1.25rem 1.5rem;
+    padding: 4.5rem 1.25rem 1.5rem !important;
   }
 
   .login-title {
@@ -947,7 +938,7 @@
   }
 
   .login-modal-body {
-    padding: 2.5rem 1rem 1.25rem;
+    padding: 4.25rem 1rem 1.25rem !important;
   }
 
   .login-modal-card {
