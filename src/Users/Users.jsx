@@ -13,6 +13,7 @@ import DeleteUser from './DeleteUser/DeleteUser';
 import GenerateQR from './GenerateQR/GenerateQR';
 import ImportExcel from './ImportExcel/ImportExcel';
 import Admins from '../Admins/Admins';
+import ScanAnalytics from './ScanAnalytics/ScanAnalytics';
 
 function Users({ isLoggedIn }) {
     const [users, setUsers] = useState([]);
@@ -165,6 +166,13 @@ function Users({ isLoggedIn }) {
                         </button>
                         <button 
                             type="button" 
+                            className={`tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('analytics')}
+                        >
+                            <i className="pi pi-chart-bar me-2"></i> Scan Analytics
+                        </button>
+                        <button 
+                            type="button" 
                             className={`tab-btn ${activeTab === 'admins' ? 'active' : ''}`}
                             onClick={() => setActiveTab('admins')}
                         >
@@ -190,6 +198,8 @@ function Users({ isLoggedIn }) {
                             <Column body={actionBodyTemplate} exportable={false} align="right" alignHeader="center" style={{ width: '38%' }} header="Actions"></Column>
                         </DataTable>
                     </>
+                ) : activeTab === 'analytics' ? (
+                    <ScanAnalytics />
                 ) : (
                     <Admins showError={showError} showSuccess={showSuccess} />
                 )}
