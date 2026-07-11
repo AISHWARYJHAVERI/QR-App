@@ -44,16 +44,27 @@ router.get('/', async (req, res) => {
 
 router.get('/analytics', async (req, res) => {
   try {
-    const all = await Scan.find({});
-    const total = all.length;
-    const bySlot = { morning: 0, afternoon: 0, evening: 0, night: 0 };
-    const scannedBySet = new Set();
-    for (const s of all) {
-      bySlot[s.timeSlot] = (bySlot[s.timeSlot] || 0) + 1;
-      if (s.scannedBy) scannedBySet.add(s.scannedBy);
-    }
-    const uniqueQRs = new Set(all.map(s => s.qrValue)).size;
-    res.json({ total, bySlot, uniqueQRs, totalScanners: scannedBySet.size });
+    const [stats] = await Scan.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          morning: { $sum: { $cond: [{ $eq: ['$timeSlot', 'morning'] }, 1, 0] } },
+          afternoon: { $sum: { $cond: [{ $eq: ['$timeSlot', 'afternoon'] }, 1, 0] } },
+          evening: { $sum: { $cond: [{ $eq: ['$timeSlot', 'evening'] }, 1, 0] } },
+          night: { $sum: { $cond: [{ $eq: ['$timeSlot', 'night'] }, 1, 0] } },
+          uniqueQRs: { $addToSet: '$qrValue' },
+          totalScanners: { $addToSet: { $cond: [{ $ne: ['$scannedBy', ''] }, '$scannedBy', null] } },
+        },
+      },
+    ]);
+    if (!stats) return res.json({ total: 0, bySlot: { morning: 0, afternoon: 0, evening: 0, night: 0 }, uniqueQRs: 0, totalScanners: 0 });
+    res.json({
+      total: stats.total,
+      bySlot: { morning: stats.morning, afternoon: stats.afternoon, evening: stats.evening, night: stats.night },
+      uniqueQRs: stats.uniqueQRs.length,
+      totalScanners: stats.totalScanners.filter(Boolean).length,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
