@@ -55,7 +55,7 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
 
     const printQrCode = () => {
         const printWindow = window.open('', '_blank');
-        const qrData = `Name: ${user.name}\nMobile: ${user.phone}\nCity: ${user.city}`;
+        const qrData = `{"app":"QRAPP","type":"U","name":"${user.name}","phone":"${user.phone}","city":"${user.city}"}`;
         const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}&color=050816&bgcolor=ffffff`;
         
         printWindow.document.write(`
@@ -145,7 +145,7 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
     );
 
     const isFormValid = user.name.trim() && user.phone.trim() && user.city.trim();
-    const qrData = `Name: ${user.name}\nMobile: ${user.phone}\nCity: ${user.city}`;
+    const qrData = `{"app":"QRAPP","type":"U","name":"${user.name}","phone":"${user.phone}","city":"${user.city}"}`;
     const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}&color=050816&bgcolor=ffffff`;
 
     if (inline) {

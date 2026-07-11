@@ -128,7 +128,7 @@ function Admins({ showError, showSuccess }) {
         );
     };
 
-    const qrData = qrAdmin ? `Name: ${qrAdmin.name}\nRole: ${qrAdmin.role}\nPhone: ${qrAdmin.phone}` : '';
+    const qrData = qrAdmin ? `{"app":"QRAPP","type":"A","name":"${qrAdmin.name}","role":"${qrAdmin.role}","phone":"${qrAdmin.phone}"}` : '';
     const qrImageUrl = qrData ? `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}&color=050816&bgcolor=ffffff` : '';
 
     const qrDialogFooter = (

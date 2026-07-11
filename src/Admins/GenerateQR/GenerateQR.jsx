@@ -13,7 +13,7 @@ const GenerateQR = ({ rowData }) => {
         setQrDialog(false);
     };
 
-    const qrData = `Name: ${rowData.name}\nRole: ${rowData.role}\nPhone: ${rowData.phone}`;
+    const qrData = `{"app":"QRAPP","type":"A","name":"${rowData.name}","role":"${rowData.role}","phone":"${rowData.phone}"}`;
     const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}&color=050816&bgcolor=ffffff`;
 
     const qrDialogFooter = (
