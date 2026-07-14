@@ -942,16 +942,13 @@
     padding: 0.65rem 2.5rem 0.65rem 2.5rem !important;
   }
 
-/* Hide browser native password reveal icons */
-.login-input-wrapper input[type="password"]::-ms-reveal,
-.login-input-wrapper input[type="password"]::-ms-clear {
-  display: none;
+/* Hide browser native password reveal icon (hover eye in Chrome/Edge) */
+.login-input-wrapper input[type="password"]::-webkit-password-reveal-button {
+  display: none !important;
 }
 
-.login-input-wrapper input::-webkit-credentials-auto-fill-button {
-  display: none !important;
-  visibility: hidden;
-  pointer-events: none;
+.login-input-wrapper input[type="password"]::-ms-reveal {
+  display: none;
 }
 
 .pwd-toggle-btn {
