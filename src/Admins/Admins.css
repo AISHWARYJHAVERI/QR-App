@@ -193,6 +193,8 @@
 
 .pwd-input-wrap .pwd-toggle-btn:hover {
   color: #cbd5e1 !important;
+  transform: translateY(-50%) !important;
+  box-shadow: none !important;
 }
 
 /* Mobile horizontal scroll for admin table */
