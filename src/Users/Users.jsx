@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { InputText } from 'primereact/inputtext';
@@ -14,6 +14,65 @@ import GenerateQR from './GenerateQR/GenerateQR';
 import ImportExcel from './ImportExcel/ImportExcel';
 import Admins from '../Admins/Admins';
 import ScanAnalytics from './ScanAnalytics/ScanAnalytics';
+
+const paginatorTemplate = {
+    layout: 'FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport',
+    'FirstPageLink': (options) => {
+        return (
+            <button type="button" className={options.className} onClick={options.onClick} disabled={options.disabled}>
+                <span className="p-paginator-icon-text">&lt;&lt;</span>
+            </button>
+        );
+    },
+    'PrevPageLink': (options) => {
+        return (
+            <button type="button" className={options.className} onClick={options.onClick} disabled={options.disabled}>
+                <span className="p-paginator-icon-text">&lt;</span>
+            </button>
+        );
+    },
+    'PageLinks': (options) => {
+        if (options.view.startPage === undefined) return null;
+        
+        const pages = [];
+        for (let i = options.view.startPage; i <= options.view.endPage; i++) {
+            const pageNum = i + 1;
+            const isSelected = i === options.view.currentPage;
+            const className = `p-paginator-page p-paginator-element p-link ${isSelected ? 'p-highlight' : ''}`;
+            
+            pages.push(
+                <button 
+                    key={i} 
+                    type="button" 
+                    className={className} 
+                    onClick={(e) => {
+                        options.onClick({
+                            originalEvent: e,
+                            value: i
+                        });
+                    }}
+                >
+                    <span className="p-paginator-icon-text">{pageNum}</span>
+                </button>
+            );
+        }
+        return <span className="p-paginator-pages">{pages}</span>;
+    },
+    'NextPageLink': (options) => {
+        return (
+            <button type="button" className={options.className} onClick={options.onClick} disabled={options.disabled}>
+                <span className="p-paginator-icon-text">&gt;</span>
+            </button>
+        );
+    },
+    'LastPageLink': (options) => {
+        return (
+            <button type="button" className={options.className} onClick={options.onClick} disabled={options.disabled}>
+                <span className="p-paginator-icon-text">&gt;&gt;</span>
+            </button>
+        );
+    }
+};
 
 function Users({ isLoggedIn }) {
     const [users, setUsers] = useState([]);
@@ -116,37 +175,7 @@ function Users({ isLoggedIn }) {
         </div>
     );
 
-    const paginatorTemplate = {
-        layout: 'FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport',
-        'FirstPageLink': (options) => {
-            return (
-                <button type="button" className={options.className} onClick={options.onClick} disabled={options.disabled}>
-                    <span className="p-paginator-icon-text">&lt;&lt;</span>
-                </button>
-            );
-        },
-        'PrevPageLink': (options) => {
-            return (
-                <button type="button" className={options.className} onClick={options.onClick} disabled={options.disabled}>
-                    <span className="p-paginator-icon-text">&lt;</span>
-                </button>
-            );
-        },
-        'NextPageLink': (options) => {
-            return (
-                <button type="button" className={options.className} onClick={options.onClick} disabled={options.disabled}>
-                    <span className="p-paginator-icon-text">&gt;</span>
-                </button>
-            );
-        },
-        'LastPageLink': (options) => {
-            return (
-                <button type="button" className={options.className} onClick={options.onClick} disabled={options.disabled}>
-                    <span className="p-paginator-icon-text">&gt;&gt;</span>
-                </button>
-            );
-        }
-    };
+
 
     return (
         <div className="users-container">
