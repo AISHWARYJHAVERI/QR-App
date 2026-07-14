@@ -14,6 +14,7 @@ const ROLES = [
 const EditAdmin = ({ rowData, onAdminUpdated, showError, showSuccess }) => {
     const [adminDialog, setAdminDialog] = useState(false);
     const [admin, setAdmin] = useState({ name: '', username: '', password: '', role: 'President', phone: '', city: '', ...rowData });
+    const [showEditPwd, setShowEditPwd] = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
     useEffect(() => {
@@ -80,7 +81,12 @@ const EditAdmin = ({ rowData, onAdminUpdated, showError, showSuccess }) => {
                         </div>
                         <div className="field">
                             <label htmlFor={`admin-password-${admin.id}`} className="font-bold">Password</label>
-                            <InputText id={`admin-password-${admin.id}`} type="password" value={admin.password} onChange={(e) => onInputChange(e, 'password')} required className={classNames({ 'p-invalid': submitted && !admin.password })} />
+                            <div className="pwd-input-wrap">
+                                <InputText id={`admin-password-${admin.id}`} type={showEditPwd ? "text" : "password"} value={admin.password} onChange={(e) => onInputChange(e, 'password')} required className={classNames({ 'p-invalid': submitted && !admin.password })} />
+                                <button type="button" className="pwd-toggle-btn" onClick={() => setShowEditPwd(!showEditPwd)} tabIndex={-1}>
+                                    <i className={`pi ${showEditPwd ? "pi-eye-slash" : "pi-eye"}`}></i>
+                                </button>
+                            </div>
                             {submitted && !admin.password && <small className="p-error">Password is required.</small>}
                         </div>
                         <div className="field">

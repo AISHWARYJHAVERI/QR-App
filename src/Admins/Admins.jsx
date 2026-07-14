@@ -24,6 +24,7 @@ function Admins({ showError, showSuccess }) {
     const [role, setRole] = useState('President');
     const [phone, setPhone] = useState('');
     const [city, setCity] = useState('');
+    const [showAdminPwd, setShowAdminPwd] = useState(false);
     const [fetching, setFetching] = useState(true);
     const [saving, setSaving] = useState(false);
     const [qrDialog, setQrDialog] = useState(false);
@@ -164,13 +165,18 @@ function Admins({ showError, showSuccess }) {
                         </div>
                         <div className="col-md-4">
                             <label className="form-label text-slate-300">Password</label>
-                            <InputText 
-                                type="password"
-                                value={password} 
-                                onChange={(e) => setPassword(e.target.value)} 
-                                placeholder="Enter secret password" 
-                                className="w-full p-inputtext-sm"
-                            />
+                            <div className="pwd-input-wrap">
+                                <InputText 
+                                    type={showAdminPwd ? "text" : "password"}
+                                    value={password} 
+                                    onChange={(e) => setPassword(e.target.value)} 
+                                    placeholder="Enter secret password" 
+                                    className="w-full p-inputtext-sm"
+                                />
+                                <button type="button" className="pwd-toggle-btn" onClick={() => setShowAdminPwd(!showAdminPwd)} tabIndex={-1}>
+                                    <i className={`pi ${showAdminPwd ? "pi-eye-slash" : "pi-eye"}`}></i>
+                                </button>
+                            </div>
                         </div>
                         <div className="col-md-4">
                             <label className="form-label text-slate-300">Role</label>

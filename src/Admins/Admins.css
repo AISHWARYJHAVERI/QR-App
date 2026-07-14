@@ -164,6 +164,37 @@
     color: #f8fafc;
 }
 
+.pwd-input-wrap {
+  position: relative;
+}
+
+.pwd-input-wrap .p-inputtext {
+  padding-right: 2.75rem !important;
+}
+
+.pwd-input-wrap .pwd-toggle-btn {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none !important;
+  border: none !important;
+  color: #64748b !important;
+  cursor: pointer;
+  padding: 0.35rem;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  z-index: 2;
+  line-height: 1;
+}
+
+.pwd-input-wrap .pwd-toggle-btn:hover {
+  color: #cbd5e1 !important;
+}
+
 /* Mobile horizontal scroll for admin table */
 @media screen and (max-width: 768px) {
     .admins-section .p-datatable-users .p-datatable-wrapper {

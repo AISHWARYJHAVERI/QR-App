@@ -683,12 +683,40 @@
   pointer-events: none;
 }
 
+.pwd-toggle-btn {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none !important;
+  border: none !important;
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b !important;
+  background-image: none !important;
+  background-clip: initial !important;
+  animation: none !important;
+  cursor: pointer;
+  padding: 0.35rem;
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  z-index: 2;
+  line-height: 1;
+}
+
+.pwd-toggle-btn:hover {
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+}
+
 .login-input-wrapper input {
   width: 100%;
   background: rgba(15, 23, 42, 0.5) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 12px !important;
-  padding: 0.75rem 1rem 0.75rem 2.75rem !important;
+  padding: 0.75rem 2.75rem 0.75rem 2.75rem !important;
   color: #ffffff !important;
   font-size: 0.95rem !important;
   transition: all 0.2s ease !important;
@@ -911,7 +939,12 @@
 
   .login-input-wrapper input {
     font-size: 0.88rem !important;
-    padding: 0.65rem 1rem 0.65rem 2.5rem !important;
+    padding: 0.65rem 2.5rem 0.65rem 2.5rem !important;
+  }
+
+  .pwd-toggle-btn {
+    font-size: 0.92rem;
+    right: 0.5rem;
   }
 }
 

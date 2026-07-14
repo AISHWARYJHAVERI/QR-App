@@ -30,6 +30,8 @@ function App() {
   const [regName, setRegName] = useState('');
   const [regUsername, setRegUsername] = useState('');
   const [regPassword, setRegPassword] = useState('');
+  const [showLoginPwd, setShowLoginPwd] = useState(false);
+  const [showRegPwd, setShowRegPwd] = useState(false);
   const [regRole, setRegRole] = useState('President');
   const [regPhone, setRegPhone] = useState('');
   const [regCity, setRegCity] = useState('');
@@ -321,13 +323,16 @@ function App() {
                     <div className="login-input-wrapper">
                       <i className="pi pi-lock login-input-icon"></i>
                       <input 
-                        type="password" 
+                        type={showLoginPwd ? "text" : "password"} 
                         value={password} 
                         onChange={(e) => setPassword(e.target.value)} 
                         placeholder="Enter secret password"
                         required
                         disabled={submitting}
                       />
+                      <button type="button" className="pwd-toggle-btn" onClick={() => setShowLoginPwd(!showLoginPwd)} tabIndex={-1}>
+                        <i className={`pi ${showLoginPwd ? "pi-eye-slash" : "pi-eye"}`}></i>
+                      </button>
                     </div>
                   </div>
 
@@ -384,13 +389,16 @@ function App() {
                       <div className="login-input-wrapper">
                         <i className="pi pi-lock login-input-icon"></i>
                         <input 
-                          type="password" 
+                          type={showRegPwd ? "text" : "password"} 
                           value={regPassword} 
                           onChange={(e) => setRegPassword(e.target.value)} 
                           placeholder="Password"
                           required
                           disabled={submitting}
                         />
+                        <button type="button" className="pwd-toggle-btn" onClick={() => setShowRegPwd(!showRegPwd)} tabIndex={-1}>
+                          <i className={`pi ${showRegPwd ? "pi-eye-slash" : "pi-eye"}`}></i>
+                        </button>
                       </div>
                     </div>
                   </div>
