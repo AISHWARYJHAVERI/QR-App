@@ -942,7 +942,19 @@
     padding: 0.65rem 2.5rem 0.65rem 2.5rem !important;
   }
 
-  .pwd-toggle-btn {
+/* Hide browser native password reveal icons */
+.login-input-wrapper input[type="password"]::-ms-reveal,
+.login-input-wrapper input[type="password"]::-ms-clear {
+  display: none;
+}
+
+.login-input-wrapper input::-webkit-credentials-auto-fill-button {
+  display: none !important;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.pwd-toggle-btn {
     font-size: 0.92rem;
     right: 0.5rem;
   }
