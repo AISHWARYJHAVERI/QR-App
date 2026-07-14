@@ -29,3 +29,74 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+/* Style DataTable container matching the main table style */
+.p-datatable-scans {
+  @apply rounded-lg overflow-hidden;
+}
+
+.p-datatable-scans .p-datatable-header {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin-bottom: 1.5rem;
+}
+
+.p-datatable-scans .p-datatable-wrapper {
+  @apply rounded-3xl overflow-hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(15, 23, 42, 0.2) !important;
+  min-height: 400px;
+}
+
+.p-datatable-scans table {
+  table-layout: fixed !important;
+}
+
+.p-datatable-scans .p-datatable-thead > tr > th {
+  background: rgba(30, 41, 59, 0.6) !important;
+  color: #f8fafc !important;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.p-datatable-scans .p-datatable-tbody > tr {
+  background: rgba(15, 23, 42, 0.4) !important;
+  color: #e2e8f0 !important;
+  transition: all 0.2s ease;
+}
+
+.p-datatable-scans .p-datatable-tbody > tr:hover {
+  background: rgba(30, 41, 59, 0.6) !important;
+}
+
+.p-datatable-scans .p-datatable-tbody > tr > td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 1rem 0.5rem;
+}
+
+@media screen and (max-width: 768px) {
+  .p-datatable-scans .p-datatable-wrapper {
+    overflow-x: auto !important;
+    overflow-y: hidden;
+    min-height: auto;
+    border-radius: 16px;
+  }
+
+  .p-datatable-scans table {
+    table-layout: auto !important;
+    min-width: 600px;
+    width: auto;
+  }
+
+  .p-datatable-scans .p-datatable-tbody > tr > td,
+  .p-datatable-scans .p-datatable-thead > tr > th {
+    white-space: nowrap;
+    padding: 1rem 0.75rem;
+  }
+
+  .p-datatable-scans .p-datatable-thead > tr > th {
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+  }
+}

@@ -63,10 +63,12 @@ function ScanAnalytics() {
     const header = (
         <div className="table-header">
             <h4 className="m-0 text-primary gradient-heading gradient-text">Scan Analytics</h4>
-            <span className="p-input-icon-left">
-                <i className="pi pi-search" />
-                <InputText type="search" onInput={(e) => setGlobalFilter(e.target.value)} placeholder="Search..." className="p-inputtext-sm" />
-            </span>
+            <div className="header-actions">
+                <span className="p-input-icon-left">
+                    <i className="pi pi-search" />
+                    <InputText type="search" onInput={(e) => setGlobalFilter(e.target.value)} placeholder="Search..." className="p-inputtext-sm" />
+                </span>
+            </div>
         </div>
     );
 
