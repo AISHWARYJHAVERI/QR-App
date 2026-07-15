@@ -23,10 +23,26 @@ const PrintQROptions = ({ visible, onHide, currentItem, selectedItems, type, fet
     onHide(true);
   };
 
-  const handlePrintSelected = () => {
+  const handlePrintSelected = async () => {
     const items = (selectedItems && selectedItems.length > 0) ? selectedItems : (currentItem ? [currentItem] : []);
     if (items.length === 0) return;
-    doPrint(items);
+    setPrinting(true);
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      try {
+        const qrData = buildQRData(item, type);
+        const qrImageUrl = buildQRImageUrl(qrData);
+        await printQRCard({
+          qrImageUrl, name: item.name, phone: item.phone,
+          city: item.city, role: item.role, type,
+          index: i + 1, total: items.length
+        });
+      } catch (e) {
+        console.error('Print failed for', item.name, e);
+      }
+    }
+    setPrinting(false);
+    onHide(true);
   };
 
   const handlePrintAll = async () => {

@@ -1,6 +1,7 @@
 export const printQRCard = ({ qrImageUrl, name, phone, city, role, type, index, total }) => {
   return new Promise((resolve) => {
     const printWindow = window.open('', '_blank');
+    if (!printWindow) { resolve(); return; }
 
     let infoHtml = '';
     infoHtml += `<div class="info-row"><span class="info-label">Name</span><span class="info-value">${name}</span></div>`;
