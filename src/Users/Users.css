@@ -842,3 +842,32 @@
     background: rgba(99, 102, 241, 0.25);
     border-color: rgba(99, 102, 241, 0.5);
 }
+
+/* Header Print QR button */
+.print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.2rem;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: rgba(99, 102, 241, 0.1);
+  color: #818cf8;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: 'Chillax', sans-serif;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.print-btn:hover {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
+}
+
+.print-btn i {
+  font-size: 0.9rem;
+}
