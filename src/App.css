@@ -944,19 +944,19 @@
     padding: 0.65rem 2.5rem 0.65rem 2.5rem !important;
   }
 
-/* Hide browser native password reveal icon (hover eye in Chrome/Edge) */
+  .pwd-toggle-btn {
+    font-size: 0.92rem;
+    right: 0.5rem;
+  }
+}
+
+/* Hide browser native password reveal icon (hover eye in Chrome/Edge) — global */
 .login-input-wrapper input[type="password"]::-webkit-password-reveal-button {
   display: none !important;
 }
 
 .login-input-wrapper input[type="password"]::-ms-reveal {
   display: none;
-}
-
-.pwd-toggle-btn {
-    font-size: 0.92rem;
-    right: 0.5rem;
-  }
 }
 
 @media (max-width: 375px) {
