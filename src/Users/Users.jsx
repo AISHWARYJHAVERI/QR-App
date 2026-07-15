@@ -169,6 +169,7 @@ function Users({ isLoggedIn }) {
                 )}
             </div>
             <div className="header-actions">
+                <Button icon="pi pi-print" className="p-button-rounded p-button-text p-button-sm" onClick={() => { setPrintCurrentItem(null); setPrintDialogVisible(true); }} title="Print QR" />
                 <ImportExcel onImported={handleImported} showError={showError} showSuccess={showSuccess} />
                 <span className="p-input-icon-left">
                     <i className="pi pi-search" />

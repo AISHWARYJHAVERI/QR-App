@@ -159,6 +159,22 @@ function Admins({ showError, showSuccess }) {
         </div>
     );
 
+    const header = (
+        <div className="table-header">
+            <div className="d-flex align-items-center gap-3">
+                <h4 className="m-0 text-primary gradient-heading gradient-text">Manage Admins</h4>
+                {showSelection && (
+                    <button type="button" className="selection-done-btn" onClick={() => { setShowSelection(false); setSelectedAdmins([]); }}>
+                        <i className="pi pi-times me-1"></i> Done Selection
+                    </button>
+                )}
+            </div>
+            <div className="header-actions">
+                <Button icon="pi pi-print" className="p-button-rounded p-button-text p-button-sm" onClick={() => { setPrintCurrentItem(null); setPrintDialogVisible(true); }} title="Print QR" />
+            </div>
+        </div>
+    );
+
     return (
         <div className="admins-section mt-4">
             {/* Create Admin Form */}
@@ -243,14 +259,7 @@ function Admins({ showError, showSuccess }) {
             </div>
 
             {/* Admins Table */}
-            <div className="d-flex align-items-center gap-3 mb-3">
-                {showSelection && (
-                    <button type="button" className="selection-done-btn" onClick={() => { setShowSelection(false); setSelectedAdmins([]); }}>
-                        <i className="pi pi-times me-1"></i> Done Selection
-                    </button>
-                )}
-            </div>
-            <div ref={tableContainerRef}><DataTable value={admins} className="p-datatable-users shadow-sm" emptyMessage="No admins registered yet." loading={fetching}
+            <div ref={tableContainerRef}><DataTable value={admins} className="p-datatable-users shadow-sm" emptyMessage="No admins registered yet." loading={fetching} header={header}
                 selection={selectedAdmins}
                 onSelectionChange={(e) => {
                     setSelectedAdmins(e.value);
