@@ -34,10 +34,24 @@ function Admins({ showError, showSuccess }) {
     const [selectedAdmins, setSelectedAdmins] = useState([]);
     const [printDialogVisible, setPrintDialogVisible] = useState(false);
     const [printCurrentItem, setPrintCurrentItem] = useState(null);
+    const tableContainerRef = useRef(null);
 
     useEffect(() => {
         fetchAdmins();
     }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (!showSelection) return;
+            if (e.target.closest('.p-dialog') || e.target.closest('.p-dialog-mask')) return;
+            if (tableContainerRef.current && !tableContainerRef.current.contains(e.target)) {
+                setShowSelection(false);
+                setSelectedAdmins([]);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showSelection]);
 
     const fetchAdmins = async () => {
         const cached = localStorage.getItem('admins_cache');
@@ -235,7 +249,7 @@ function Admins({ showError, showSuccess }) {
                     </button>
                 )}
             </div>
-            <DataTable value={admins} className="p-datatable-users shadow-sm" emptyMessage="No admins registered yet." loading={fetching}
+            <div ref={tableContainerRef}><DataTable value={admins} className="p-datatable-users shadow-sm" emptyMessage="No admins registered yet." loading={fetching}
                 selection={selectedAdmins}
                 onSelectionChange={(e) => setSelectedAdmins(e.value)}
                 selectionMode={showSelection ? "multiple" : null}
@@ -256,7 +270,7 @@ function Admins({ showError, showSuccess }) {
                 <Column field="phone" header="Mobile Number" align="left" style={{ width: '14%' }} className="pl-6"></Column>
                 <Column field="city" header="City" align="left" style={{ width: '12%' }} className="pl-6"></Column>
                 <Column body={actionBodyTemplate} header="Actions" align="center" style={{ width: '30%' }}></Column>
-            </DataTable>
+            </DataTable></div>
 
             {/* Auto QR Dialog after create */}
             <Dialog visible={qrDialog} style={{ width: '400px' }} header={<div className="p-dialog-title gradient-text">Generated QR Code</div>} modal className="p-fluid" footer={qrDialogFooter} onHide={() => setQrDialog(false)} closeIcon={<span className="pi pi-times"></span>} draggable={false} resizable={false}>

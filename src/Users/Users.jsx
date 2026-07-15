@@ -60,6 +60,7 @@ function Users({ isLoggedIn }) {
     const [printDialogVisible, setPrintDialogVisible] = useState(false);
     const [printCurrentItem, setPrintCurrentItem] = useState(null);
     const toast = useRef(null);
+    const tableContainerRef = useRef(null);
 
     useEffect(() => {
         fetchUsers();
@@ -70,6 +71,19 @@ function Users({ isLoggedIn }) {
             setActiveTab('users');
         }
     }, [isLoggedIn]);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (!showSelection) return;
+            if (e.target.closest('.p-dialog') || e.target.closest('.p-dialog-mask')) return;
+            if (tableContainerRef.current && !tableContainerRef.current.contains(e.target)) {
+                setShowSelection(false);
+                setSelectedUsers([]);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showSelection]);
 
     const fetchUsers = async () => {
         const cached = localStorage.getItem('users_cache');
@@ -202,7 +216,7 @@ function Users({ isLoggedIn }) {
                     <>
                         <AddUser inline={true} onUserAdded={handleUserAdded} showError={showError} showSuccess={showSuccess} />
 
-                        <DataTable value={users} header={header} globalFilter={globalFilter} paginator rows={10}
+                        <div ref={tableContainerRef}><DataTable value={users} header={header} globalFilter={globalFilter} paginator rows={10}
                             paginatorTemplate={paginatorTemplate}
                             currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
                             className="p-datatable-users"
@@ -226,7 +240,7 @@ function Users({ isLoggedIn }) {
                             <Column field="phone" header="Mobile Number" align="left" style={{ width: '18%' }} className="pl-6"></Column>
                             <Column field="city" header="City" align="left" style={{ width: '16%' }} className="pl-6" body={(rowData) => rowData.city || rowData.address?.city || 'N/A'}></Column>
                             <Column body={actionBodyTemplate} exportable={false} align="right" alignHeader="center" style={{ width: '38%' }} header="Actions"></Column>
-                        </DataTable>
+                        </DataTable></div>
                     </>
                 ) : activeTab === 'analytics' ? (
                     <ScanAnalytics />
