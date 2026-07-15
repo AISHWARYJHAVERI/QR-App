@@ -252,7 +252,12 @@ function Admins({ showError, showSuccess }) {
             </div>
             <div ref={tableContainerRef}><DataTable value={admins} className="p-datatable-users shadow-sm" emptyMessage="No admins registered yet." loading={fetching}
                 selection={selectedAdmins}
-                onSelectionChange={(e) => setSelectedAdmins(e.value)}
+                onSelectionChange={(e) => {
+                    setSelectedAdmins(e.value);
+                    if (e.value.length === 0) {
+                        setShowSelection(false);
+                    }
+                }}
                 selectionMode={showSelection ? "multiple" : null}
                 onRowClick={(e) => {
                     if (!showSelection) {

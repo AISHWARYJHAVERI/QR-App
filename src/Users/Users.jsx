@@ -224,7 +224,12 @@ function Users({ isLoggedIn }) {
                             emptyMessage="No users found."
                             loading={loading}
                             selection={selectedUsers}
-                            onSelectionChange={(e) => setSelectedUsers(e.value)}
+                            onSelectionChange={(e) => {
+                                setSelectedUsers(e.value);
+                                if (e.value.length === 0) {
+                                    setShowSelection(false);
+                                }
+                            }}
                             selectionMode={showSelection ? "multiple" : null}
                             onRowClick={(e) => {
                                 if (!showSelection) {
