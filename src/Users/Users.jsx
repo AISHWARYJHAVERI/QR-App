@@ -77,6 +77,7 @@ function Users({ isLoggedIn }) {
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (!showSelectionRef.current) return;
+            if (e.target.closest('.p-dialog')) return;
             if (tableContainerRef.current && !tableContainerRef.current.contains(e.target)) {
                 setShowSelection(false);
                 setSelectedUsers([]);
