@@ -9,6 +9,7 @@ import './Admins.css';
 import EditAdmin from './EditAdmin/EditAdmin';
 import DeleteAdmin from './DeleteAdmin/DeleteAdmin';
 import GenerateQR from './GenerateQR/GenerateQR';
+import PrintQROptions from '../components/PrintQROptions';
 
 const ROLES = [
   'President', 'Vice President', 'Secretary', 'Joint Secretary',
@@ -29,6 +30,10 @@ function Admins({ showError, showSuccess }) {
     const [saving, setSaving] = useState(false);
     const [qrDialog, setQrDialog] = useState(false);
     const [qrAdmin, setQrAdmin] = useState(null);
+    const [showSelection, setShowSelection] = useState(false);
+    const [selectedAdmins, setSelectedAdmins] = useState([]);
+    const [printDialogVisible, setPrintDialogVisible] = useState(false);
+    const [printCurrentItem, setPrintCurrentItem] = useState(null);
 
     useEffect(() => {
         fetchAdmins();
@@ -123,8 +128,9 @@ function Admins({ showError, showSuccess }) {
         return (
             <div className="action-buttons">
                 <EditAdmin rowData={rowData} onAdminUpdated={handleAdminUpdated} showError={showError} showSuccess={showSuccess} />
-                <GenerateQR rowData={rowData} />
+                <GenerateQR rowData={rowData} onPrintClick={(item) => { setPrintCurrentItem(item); setPrintDialogVisible(true); }} />
                 <DeleteAdmin rowData={rowData} onAdminDeleted={handleAdminDeleted} showError={showError} showSuccess={showSuccess} />
+                <Button icon="pi pi-print" className="p-button-rounded p-button-text p-button-sm print-icon-btn" onClick={() => { setPrintCurrentItem(rowData); setPrintDialogVisible(true); }} title="Print QR" />
             </div>
         );
     };
@@ -222,7 +228,27 @@ function Admins({ showError, showSuccess }) {
             </div>
 
             {/* Admins Table */}
-            <DataTable value={admins} className="p-datatable-users shadow-sm" emptyMessage="No admins registered yet." loading={fetching}>
+            <div className="d-flex align-items-center gap-3 mb-3">
+                {showSelection && (
+                    <button type="button" className="selection-done-btn" onClick={() => { setShowSelection(false); setSelectedAdmins([]); }}>
+                        <i className="pi pi-times me-1"></i> Done Selection
+                    </button>
+                )}
+            </div>
+            <DataTable value={admins} className="p-datatable-users shadow-sm" emptyMessage="No admins registered yet." loading={fetching}
+                selection={selectedAdmins}
+                onSelectionChange={(e) => setSelectedAdmins(e.value)}
+                selectionMode={showSelection ? "multiple" : null}
+                onRowClick={(e) => {
+                    if (!showSelection) {
+                        setShowSelection(true);
+                        setSelectedAdmins([e.data]);
+                    }
+                }}
+                dataKey="id">
+                {showSelection && (
+                    <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
+                )}
                 <Column header="ID" body={(rowData, options) => options.rowIndex + 1} align="center" style={{ width: '6%' }}></Column>
                 <Column field="name" header="Name" align="left" style={{ width: '16%' }} className="pl-6"></Column>
                 <Column field="username" header="Username" align="left" style={{ width: '14%' }} className="pl-6"></Column>
@@ -247,6 +273,18 @@ function Admins({ showError, showSuccess }) {
                     </div>
                 )}
             </Dialog>
+
+            <PrintQROptions
+                visible={printDialogVisible}
+                onHide={(clearSelection) => {
+                    setPrintDialogVisible(false);
+                    if (clearSelection) { setShowSelection(false); setSelectedAdmins([]); }
+                }}
+                currentItem={printCurrentItem}
+                selectedItems={showSelection ? selectedAdmins : []}
+                type="A"
+                fetchAllUrl="/admins"
+            />
         </div>
     );
 }

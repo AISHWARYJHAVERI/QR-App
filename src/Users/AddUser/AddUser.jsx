@@ -4,6 +4,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import axios from 'axios';
+import PrintQROptions from '../../components/PrintQROptions';
 
 const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
     let emptyUser = {
@@ -14,6 +15,7 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
 
     const [userDialog, setUserDialog] = useState(false);
     const [qrDialog, setQrDialog] = useState(false);
+    const [printDialogVisible, setPrintDialogVisible] = useState(false);
     const [user, setUser] = useState(emptyUser);
     const [submitted, setSubmitted] = useState(false);
 
@@ -53,81 +55,9 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
         setUser(_user);
     };
 
-    const printQrCode = () => {
-        const printWindow = window.open('', '_blank');
-        const qrData = `{"app":"QRAPP","type":"U","name":"${user.name}","phone":"${user.phone}","city":"${user.city}"}`;
-        const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}&color=050816&bgcolor=ffffff`;
-        
-        printWindow.document.write(`
-            <html>
-                <head>
-                    <title>Print QR Code - ${user.name}</title>
-                    <style>
-                        body {
-                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                            display: flex;
-                            flex-direction: column;
-                            align-items: center;
-                            justify-content: center;
-                            height: 100vh;
-                            margin: 0;
-                            background: white;
-                            color: #0f172a;
-                            text-align: center;
-                        }
-                        .print-container {
-                            border: 2px dashed #cbd5e1;
-                            padding: 2.5rem;
-                            border-radius: 1.5rem;
-                            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-                            background: #ffffff;
-                            max-width: 350px;
-                        }
-                        img {
-                            width: 250px;
-                            height: 250px;
-                            margin-bottom: 1.5rem;
-                            display: block;
-                        }
-                        h2 {
-                            margin: 0 0 0.5rem 0;
-                            font-size: 1.5rem;
-                            font-weight: 700;
-                        }
-                        p {
-                            margin: 0.25rem 0;
-                            color: #64748b;
-                            font-size: 1.1rem;
-                        }
-                        @media print {
-                            body {
-                                height: auto;
-                            }
-                            .print-container {
-                                border: none;
-                                box-shadow: none;
-                                padding: 0;
-                            }
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="print-container">
-                        <img src="${qrImageUrl}" alt="QR Code" />
-                        <h2>${user.name}</h2>
-                        <p>Mobile: ${user.phone}</p>
-                        <p>City: ${user.city}</p>
-                    </div>
-                    <script>
-                        window.onload = function() {
-                            window.print();
-                            setTimeout(function() { window.close(); }, 500);
-                        };
-                    </script>
-                </body>
-            </html>
-        `);
-        printWindow.document.close();
+    const handlePrintClick = () => {
+        setQrDialog(false);
+        setPrintDialogVisible(true);
     };
 
     const userDialogFooter = (
@@ -140,7 +70,7 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
     const qrDialogFooter = (
         <div className="dialog-footer mt-4">
             <Button label="Close" icon="pi pi-times" onClick={() => setQrDialog(false)} style={{ backgroundColor: '#ef4444', color: '#ffffff', border: 'none' }} />
-            <Button label="Print QR" icon="pi pi-print" onClick={printQrCode} style={{ backgroundColor: '#6366f1', color: '#ffffff', border: 'none' }} />
+            <Button label="Print QR" icon="pi pi-print" onClick={handlePrintClick} style={{ backgroundColor: '#6366f1', color: '#ffffff', border: 'none' }} />
         </div>
     );
 
@@ -204,6 +134,14 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
                         </div>
                     </div>
                 </Dialog>
+                <PrintQROptions
+                    visible={printDialogVisible}
+                    onHide={(clearSelection) => { setPrintDialogVisible(false); }}
+                    currentItem={user}
+                    selectedItems={[]}
+                    type="U"
+                    fetchAllUrl="/users"
+                />
             </div>
         );
     }
@@ -262,6 +200,14 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
                     </div>
                 </div>
             </Dialog>
+            <PrintQROptions
+                visible={printDialogVisible}
+                onHide={(clearSelection) => { setPrintDialogVisible(false); }}
+                currentItem={user}
+                selectedItems={[]}
+                type="U"
+                fetchAllUrl="/users"
+            />
         </>
     );
 };

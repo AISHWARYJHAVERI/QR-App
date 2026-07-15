@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 
-const GenerateQR = ({ rowData }) => {
+const GenerateQR = ({ rowData, onPrintClick }) => {
     const [qrDialog, setQrDialog] = useState(false);
 
     const openQR = () => {
@@ -19,6 +19,9 @@ const GenerateQR = ({ rowData }) => {
     const qrDialogFooter = (
         <div className="dialog-footer mt-4">
             <Button label="Close" icon="pi pi-times" onClick={hideQRDialog} style={{ backgroundColor: '#ef4444', color: '#ffffff', border: 'none' }} />
+            {onPrintClick && (
+                <Button label="Print QR" icon="pi pi-print" onClick={() => { hideQRDialog(); onPrintClick(rowData); }} style={{ backgroundColor: '#6366f1', color: '#ffffff', border: 'none' }} />
+            )}
         </div>
     );
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { InputText } from 'primereact/inputtext';
+import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import axios from 'axios';
 import './Users.css';
@@ -14,6 +15,7 @@ import GenerateQR from './GenerateQR/GenerateQR';
 import ImportExcel from './ImportExcel/ImportExcel';
 import Admins from '../Admins/Admins';
 import ScanAnalytics from './ScanAnalytics/ScanAnalytics';
+import PrintQROptions from '../components/PrintQROptions';
 
 const paginatorTemplate = {
     layout: 'FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport',
@@ -53,6 +55,10 @@ function Users({ isLoggedIn }) {
     const [globalFilter, setGlobalFilter] = useState(null);
     const [activeTab, setActiveTab] = useState('users');
     const [loading, setLoading] = useState(true);
+    const [showSelection, setShowSelection] = useState(false);
+    const [selectedUsers, setSelectedUsers] = useState([]);
+    const [printDialogVisible, setPrintDialogVisible] = useState(false);
+    const [printCurrentItem, setPrintCurrentItem] = useState(null);
     const toast = useRef(null);
 
     useEffect(() => {
@@ -130,15 +136,23 @@ function Users({ isLoggedIn }) {
             <div className="action-buttons">
                 <ViewUser rowData={rowData} />
                 <EditUser rowData={rowData} onUserUpdated={handleUserUpdated} showError={showError} showSuccess={showSuccess} />
-                <GenerateQR rowData={rowData} />
+                <GenerateQR rowData={rowData} onPrintClick={(item) => { setPrintCurrentItem(item); setPrintDialogVisible(true); }} />
                 <DeleteUser rowData={rowData} onUserDeleted={handleUserDeleted} showError={showError} showSuccess={showSuccess} />
+                <Button icon="pi pi-print" className="p-button-rounded p-button-text p-button-sm print-icon-btn" onClick={() => { setPrintCurrentItem(rowData); setPrintDialogVisible(true); }} title="Print QR" />
             </div>
         );
     };
 
     const header = (
         <div className="table-header">
-            <h4 className="m-0 text-primary gradient-heading gradient-text">Manage Users</h4>
+            <div className="d-flex align-items-center gap-3">
+                <h4 className="m-0 text-primary gradient-heading gradient-text">Manage Users</h4>
+                {showSelection && (
+                    <button type="button" className="selection-done-btn" onClick={() => { setShowSelection(false); setSelectedUsers([]); }}>
+                        <i className="pi pi-times me-1"></i> Done Selection
+                    </button>
+                )}
+            </div>
             <div className="header-actions">
                 <ImportExcel onImported={handleImported} showError={showError} showSuccess={showSuccess} />
                 <span className="p-input-icon-left">
@@ -193,7 +207,20 @@ function Users({ isLoggedIn }) {
                             currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
                             className="p-datatable-users"
                             emptyMessage="No users found."
-                            loading={loading}>
+                            loading={loading}
+                            selection={selectedUsers}
+                            onSelectionChange={(e) => setSelectedUsers(e.value)}
+                            selectionMode={showSelection ? "multiple" : null}
+                            onRowClick={(e) => {
+                                if (!showSelection) {
+                                    setShowSelection(true);
+                                    setSelectedUsers([e.data]);
+                                }
+                            }}
+                            dataKey="id">
+                            {showSelection && (
+                                <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
+                            )}
                             <Column header="ID" body={(rowData, options) => options.rowIndex + 1} align="center" style={{ width: '6%' }}></Column>
                             <Column field="name" header="Name" align="left" style={{ width: '22%' }} className="pl-6"></Column>
                             <Column field="phone" header="Mobile Number" align="left" style={{ width: '18%' }} className="pl-6"></Column>
@@ -207,6 +234,18 @@ function Users({ isLoggedIn }) {
                     <Admins showError={showError} showSuccess={showSuccess} />
                 )}
             </div>
+
+            <PrintQROptions
+                visible={printDialogVisible}
+                onHide={(clearSelection) => {
+                    setPrintDialogVisible(false);
+                    if (clearSelection) { setShowSelection(false); setSelectedUsers([]); }
+                }}
+                currentItem={printCurrentItem}
+                selectedItems={showSelection ? selectedUsers : []}
+                type="U"
+                fetchAllUrl="/users"
+            />
         </div>
     );
 }
