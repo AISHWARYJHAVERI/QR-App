@@ -61,6 +61,8 @@ function Users({ isLoggedIn }) {
     const [printCurrentItem, setPrintCurrentItem] = useState(null);
     const toast = useRef(null);
     const tableContainerRef = useRef(null);
+    const showSelectionRef = useRef(showSelection);
+    useEffect(() => { showSelectionRef.current = showSelection; }, [showSelection]);
 
     useEffect(() => {
         fetchUsers();
@@ -74,8 +76,7 @@ function Users({ isLoggedIn }) {
 
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (!showSelection) return;
-            if (e.target.closest('.p-dialog') || e.target.closest('.p-dialog-mask')) return;
+            if (!showSelectionRef.current) return;
             if (tableContainerRef.current && !tableContainerRef.current.contains(e.target)) {
                 setShowSelection(false);
                 setSelectedUsers([]);
@@ -83,7 +84,7 @@ function Users({ isLoggedIn }) {
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [showSelection]);
+    }, []);
 
     const fetchUsers = async () => {
         const cached = localStorage.getItem('users_cache');

@@ -35,6 +35,8 @@ function Admins({ showError, showSuccess }) {
     const [printDialogVisible, setPrintDialogVisible] = useState(false);
     const [printCurrentItem, setPrintCurrentItem] = useState(null);
     const tableContainerRef = useRef(null);
+    const showSelectionRef = useRef(showSelection);
+    useEffect(() => { showSelectionRef.current = showSelection; }, [showSelection]);
 
     useEffect(() => {
         fetchAdmins();
@@ -42,8 +44,7 @@ function Admins({ showError, showSuccess }) {
 
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (!showSelection) return;
-            if (e.target.closest('.p-dialog') || e.target.closest('.p-dialog-mask')) return;
+            if (!showSelectionRef.current) return;
             if (tableContainerRef.current && !tableContainerRef.current.contains(e.target)) {
                 setShowSelection(false);
                 setSelectedAdmins([]);
@@ -51,7 +52,7 @@ function Admins({ showError, showSuccess }) {
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [showSelection]);
+    }, []);
 
     const fetchAdmins = async () => {
         const cached = localStorage.getItem('admins_cache');
