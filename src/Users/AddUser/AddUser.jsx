@@ -111,6 +111,9 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
                         disabled={!isFormValid}
                         style={{ width: 'auto', borderRadius: '12px', padding: '0.6rem 1.5rem' }} 
                     />
+                    <button type="button" className="print-btn" onClick={() => setPrintDialogVisible(true)} disabled={!isFormValid} title="Print QR">
+                        <i className="pi pi-print mr-2"></i> Print QR
+                    </button>
                     <Button 
                         type="button"
                         label="Save User Details" 
@@ -170,7 +173,7 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
                             {submitted && !user.city && <small className="p-error">City is required.</small>}
                         </div>
                         
-                        <div className="mt-4 text-center">
+                        <div className="mt-4 d-flex flex-wrap gap-2 justify-content-center">
                             <Button 
                                 type="button"
                                 label="Generate QR Code" 
@@ -179,8 +182,11 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
                                 outlined
                                 onClick={() => setQrDialog(true)} 
                                 disabled={!isFormValid}
-                                style={{ width: '100%', borderRadius: '12px', padding: '0.6rem' }} 
+                                style={{ borderRadius: '12px', padding: '0.6rem 1.5rem' }} 
                             />
+                            <button type="button" className="print-btn" onClick={() => setPrintDialogVisible(true)} disabled={!isFormValid} title="Print QR">
+                                <i className="pi pi-print mr-2"></i> Print QR
+                            </button>
                         </div>
                     </div>
                 </div>

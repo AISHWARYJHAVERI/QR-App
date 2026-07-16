@@ -23,9 +23,12 @@ function ScanAnalytics() {
                 axios.get('/api/scans/analytics'),
                 axios.get('/api/scans?limit=100'),
             ]);
+            console.log('Analytics API:', analyticsRes.data);
+            console.log('Scans API:', scansRes.data);
             setStats(analyticsRes.data);
             setScans(scansRes.data.scans || []);
         } catch (err) {
+            console.error('Scan analytics fetch error:', err);
             toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load scan analytics', life: 3000 });
         } finally {
             setLoading(false);
@@ -44,7 +47,7 @@ function ScanAnalytics() {
     const displayMobile = (qrValue) => {
         try {
             const d = JSON.parse(qrValue);
-            return d.mobile || '';
+            return d.phone || d.mobile || '';
         } catch {
             return '';
         }
