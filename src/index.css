@@ -109,6 +109,10 @@ h6,
   @apply rounded-lg font-semibold transition-all duration-200;
 }
 
+.p-button:not(.p-button-outlined) {
+  border: 1px solid transparent !important;
+}
+
 .p-button-primary {
   @apply bg-gradient-to-r from-brand to-pink-600 hover:shadow-lg;
 }
