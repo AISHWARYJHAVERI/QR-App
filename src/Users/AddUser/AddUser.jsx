@@ -99,32 +99,27 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
                         {submitted && !user.city && <small className="p-error">City is required.</small>}
                     </div>
                 </div>
-                
+
                 <div className="d-flex flex-wrap gap-3 mt-4 justify-content-end">
-                    <Button 
+                    <button type="button" className="print-btn" onClick={() => setPrintDialogVisible(true)} disabled={!isFormValid} title="Print QR">
+                        <i className="pi pi-print mr-2"></i> Print QR
+                    </button>
+                    <Button
                         type="button"
-                        label="Print QR" 
-                        icon="pi pi-print" 
-                        onClick={() => setPrintDialogVisible(true)} 
-                        disabled={!isFormValid}
-                        style={{ backgroundColor: '#6366f1', color: '#ffffff', border: 'none', width: 'auto', borderRadius: '12px', padding: '0.6rem 1.5rem' }} 
-                    />
-                    <Button 
-                        type="button"
-                        label="Generate QR Code" 
-                        icon="pi pi-qrcode" 
-                        severity="help" 
+                        label="Generate QR Code"
+                        icon="pi pi-qrcode"
+                        severity="help"
                         outlined
-                        onClick={() => setQrDialog(true)} 
+                        onClick={() => setQrDialog(true)}
                         disabled={!isFormValid}
-                        style={{ width: 'auto', borderRadius: '12px', padding: '0.6rem 1.5rem' }} 
+                        style={{ width: 'auto', borderRadius: '12px', padding: '0.6rem 1.5rem' }}
                     />
-                    <Button 
+                    <Button
                         type="button"
-                        label="Save User Details" 
-                        icon="pi pi-check" 
-                        onClick={saveUser} 
-                        style={{ backgroundColor: '#10b981', color: '#ffffff', border: 'none', width: 'auto', borderRadius: '12px', padding: '0.6rem 1.5rem' }} 
+                        label="Save User Details"
+                        icon="pi pi-check"
+                        onClick={saveUser}
+                        style={{ backgroundColor: '#10b981', color: '#ffffff', border: 'none', width: 'auto', borderRadius: '12px', padding: '0.6rem 1.5rem' }}
                     />
                 </div>
 
@@ -134,7 +129,7 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
                         <div style={{ background: '#ffffff', padding: '1.5rem', borderRadius: '1.5rem', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.25)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
                             <img src={qrImageUrl} alt="Generated QR" style={{ width: '220px', height: '220px', display: 'block' }} />
                         </div>
-                        
+
                         <div style={{ marginTop: '0.5rem' }}>
                             <h4 style={{ color: '#f8fafc', fontWeight: '700', fontSize: '1.25rem', marginBottom: '0.25rem' }}>{user.name}</h4>
                             <p style={{ color: '#94a3b8', fontSize: '1.05rem', fontWeight: '500', margin: '0.25rem 0' }}>{user.phone}</p>
@@ -177,25 +172,20 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
                             <InputText id="city" value={user.city} onChange={(e) => onInputChange(e, 'city')} required className={classNames({ 'p-invalid': submitted && !user.city })} />
                             {submitted && !user.city && <small className="p-error">City is required.</small>}
                         </div>
-                        
+
                         <div className="mt-4 d-flex flex-wrap gap-2 justify-content-center">
-                            <Button 
+                            <button type="button" className="print-btn" onClick={() => setPrintDialogVisible(true)} disabled={!isFormValid} title="Print QR">
+                                <i className="pi pi-print mr-2"></i> Print QR
+                            </button>
+                            <Button
                                 type="button"
-                                label="Print QR" 
-                                icon="pi pi-print" 
-                                onClick={() => setPrintDialogVisible(true)} 
-                                disabled={!isFormValid}
-                                style={{ backgroundColor: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.6rem 1.5rem' }} 
-                            />
-                            <Button 
-                                type="button"
-                                label="Generate QR Code" 
-                                icon="pi pi-qrcode" 
-                                severity="help" 
+                                label="Generate QR Code"
+                                icon="pi pi-qrcode"
+                                severity="help"
                                 outlined
-                                onClick={() => setQrDialog(true)} 
+                                onClick={() => setQrDialog(true)}
                                 disabled={!isFormValid}
-                                style={{ borderRadius: '12px', padding: '0.6rem 1.5rem' }} 
+                                style={{ borderRadius: '12px', padding: '0.6rem 1.5rem' }}
                             />
                         </div>
                     </div>
@@ -208,7 +198,7 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
                     <div style={{ background: '#ffffff', padding: '1.5rem', borderRadius: '1.5rem', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.25)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
                         <img src={qrImageUrl} alt="Generated QR" style={{ width: '220px', height: '220px', display: 'block' }} />
                     </div>
-                    
+
                     <div style={{ marginTop: '0.5rem' }}>
                         <h4 style={{ color: '#f8fafc', fontWeight: '700', fontSize: '1.25rem', marginBottom: '0.25rem' }}>{user.name}</h4>
                         <p style={{ color: '#94a3b8', fontSize: '1.05rem', fontWeight: '500', margin: '0.25rem 0' }}>{user.phone}</p>
