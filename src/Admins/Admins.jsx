@@ -177,7 +177,7 @@ function Admins({ showError, showSuccess }) {
                     icon="pi pi-print"
                     onClick={() => { setPrintCurrentItem(null); setPrintDialogVisible(true); }}
                     title="Print QR"
-                    style={{ borderRadius: '12px', padding: '0.6rem 1.5rem', backgroundColor: '#6366f1', color: '#ffffff', border: 'none' }}
+                    style={{ borderRadius: '12px', padding: '0.6rem 1.5rem', backgroundColor: '#6366f1', color: '#ffffff', border: '1px solid transparent', minWidth: '200px' }}
                 />
             </div>
         </div>

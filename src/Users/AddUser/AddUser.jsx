@@ -69,8 +69,8 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
 
     const qrDialogFooter = (
         <div className="dialog-footer mt-4">
-            <Button label="Close" icon="pi pi-times" onClick={() => setQrDialog(false)} style={{ backgroundColor: '#ef4444', color: '#ffffff', border: 'none' }} />
-            <Button label="Print QR" icon="pi pi-print" onClick={handlePrintClick} style={{ backgroundColor: '#6366f1', color: '#ffffff', border: 'none' }} />
+            <Button label="Close" icon="pi pi-times" onClick={() => setQrDialog(false)} style={{ backgroundColor: '#ef4444', color: '#ffffff', border: '1px solid transparent' }} />
+            <Button label="Print QR" icon="pi pi-print" onClick={handlePrintClick} style={{ backgroundColor: '#6366f1', color: '#ffffff', border: '1px solid transparent', minWidth: '200px' }} />
         </div>
     );
 

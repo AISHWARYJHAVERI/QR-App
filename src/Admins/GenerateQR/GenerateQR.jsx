@@ -18,9 +18,9 @@ const GenerateQR = ({ rowData, onPrintClick }) => {
 
     const qrDialogFooter = (
         <div className="dialog-footer mt-4">
-            <Button label="Close" icon="pi pi-times" onClick={hideQRDialog} style={{ backgroundColor: '#ef4444', color: '#ffffff', border: 'none' }} />
+            <Button label="Close" icon="pi pi-times" onClick={hideQRDialog} style={{ backgroundColor: '#ef4444', color: '#ffffff', border: '1px solid transparent' }} />
             {onPrintClick && (
-                <Button label="Print QR" icon="pi pi-print" onClick={() => { hideQRDialog(); onPrintClick(rowData); }} style={{ backgroundColor: '#6366f1', color: '#ffffff', border: 'none' }} />
+                <Button label="Print QR" icon="pi pi-print" onClick={() => { hideQRDialog(); onPrintClick(rowData); }} style={{ backgroundColor: '#6366f1', color: '#ffffff', border: '1px solid transparent', minWidth: '200px' }} />
             )}
         </div>
     );
