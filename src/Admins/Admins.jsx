@@ -171,7 +171,14 @@ function Admins({ showError, showSuccess }) {
                 )}
             </div>
             <div className="header-actions">
-                <button type="button" className="print-btn" onClick={() => { setPrintCurrentItem(null); setPrintDialogVisible(true); }} title="Print QR"><i className="pi pi-print mr-2"></i> Print QR</button>
+                <Button
+                    type="button"
+                    label="Print QR"
+                    icon="pi pi-print"
+                    onClick={() => { setPrintCurrentItem(null); setPrintDialogVisible(true); }}
+                    title="Print QR"
+                    style={{ borderRadius: '12px', padding: '0.6rem 1.5rem', backgroundColor: '#6366f1', color: '#ffffff', border: 'none' }}
+                />
             </div>
         </div>
     );
