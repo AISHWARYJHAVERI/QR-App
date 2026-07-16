@@ -12,4 +12,9 @@ scanSchema.virtual('id').get(function () {
   return this._id.toString();
 });
 
+scanSchema.index({ scannedAt: -1 });
+scanSchema.index({ timeSlot: 1, scannedAt: -1 });
+scanSchema.index({ qrValue: 1 });
+scanSchema.index({ qrValue: 1, scannedBy: 1, timeSlot: 1 });
+
 export default mongoose.model('Scan', scanSchema);

@@ -1,10 +1,51 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { InputText } from 'primereact/inputtext';
 import { Toast } from 'primereact/toast';
 import axios from 'axios';
 import './ScanAnalytics.css';
+
+const CACHE_TTL = 5 * 60 * 1000;
+const slotIcons = { morning: '🌅', afternoon: '☀️', evening: '🌆', night: '🌙' };
+
+function displayName(qrValue) {
+    try {
+        const d = JSON.parse(qrValue);
+        return d.name || qrValue;
+    } catch {
+        return qrValue;
+    }
+}
+
+function displayMobile(qrValue) {
+    try {
+        const d = JSON.parse(qrValue);
+        return d.phone || d.mobile || '';
+    } catch {
+        return '';
+    }
+}
+
+function slotBodyTemplate(rowData) {
+    return <span>{slotIcons[rowData.timeSlot] || ''} {rowData.timeSlot}</span>;
+}
+
+function nameBodyTemplate(rowData) {
+    return displayName(rowData.qrValue);
+}
+
+function mobileBodyTemplate(rowData) {
+    return displayMobile(rowData.qrValue);
+}
+
+function scannedAtBodyTemplate(rowData) {
+    return new Date(rowData.scannedAt).toLocaleString();
+}
+
+function indexBodyTemplate(_, options) {
+    return options.rowIndex + 1;
+}
 
 function ScanAnalytics() {
     const [scans, setScans] = useState([]);
@@ -14,56 +55,40 @@ function ScanAnalytics() {
     const toast = useRef(null);
 
     useEffect(() => {
+        const cachedStats = localStorage.getItem('scan_stats_cache');
+        const cachedScans = localStorage.getItem('scan_scans_cache');
+        if (cachedStats && cachedScans) {
+            try {
+                const s = JSON.parse(cachedStats);
+                const sc = JSON.parse(cachedScans);
+                if (Date.now() - s.timestamp < CACHE_TTL && Date.now() - sc.timestamp < CACHE_TTL) {
+                    setStats(s.data);
+                    setScans(sc.data);
+                    setLoading(false);
+                }
+            } catch {}
+        }
         fetchData();
     }, []);
 
     const fetchData = async () => {
         try {
             const [analyticsRes, scansRes] = await Promise.all([
-                axios.get('/api/scans/analytics'),
+                axios.get('/api/scans/analytics?days=90'),
                 axios.get('/api/scans?limit=100'),
             ]);
-            console.log('Analytics API:', analyticsRes.data);
-            console.log('Scans API:', scansRes.data);
             setStats(analyticsRes.data);
             setScans(scansRes.data.scans || []);
+            localStorage.setItem('scan_stats_cache', JSON.stringify({ data: analyticsRes.data, timestamp: Date.now() }));
+            localStorage.setItem('scan_scans_cache', JSON.stringify({ data: scansRes.data.scans, timestamp: Date.now() }));
         } catch (err) {
-            console.error('Scan analytics fetch error:', err);
             toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load scan analytics', life: 3000 });
         } finally {
             setLoading(false);
         }
     };
 
-    const displayName = (qrValue) => {
-        try {
-            const d = JSON.parse(qrValue);
-            return d.name || qrValue;
-        } catch {
-            return qrValue;
-        }
-    };
-
-    const displayMobile = (qrValue) => {
-        try {
-            const d = JSON.parse(qrValue);
-            return d.phone || d.mobile || '';
-        } catch {
-            return '';
-        }
-    };
-
-    const slotIcons = { morning: '🌅', afternoon: '☀️', evening: '🌆', night: '🌙' };
-
-    const slotBodyTemplate = (rowData) => (
-        <span>{slotIcons[rowData.timeSlot] || ''} {rowData.timeSlot}</span>
-    );
-
-    const qrValueBodyTemplate = (rowData) => displayName(rowData.qrValue);
-
-    const mobileBodyTemplate = (rowData) => displayMobile(rowData.qrValue);
-
-    const header = (
+    const header = useMemo(() => (
         <div className="table-header">
             <h4 className="m-0 text-primary gradient-heading gradient-text">Scan Analytics</h4>
             <div className="header-actions">
@@ -73,7 +98,7 @@ function ScanAnalytics() {
                 </span>
             </div>
         </div>
-    );
+    ), []);
 
     return (
         <div className="scan-analytics-container">
@@ -110,11 +135,11 @@ function ScanAnalytics() {
                 className="p-datatable-scans"
                 emptyMessage="No scans found."
                 loading={loading}>
-                <Column header="#" body={(_, options) => options.rowIndex + 1} align="center" style={{ width: '5%' }}></Column>
-                <Column field="qrValue" header="Name" body={qrValueBodyTemplate} align="left" style={{ width: '20%' }}></Column>
+                <Column header="#" body={indexBodyTemplate} align="center" style={{ width: '5%' }}></Column>
+                <Column header="Name" body={nameBodyTemplate} align="left" style={{ width: '20%' }}></Column>
                 <Column header="Mobile" body={mobileBodyTemplate} align="left" style={{ width: '18%' }}></Column>
                 <Column field="timeSlot" header="Time Slot" body={slotBodyTemplate} align="center" style={{ width: '15%' }}></Column>
-                <Column field="scannedAt" header="Scanned At" align="center" style={{ width: '20%' }} body={(rowData) => new Date(rowData.scannedAt).toLocaleString()}></Column>
+                <Column field="scannedAt" header="Scanned At" align="center" style={{ width: '20%' }} body={scannedAtBodyTemplate}></Column>
                 <Column field="scannedBy" header="Scanned By" align="center" style={{ width: '22%' }}></Column>
             </DataTable>
         </div>

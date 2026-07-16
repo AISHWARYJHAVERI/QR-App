@@ -31,11 +31,14 @@ router.get('/', async (req, res) => {
     const filter = {};
     if (slot && slot !== 'all') filter.timeSlot = slot;
     if (q) filter.qrValue = { $regex: q, $options: 'i' };
-    const total = await Scan.countDocuments(filter);
-    const scans = await Scan.find(filter)
-      .sort({ scannedAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit);
+    const [total, scans] = await Promise.all([
+      Scan.countDocuments(filter),
+      Scan.find(filter)
+        .sort({ scannedAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+    ]);
     res.json({ scans, total, page, totalPages: Math.ceil(total / limit), limit });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -44,7 +47,11 @@ router.get('/', async (req, res) => {
 
 router.get('/analytics', async (req, res) => {
   try {
+    const days = parseInt(req.query.days) || 90;
+    const since = new Date();
+    since.setDate(since.getDate() - days);
     const [stats] = await Scan.aggregate([
+      { $match: { scannedAt: { $gte: since } } },
       {
         $group: {
           _id: null,
