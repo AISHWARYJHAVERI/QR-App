@@ -101,6 +101,9 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
                 </div>
                 
                 <div className="d-flex flex-wrap gap-3 mt-4 justify-content-end">
+                    <button type="button" className="print-btn" onClick={() => setPrintDialogVisible(true)} disabled={!isFormValid} title="Print QR">
+                        <i className="pi pi-print mr-2"></i> Print QR
+                    </button>
                     <Button 
                         type="button"
                         label="Generate QR Code" 
@@ -111,9 +114,6 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
                         disabled={!isFormValid}
                         style={{ width: 'auto', borderRadius: '12px', padding: '0.6rem 1.5rem' }} 
                     />
-                    <button type="button" className="print-btn" onClick={() => setPrintDialogVisible(true)} disabled={!isFormValid} title="Print QR">
-                        <i className="pi pi-print mr-2"></i> Print QR
-                    </button>
                     <Button 
                         type="button"
                         label="Save User Details" 
@@ -174,6 +174,9 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
                         </div>
                         
                         <div className="mt-4 d-flex flex-wrap gap-2 justify-content-center">
+                            <button type="button" className="print-btn" onClick={() => setPrintDialogVisible(true)} disabled={!isFormValid} title="Print QR">
+                                <i className="pi pi-print mr-2"></i> Print QR
+                            </button>
                             <Button 
                                 type="button"
                                 label="Generate QR Code" 
@@ -184,9 +187,6 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
                                 disabled={!isFormValid}
                                 style={{ borderRadius: '12px', padding: '0.6rem 1.5rem' }} 
                             />
-                            <button type="button" className="print-btn" onClick={() => setPrintDialogVisible(true)} disabled={!isFormValid} title="Print QR">
-                                <i className="pi pi-print mr-2"></i> Print QR
-                            </button>
                         </div>
                     </div>
                 </div>
