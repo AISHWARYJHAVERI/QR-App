@@ -107,7 +107,7 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
                         icon="pi pi-print"
                         onClick={() => setPrintDialogVisible(true)}
                         disabled={!isFormValid}
-                        style={{ width: 'auto', minWidth: '200px', borderRadius: '12px', padding: '0.6rem 1.5rem', backgroundColor: '#6366f1', color: '#ffffff', border: '1px solid transparent' }}
+                        style={{ width: '240px', borderRadius: '12px', padding: '0.6rem 1.5rem', backgroundColor: '#6366f1', color: '#ffffff', border: '1px solid transparent' }}
                     />
                     <Button
                         type="button"
@@ -117,14 +117,14 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
                         outlined
                         onClick={() => setQrDialog(true)}
                         disabled={!isFormValid}
-                        style={{ width: 'auto', minWidth: '200px', borderRadius: '12px', padding: '0.6rem 1.5rem' }}
+                        style={{ width: '240px', borderRadius: '12px', padding: '0.6rem 1.5rem' }}
                     />
                     <Button
                         type="button"
                         label="Save User Details"
                         icon="pi pi-check"
                         onClick={saveUser}
-                        style={{ backgroundColor: '#10b981', color: '#ffffff', border: '1px solid transparent', width: 'auto', minWidth: '200px', borderRadius: '12px', padding: '0.6rem 1.5rem' }}
+                        style={{ backgroundColor: '#10b981', color: '#ffffff', border: '1px solid transparent', width: '240px', borderRadius: '12px', padding: '0.6rem 1.5rem' }}
                     />
                 </div>
 
@@ -185,7 +185,7 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
                                 icon="pi pi-print"
                                 onClick={() => setPrintDialogVisible(true)}
                                 disabled={!isFormValid}
-                                style={{ borderRadius: '12px', padding: '0.6rem 1.5rem', backgroundColor: '#6366f1', color: '#ffffff', border: '1px solid transparent', minWidth: '200px' }}
+                                style={{ borderRadius: '12px', padding: '0.6rem 1.5rem', backgroundColor: '#6366f1', color: '#ffffff', border: '1px solid transparent', width: '240px' }}
                             />
                             <Button
                                 type="button"
@@ -195,7 +195,7 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
                                 outlined
                                 onClick={() => setQrDialog(true)}
                                 disabled={!isFormValid}
-                                style={{ borderRadius: '12px', padding: '0.6rem 1.5rem', minWidth: '200px' }}
+                                style={{ borderRadius: '12px', padding: '0.6rem 1.5rem', width: '240px' }}
                             />
                         </div>
                     </div>
