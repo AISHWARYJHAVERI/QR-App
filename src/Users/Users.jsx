@@ -197,27 +197,27 @@ function Users({ isLoggedIn }) {
                 <h2 className="dashboard-title animated-gradient">User Management Dashboard</h2>
 
                 {isLoggedIn && (
-                    <div className="tabs-container d-flex gap-3 mb-4 justify-content-center">
+                    <div className="tabs-container">
                         <button 
                             type="button" 
                             className={`tab-btn ${activeTab === 'users' ? 'active' : ''}`}
                             onClick={() => setActiveTab('users')}
                         >
-                            <i className="pi pi-users me-2"></i> User Database
+                            <i className="pi pi-users"></i><span>User Database</span>
                         </button>
                         <button 
                             type="button" 
                             className={`tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
                             onClick={() => setActiveTab('analytics')}
                         >
-                            <i className="pi pi-chart-bar me-2"></i> Scan Analytics
+                            <i className="pi pi-chart-bar"></i><span>Scan Analytics</span>
                         </button>
                         <button 
                             type="button" 
                             className={`tab-btn ${activeTab === 'admins' ? 'active' : ''}`}
                             onClick={() => setActiveTab('admins')}
                         >
-                            <i className="pi pi-shield me-2"></i> Admin Panel
+                            <i className="pi pi-shield"></i><span>Admin Panel</span>
                         </button>
                     </div>
                 )}

@@ -687,35 +687,49 @@
         font-size: 1.35rem;
         margin-bottom: 1.25rem;
     }
+    .tabs-container {
+        gap: 0.5rem;
+        padding: 0.35rem;
+        margin-bottom: 1.5rem;
+    }
     .tab-btn {
         font-size: 0.78rem !important;
-        padding: 0.45rem 0.85rem !important;
+        padding: 0.4rem 0.75rem !important;
     }
-    .tabs-container {
-        gap: 0.4rem;
-        padding: 0.35rem;
+    .tab-btn i {
+        margin-right: 0.35rem;
     }
 }
 
 @media screen and (max-width: 480px) {
-    .tab-btn {
-        font-size: 0.72rem !important;
-        padding: 0.35rem 0.65rem !important;
-    }
     .tabs-container {
-        gap: 0.3rem;
+        gap: 0.35rem;
         padding: 0.3rem;
+        margin-bottom: 1.25rem;
+    }
+    .tab-btn {
+        font-size: 0.7rem !important;
+        padding: 0.35rem 0.6rem !important;
+    }
+    .tab-btn i {
+        margin-right: 0.25rem;
+        font-size: 0.85rem;
     }
 }
 
 @media screen and (max-width: 375px) {
-    .tab-btn {
-        font-size: 0.65rem !important;
-        padding: 0.3rem 0.5rem !important;
-    }
     .tabs-container {
         gap: 0.25rem;
-        padding: 0.25rem;
+        padding: 0.2rem;
+        margin-bottom: 1rem;
+    }
+    .tab-btn {
+        font-size: 0.6rem !important;
+        padding: 0.25rem 0.4rem !important;
+    }
+    .tab-btn i {
+        margin-right: 0.2rem;
+        font-size: 0.8rem;
     }
 }
 
@@ -789,8 +803,14 @@
     padding: 0.5rem;
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.06);
-    display: inline-flex;
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
     margin: 0 auto 2.5rem;
+}
+
+.tab-btn i {
+    margin-right: 0.5rem;
 }
 
 .tab-btn {
