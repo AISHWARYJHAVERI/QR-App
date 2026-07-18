@@ -688,12 +688,34 @@
         margin-bottom: 1.25rem;
     }
     .tab-btn {
-        font-size: 0.82rem !important;
-        padding: 0.5rem 1rem !important;
+        font-size: 0.78rem !important;
+        padding: 0.45rem 0.85rem !important;
+    }
+    .tabs-container {
+        gap: 0.4rem;
+        padding: 0.35rem;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .tab-btn {
+        font-size: 0.72rem !important;
+        padding: 0.35rem 0.65rem !important;
+    }
+    .tabs-container {
+        gap: 0.3rem;
+        padding: 0.3rem;
+    }
+}
+
+@media screen and (max-width: 375px) {
+    .tab-btn {
+        font-size: 0.65rem !important;
+        padding: 0.3rem 0.5rem !important;
     }
     .tabs-container {
         gap: 0.25rem;
-        padding: 0.35rem;
+        padding: 0.25rem;
     }
 }
 
