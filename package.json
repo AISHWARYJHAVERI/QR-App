@@ -21,6 +21,7 @@
     "json-server": "^1.0.0-beta.9",
     "mongodb": "^7.4.0",
     "mongoose": "^9.7.3",
+    "motion": "^12.42.2",
     "primeicons": "^7.0.0",
     "primereact": "^10.9.7",
     "react": "^19.2.0",
