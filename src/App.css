@@ -1049,11 +1049,11 @@
 
 .brand-circular-text {
   position: absolute;
-  width: 200px;
-  height: 200px;
+  width: 80px;
+  height: 80px;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%) scale(0.4);
+  transform: translate(-50%, -50%);
   z-index: 1;
   pointer-events: auto;
 }
@@ -1074,6 +1074,7 @@
   }
 
   .brand-circular-text {
-    transform: translate(-50%, -50%) scale(0.3);
+    width: 60px;
+    height: 60px;
   }
 }

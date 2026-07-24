@@ -87,10 +87,7 @@ const CircularText = ({ text, spinDuration = 20, onHover = 'speedUp', className 
     >
       {letters.map((letter, i) => {
         const rotationDeg = (360 / letters.length) * i;
-        const factor = Math.PI / letters.length;
-        const x = factor * i;
-        const y = factor * i;
-        const transform = `rotateZ(${rotationDeg}deg) translate3d(${x}px, ${y}px, 0)`;
+        const transform = `rotate(${rotationDeg}deg) translate(0, -30px)`;
         return (
           <span key={i} style={{ transform, WebkitTransform: transform }}>
             {letter}
