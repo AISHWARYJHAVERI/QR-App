@@ -181,12 +181,12 @@ function App() {
   return (
     <div className="App" style={{ position: 'relative' }}>
       <SplashCursor />
-      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '800px', zIndex: 1, pointerEvents: 'none', opacity: 0.55, overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '1000px', zIndex: 1, pointerEvents: 'none', opacity: 0.5, overflow: 'hidden' }}>
         <SideRays
           speed={2.0}
           rayColor1="#EAB308"
           rayColor2="#96c8ff"
-          intensity={1.5}
+          intensity={1.2}
           spread={2.0}
           origin="top-right"
           tilt={0}
@@ -199,9 +199,35 @@ function App() {
           speed={2.0}
           rayColor1="#96c8ff"
           rayColor2="#EAB308"
-          intensity={1.5}
+          intensity={1.2}
           spread={2.0}
           origin="top-left"
+          tilt={0}
+          saturation={1.5}
+          blend={0.75}
+          falloff={1.6}
+          opacity={0.8}
+        />
+        <SideRays
+          speed={2.0}
+          rayColor1="#EAB308"
+          rayColor2="#96c8ff"
+          intensity={1.2}
+          spread={2.0}
+          origin="bottom-right"
+          tilt={0}
+          saturation={1.5}
+          blend={0.75}
+          falloff={1.6}
+          opacity={0.8}
+        />
+        <SideRays
+          speed={2.0}
+          rayColor1="#96c8ff"
+          rayColor2="#EAB308"
+          intensity={1.2}
+          spread={2.0}
+          origin="bottom-left"
           tilt={0}
           saturation={1.5}
           blend={0.75}
