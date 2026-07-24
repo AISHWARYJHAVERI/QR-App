@@ -10,6 +10,7 @@ import Solutions from './pages/Solutions';
 import Developer from './pages/Developer';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import SplashCursor from './components/SplashCursor';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -178,6 +179,7 @@ function App() {
 
   return (
     <div className="App">
+      <SplashCursor />
       <Toast ref={appToast} />
       
       <header className="hero-nav">
