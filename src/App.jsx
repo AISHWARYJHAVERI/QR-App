@@ -11,7 +11,6 @@ import Developer from './pages/Developer';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import SplashCursor from './components/SplashCursor';
-import CircularText from './components/CircularText';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -184,10 +183,7 @@ function App() {
       <Toast ref={appToast} />
       
       <header className="hero-nav">
-        <div className="brand-container">
-          <CircularText text="AISHWARY*JHAVERI*QR*APP*" onHover="speedUp" spinDuration={20} className="brand-circular-text" />
-          <Link className="brand" to="/">AJ</Link>
-        </div>
+        <Link className="brand" to="/">AJ</Link>
         
         <nav className="capsule-nav">
           <button

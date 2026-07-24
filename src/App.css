@@ -1030,43 +1030,11 @@
 }
 
 /* CircularText around AJ brand logo */
-.brand-container {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 80px;
-  height: 80px;
-  justify-self: start;
-  overflow: visible;
-}
-
-.brand-container .brand {
-  position: relative;
-  z-index: 2;
-  font-size: 1.1rem;
-}
-
-.brand-circular-text {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  pointer-events: auto;
-}
-
-.brand-circular-text span {
-  background-image: linear-gradient(125deg, #4ade80, #22d3ee, #facc15);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-}
-
-@media (max-width: 768px) {
-  .brand-container {
-    width: 60px;
-    height: 60px;
-  }
+.brand {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #ffffff;
+  text-transform: uppercase;
+  text-decoration: none;
 }
