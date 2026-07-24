@@ -84,6 +84,7 @@ const SideRays = ({
       const gl = renderer.gl;
       gl.canvas.style.width = '100%';
       gl.canvas.style.height = '100%';
+      gl.clearColor(0.0, 0.0, 0.0, 0.0);
 
       while (containerRef.current.firstChild) {
         containerRef.current.removeChild(containerRef.current.firstChild);
