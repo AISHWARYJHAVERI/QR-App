@@ -179,8 +179,23 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <div className="App" style={{ position: 'relative' }}>
       <SplashCursor />
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '800px', zIndex: 1, pointerEvents: 'none', opacity: 0.65, overflow: 'hidden' }}>
+        <SideRays
+          speed={2.5}
+          rayColor1="#EAB308"
+          rayColor2="#96c8ff"
+          intensity={2.0}
+          spread={2.0}
+          origin="top-right"
+          tilt={0}
+          saturation={1.5}
+          blend={0.75}
+          falloff={1.6}
+          opacity={0.8}
+        />
+      </div>
       <Toast ref={appToast} />
       
       <header className="hero-nav">
@@ -236,21 +251,6 @@ function App() {
         <Route path="/" element={
           <>
             <main className="hero" style={{ position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, pointerEvents: 'none', opacity: 0.8 }}>
-                <SideRays
-                  speed={2.5}
-                  rayColor1="#EAB308"
-                  rayColor2="#96c8ff"
-                  intensity={2.0}
-                  spread={2.0}
-                  origin="top-right"
-                  tilt={0}
-                  saturation={1.5}
-                  blend={0.75}
-                  falloff={1.6}
-                  opacity={0.8}
-                />
-              </div>
               <div className="hero-copy" style={{ position: 'relative', zIndex: 2 }}>
                 <p className="eyebrow">QR User Management Dashboard</p>
                 <h1 className="hero-title">
