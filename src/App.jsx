@@ -181,11 +181,13 @@ function App() {
   return (
     <div className="App">
       <SplashCursor />
-      <CircularText text="AISHWARY*JHAVERI*QR*APP*" onHover="speedUp" spinDuration={20} className="circular-text-fixed" />
       <Toast ref={appToast} />
       
       <header className="hero-nav">
-        <Link className="brand" to="/">AJ</Link>
+        <div className="brand-container">
+          <CircularText text="AISHWARY*JHAVERI*QR*APP*" onHover="speedUp" spinDuration={20} className="brand-circular-text" />
+          <Link className="brand" to="/">AJ</Link>
+        </div>
         
         <nav className="capsule-nav">
           <button

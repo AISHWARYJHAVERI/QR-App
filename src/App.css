@@ -1029,19 +1029,34 @@
   padding: 2rem 0;
 }
 
-/* CircularText fixed positioning — top-left corner */
-.circular-text-fixed {
-  position: fixed;
-  top: 1.5rem;
-  left: 1.5rem;
-  z-index: 100;
-  width: 120px;
-  height: 120px;
+/* CircularText around AJ brand logo */
+.brand-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 130px;
+  height: 130px;
+  justify-self: start;
+}
+
+.brand-container .brand {
+  position: relative;
+  z-index: 2;
+  font-size: 1.2rem;
+}
+
+.brand-circular-text {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
   pointer-events: auto;
 }
 
-.circular-text-fixed span {
-  font-size: 14px;
+.brand-circular-text span {
+  font-size: 13px;
   background-image: linear-gradient(125deg, #4ade80, #22d3ee, #facc15);
   background-clip: text;
   -webkit-background-clip: text;
@@ -1050,14 +1065,12 @@
 }
 
 @media (max-width: 768px) {
-  .circular-text-fixed {
-    width: 90px;
-    height: 90px;
-    top: 1rem;
-    left: 1rem;
+  .brand-container {
+    width: 100px;
+    height: 100px;
   }
 
-  .circular-text-fixed span {
-    font-size: 11px;
+  .brand-circular-text span {
+    font-size: 10px;
   }
 }
