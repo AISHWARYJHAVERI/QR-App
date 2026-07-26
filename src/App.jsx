@@ -43,43 +43,66 @@ function App() {
   const navRef = useRef(null);
 
   useEffect(() => {
-    const dock = navRef.current;
-    if (!dock) return;
-
-    const handleMouseMove = (e) => {
+    const handleGlobalMouseMove = (e) => {
       if (window.innerWidth <= 768) return;
-      const mouseX = e.clientX;
-      const items = dock.querySelectorAll('.nav-link, .nav-btn-solid');
-      const maxScale = 1.25; // Adjusted magnification to look elegant with nav labels
-      const maxDistance = 120;
-
-      items.forEach((item) => {
-        const rect = item.getBoundingClientRect();
-        const itemCenterX = rect.left + rect.width / 2;
-        const distance = Math.abs(mouseX - itemCenterX);
-
-        if (distance < maxDistance) {
-          const scale = 1 + (maxScale - 1) * Math.cos((distance / maxDistance) * (Math.PI / 2));
-          item.style.transform = `scale(${scale}) translateY(-${(scale - 1) * 8}px)`;
+      
+      const containers = document.querySelectorAll(
+        '.capsule-nav, .dialog-footer, .action-buttons, .form-row, .d-flex, .search-bar-container, .hero-nav-actions, .p-paginator, .excel-actions, .input-group'
+      );
+      
+      containers.forEach(container => {
+        const rect = container.getBoundingClientRect();
+        const isNearVertical = e.clientY >= rect.top - 60 && e.clientY <= rect.bottom + 60;
+        const isNearHorizontal = e.clientX >= rect.left - 60 && e.clientX <= rect.right + 60;
+        
+        const items = container.querySelectorAll(
+          '.p-button, .hero-button, .nav-link, .nav-btn-solid, .p-inputtext, .p-paginator-page'
+        );
+        
+        if (isNearVertical && isNearHorizontal && items.length > 0) {
+          const maxScale = 1.15; 
+          const maxDistance = 120;
+          
+          items.forEach(item => {
+            if (item.classList.contains('p-disabled') || item.disabled) {
+              item.style.transform = 'scale(1) translateY(0)';
+              return;
+            }
+            
+            const itemRect = item.getBoundingClientRect();
+            const itemCenterX = itemRect.left + itemRect.width / 2;
+            const distance = Math.abs(e.clientX - itemCenterX);
+            
+            if (distance < maxDistance) {
+              const scale = 1 + (maxScale - 1) * Math.cos((distance / maxDistance) * (Math.PI / 2));
+              item.style.transform = `scale(${scale}) translateY(-${(scale - 1) * 6}px)`;
+            } else {
+              item.style.transform = 'scale(1) translateY(0)';
+            }
+          });
         } else {
-          item.style.transform = 'scale(1) translateY(0)';
+          items.forEach(item => {
+            item.style.transform = '';
+          });
         }
       });
     };
 
-    const handleMouseLeave = () => {
-      const items = dock.querySelectorAll('.nav-link, .nav-btn-solid');
-      items.forEach((item) => {
-        item.style.transform = 'scale(1) translateY(0)';
+    const handleGlobalMouseLeave = () => {
+      const items = document.querySelectorAll(
+        '.p-button, .hero-button, .nav-link, .nav-btn-solid, .p-inputtext, .p-paginator-page'
+      );
+      items.forEach(item => {
+        item.style.transform = '';
       });
     };
 
-    dock.addEventListener('mousemove', handleMouseMove);
-    dock.addEventListener('mouseleave', handleMouseLeave);
-
+    window.addEventListener('mousemove', handleGlobalMouseMove);
+    document.addEventListener('mouseleave', handleGlobalMouseLeave);
+    
     return () => {
-      dock.removeEventListener('mousemove', handleMouseMove);
-      dock.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseleave', handleGlobalMouseLeave);
     };
   }, []);
 

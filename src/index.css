@@ -339,4 +339,14 @@ h1, h2, h3, h4, h5, h6, p, span, a, label, li, strong, em, small, .section-title
 .p-datatable .p-datatable-tbody > tr:nth-child(9) { animation-delay: 0.18s !important; }
 .p-datatable .p-datatable-tbody > tr:nth-child(10) { animation-delay: 0.20s !important; }
 
+/* Enable hardware acceleration and smooth transitions for all dockable interactive items */
+.p-button,
+.hero-button,
+.p-inputtext,
+.p-paginator-page {
+  will-change: transform;
+  transition: transform 0.15s ease-out, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+  transform-origin: center bottom;
+}
+
 
