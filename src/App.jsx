@@ -40,6 +40,48 @@ function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const appToast = useRef(null);
+  const navRef = useRef(null);
+
+  useEffect(() => {
+    const dock = navRef.current;
+    if (!dock) return;
+
+    const handleMouseMove = (e) => {
+      if (window.innerWidth <= 768) return;
+      const mouseX = e.clientX;
+      const items = dock.querySelectorAll('.nav-link, .nav-btn-solid');
+      const maxScale = 1.25; // Adjusted magnification to look elegant with nav labels
+      const maxDistance = 120;
+
+      items.forEach((item) => {
+        const rect = item.getBoundingClientRect();
+        const itemCenterX = rect.left + rect.width / 2;
+        const distance = Math.abs(mouseX - itemCenterX);
+
+        if (distance < maxDistance) {
+          const scale = 1 + (maxScale - 1) * Math.cos((distance / maxDistance) * (Math.PI / 2));
+          item.style.transform = `scale(${scale}) translateY(-${(scale - 1) * 8}px)`;
+        } else {
+          item.style.transform = 'scale(1) translateY(0)';
+        }
+      });
+    };
+
+    const handleMouseLeave = () => {
+      const items = dock.querySelectorAll('.nav-link, .nav-btn-solid');
+      items.forEach((item) => {
+        item.style.transform = 'scale(1) translateY(0)';
+      });
+    };
+
+    dock.addEventListener('mousemove', handleMouseMove);
+    dock.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      dock.removeEventListener('mousemove', handleMouseMove);
+      dock.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
 
   useEffect(() => {
     if (showLogin) {
@@ -240,7 +282,7 @@ function App() {
       <header className="hero-nav">
         <Link className="brand" to="/">AJ</Link>
         
-        <nav className="capsule-nav">
+        <nav className="capsule-nav" ref={navRef}>
           <button
             className={`hamburger-btn ${mobileMenuOpen ? 'open' : ''}`}
             onClick={() => setMobileMenuOpen(prev => !prev)}
