@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
-    "@react-three/fiber": "^9.6.1",
     "axios": "^1.13.5",
     "axios-retry": "^4.5.0",
     "bootstrap": "^5.3.8",
@@ -29,7 +28,6 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.17.0",
-    "three": "^0.185.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

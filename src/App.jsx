@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import { Toast } from 'primereact/toast';
 import axios from 'axios';
 import './App.css';
@@ -11,7 +11,6 @@ import Developer from './pages/Developer';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import SideRays from './components/SideRays';
-import Antigravity from './components/Antigravity';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -41,7 +40,6 @@ function App() {
   
   const appToast = useRef(null);
   const navRef = useRef(null);
-  const location = useLocation();
 
   useEffect(() => {
     const handleGlobalMouseMove = (e) => {
@@ -301,23 +299,6 @@ function App() {
         />
       </div>
       <Toast ref={appToast} />
-      
-      {location.pathname === '/' && (
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100vh', zIndex: 0, pointerEvents: 'none' }}>
-          <Antigravity
-            count={300}
-            magnetRadius={6}
-            ringRadius={7}
-            waveSpeed={0.4}
-            waveAmplitude={1}
-            particleSize={1.5}
-            lerpSpeed={0.05}
-            color={'#FF9FFC'}
-            autoAnimate={true}
-            particleVariance={1}
-          />
-        </div>
-      )}
       
       <header className="hero-nav" style={{ position: 'relative', zIndex: 1 }}>
         <Link className="brand" to="/">AJ</Link>
