@@ -11,6 +11,7 @@ import Developer from './pages/Developer';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import SideRays from './components/SideRays';
+import Antigravity from './components/Antigravity';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -353,6 +354,20 @@ function App() {
         <Route path="/" element={
           <>
             <main className="hero" style={{ position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, pointerEvents: 'none' }}>
+                <Antigravity
+                  count={300}
+                  magnetRadius={6}
+                  ringRadius={7}
+                  waveSpeed={0.4}
+                  waveAmplitude={1}
+                  particleSize={1.5}
+                  lerpSpeed={0.05}
+                  color={'#FF9FFC'}
+                  autoAnimate={true}
+                  particleVariance={1}
+                />
+              </div>
               <div className="hero-copy" style={{ position: 'relative', zIndex: 2 }}>
                 <p className="eyebrow">QR User Management Dashboard</p>
                 <h1 className="hero-title">
