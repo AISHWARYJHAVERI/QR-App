@@ -5,7 +5,7 @@ import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import axios from 'axios';
 
-const EditUser = ({ rowData, onUserUpdated, showError, showSuccess }) => {
+const EditUser = ({ rowData, onUserUpdated, showError, showSuccess, localMode = false }) => {
     const [userDialog, setUserDialog] = useState(false);
     const [user, setUser] = useState({ name: '', phone: '', city: '', ...rowData });
     const [submitted, setSubmitted] = useState(false);
@@ -30,6 +30,13 @@ const EditUser = ({ rowData, onUserUpdated, showError, showSuccess }) => {
 
         if (user.name.trim() && user.phone.trim() && (user.city || '').trim()) {
             let _user = { ...user };
+            if (localMode) {
+                showSuccess("User Updated Successfully");
+                onUserUpdated(_user);
+                setUserDialog(false);
+                setSubmitted(false);
+                return;
+            }
             try {
                 await axios.put(`/users/${user.id}`, _user);
                 showSuccess("User Updated Successfully");

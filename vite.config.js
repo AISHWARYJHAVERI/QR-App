@@ -21,6 +21,10 @@ export default defineConfig({
         target: 'http://localhost:5001',
         changeOrigin: true,
       },
+      '/committeesessions': {
+        target: 'http://localhost:5001',
+        changeOrigin: true,
+      },
     },
   },
 })

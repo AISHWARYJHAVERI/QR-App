@@ -16,7 +16,7 @@ const downloadTemplate = () => {
   XLSX.writeFile(wb, 'user_import_template.xlsx');
 };
 
-function ImportExcel({ onImported, showError, showSuccess }) {
+function ImportExcel({ onImported, showError, showSuccess, onImport }) {
   const [showModal, setShowModal] = useState(false);
   const [file, setFile] = useState(null);
   const [parsedData, setParsedData] = useState([]);
@@ -99,6 +99,25 @@ function ImportExcel({ onImported, showError, showSuccess }) {
 
     if (!nameCol) {
       showError('Please map a column for "Name".');
+      return;
+    }
+
+    if (onImport) {
+      setImporting(false);
+      const imported = [];
+      let failed = 0;
+      for (const row of parsedData) {
+        const name = String(row[nameCol] || '').trim();
+        const phone = String(row[phoneCol] || '').trim();
+        const city = String(row[cityCol] || '').trim();
+        if (!name) { failed++; continue; }
+        const payload = { name };
+        if (phone) payload.phone = phone;
+        if (city) payload.city = city;
+        imported.push(payload);
+      }
+      onImport(imported, failed);
+      closeModal();
       return;
     }
 

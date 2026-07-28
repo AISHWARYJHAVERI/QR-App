@@ -6,7 +6,7 @@ import { classNames } from 'primereact/utils';
 import axios from 'axios';
 import PrintQROptions from '../../components/PrintQROptions';
 
-const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
+const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMode = false }) => {
     let emptyUser = {
         name: '',
         phone: '',
@@ -35,6 +35,14 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false }) => {
 
         if (user.name.trim() && user.phone.trim() && user.city.trim()) {
             let _user = { ...user };
+            if (localMode) {
+                showSuccess("User Added Successfully");
+                onUserAdded(_user);
+                setUserDialog(false);
+                setUser(emptyUser);
+                setSubmitted(false);
+                return;
+            }
             try {
                 const response = await axios.post('/users', _user);
                 showSuccess("User Created Successfully");
