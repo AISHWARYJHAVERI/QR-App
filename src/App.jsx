@@ -10,7 +10,6 @@ import Solutions from './pages/Solutions';
 import Developer from './pages/Developer';
 import About from './pages/About';
 import Contact from './pages/Contact';
-import SplashCursor from './components/SplashCursor';
 import SideRays from './components/SideRays';
 
 function App() {
@@ -245,7 +244,6 @@ function App() {
 
   return (
     <div className="App" style={{ position: 'relative' }}>
-      <SplashCursor />
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '1000px', zIndex: 1, pointerEvents: 'none', opacity: 0.5, overflow: 'hidden' }}>
         <SideRays
           speed={2.0}
