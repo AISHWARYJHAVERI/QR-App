@@ -29,7 +29,7 @@
 }
 
 .admins-section .btn-action-add:hover {
-    transform: translateY(-2px);
+    transform: scale(1.04);
     box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
 }
 
@@ -234,6 +234,7 @@
 .selection-done-btn:hover {
   background: rgba(99, 102, 241, 0.25);
   border-color: rgba(99, 102, 241, 0.5);
+  transform: scale(1.04);
 }
 
 /* Mobile horizontal scroll for admin table */

@@ -47,7 +47,7 @@
 }
 
 .hero-button:hover {
-  transform: translateY(-2px);
+  transform: scale(1.06);
 }
 
 .hero-button.solid {
@@ -769,7 +769,7 @@
 }
 
 .login-submit-btn:hover {
-  transform: translateY(-1px) !important;
+  transform: scale(1.04) !important;
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3) !important;
 }
 
@@ -881,6 +881,7 @@
 .login-tab-btn:hover {
   color: #cbd5e1 !important;
   -webkit-text-fill-color: #cbd5e1 !important;
+  transform: scale(1.04) !important;
 }
 
 .login-tab-btn.active {

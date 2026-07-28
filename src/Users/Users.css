@@ -182,7 +182,7 @@
 }
 
 .btn-action-add:hover {
-    transform: translateY(-2px);
+    transform: scale(1.04);
     box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
 }
 
@@ -797,6 +797,7 @@
     -webkit-text-fill-color: #f8fafc !important;
     background: rgba(255, 255, 255, 0.05) !important;
     border-color: rgba(255, 255, 255, 0.25) !important;
+    transform: scale(1.04) !important;
 }
 
 .tab-btn.active {
@@ -844,6 +845,7 @@
 .selection-done-btn:hover {
     background: rgba(99, 102, 241, 0.25);
     border-color: rgba(99, 102, 241, 0.5);
+    transform: scale(1.04);
 }
 
 /* Header Print QR button */
@@ -868,7 +870,7 @@
 .print-btn:hover {
   background: rgba(99, 102, 241, 0.18);
   border-color: rgba(99, 102, 241, 0.4);
-  transform: translateY(-1px);
+  transform: scale(1.04);
 }
 
 .print-btn i {

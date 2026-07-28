@@ -18,7 +18,7 @@
 .import-btn:hover {
   background: rgba(16, 185, 129, 0.18);
   border-color: rgba(16, 185, 129, 0.4);
-  transform: translateY(-1px);
+  transform: scale(1.04);
 }
 
 .template-btn {
@@ -30,6 +30,7 @@
 .template-btn:hover {
   background: rgba(59, 130, 246, 0.18);
   border-color: rgba(59, 130, 246, 0.4);
+  transform: scale(1.04);
 }
 
 /* ── Overlay ── */
@@ -351,6 +352,7 @@
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.2);
   color: rgba(255, 255, 255, 0.8);
+  transform: scale(1.04);
 }
 
 .import-submit-btn {
@@ -370,7 +372,7 @@
 }
 
 .import-submit-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
+  transform: scale(1.04);
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
   border-color: rgba(16, 185, 129, 0.45);
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.15);
