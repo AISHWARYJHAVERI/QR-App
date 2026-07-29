@@ -4,7 +4,7 @@ import { Dialog } from 'primereact/dialog';
 import { printQRCard, buildQRData, buildQRImageUrl } from '../utils/printQR';
 import axios from 'axios';
 
-const PrintQROptions = ({ visible, onHide, currentItem, selectedItems, type, fetchAllUrl }) => {
+const PrintQROptions = ({ visible, onHide, currentItem, selectedItems, type, fetchAllUrl, allItems }) => {
   const [printing, setPrinting] = useState(false);
 
   const doPrint = async (items) => {
@@ -49,8 +49,7 @@ const PrintQROptions = ({ visible, onHide, currentItem, selectedItems, type, fet
     setPrinting(true);
     onHide(true);
     try {
-      const response = await axios.get(fetchAllUrl);
-      const items = response.data;
+      const items = allItems || (await axios.get(fetchAllUrl)).data;
       if (items.length === 0) return;
       setPrinting(false);
       await doPrint(items);

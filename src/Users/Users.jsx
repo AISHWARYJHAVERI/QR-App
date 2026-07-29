@@ -611,6 +611,7 @@ function Users({ isLoggedIn }) {
                 selectedItems={showSelection ? selectedUsers : []}
                 type="U"
                 fetchAllUrl="/users"
+                allItems={mode === 'folder' ? displayData : undefined}
             />
 
             {showSaveDialog && (
