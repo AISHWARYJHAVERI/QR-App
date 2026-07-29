@@ -64,6 +64,8 @@ function Users({ isLoggedIn }) {
     const tableContainerRef = useRef(null);
     const showSelectionRef = useRef(showSelection);
     const dropdownRef = useRef(null);
+    const folderTriggerRef = useRef(null);
+    const [ddStyle, setDdStyle] = useState({});
 
     useEffect(() => { showSelectionRef.current = showSelection; }, [showSelection]);
 
@@ -115,12 +117,31 @@ function Users({ isLoggedIn }) {
         if (!showFolderDropdown) return;
         const handleClick = (e) => {
             if (dropdownRef.current && !dropdownRef.current.contains(e.target) &&
-                !e.target.closest('.folder-trigger-wrapper')) {
+                !folderTriggerRef.current?.contains(e.target)) {
                 setShowFolderDropdown(false);
             }
         };
         document.addEventListener('mousedown', handleClick);
         return () => document.removeEventListener('mousedown', handleClick);
+    }, [showFolderDropdown]);
+
+    useEffect(() => {
+        if (!showFolderDropdown) { setDdStyle({}); return; }
+        requestAnimationFrame(() => {
+            const t = folderTriggerRef.current?.getBoundingClientRect();
+            const d = dropdownRef.current;
+            if (!t || !d) return;
+            const dh = d.offsetHeight;
+            const dw = Math.min(d.offsetWidth, 560);
+            const spaceBelow = window.innerHeight - t.bottom - 16;
+            const spaceAbove = t.top - 16;
+            let top = spaceBelow >= dh || spaceBelow >= spaceAbove
+                ? t.bottom + 8 : t.top - dh - 8;
+            let left = t.left + t.width / 2 - dw / 2;
+            if (left < 16) left = 16;
+            if (left + dw > window.innerWidth - 16) left = window.innerWidth - dw - 16;
+            setDdStyle({ position: 'fixed', top: top + 'px', left: left + 'px' });
+        });
     }, [showFolderDropdown]);
 
     const fetchUsers = async () => {
@@ -409,8 +430,8 @@ function Users({ isLoggedIn }) {
                 )}
             </div>
             <div className="header-actions">
-                <div className="folder-trigger-wrapper" onClick={() => setShowFolderDropdown(prev => !prev)}>
-                    <Folder color="#6366f1" size={0.55} items={[<i key="1" className="pi pi-users" style={{ fontSize: 8, color: '#333' }}></i>]} />
+                <div className="folder-trigger-wrapper" ref={folderTriggerRef} onClick={() => setShowFolderDropdown(prev => !prev)}>
+                    <Folder color="#6366f1" size={0.72} items={[<i key="1" className="pi pi-users" style={{ fontSize: 11, color: '#333' }}></i>]} />
                     {folders.length > 0 && (
                         <span className="folder-trigger-badge">{folders.length}</span>
                     )}
@@ -496,7 +517,7 @@ function Users({ isLoggedIn }) {
                             {showFolderDropdown && (
                                 <>
                                     <div className="folder-dropdown-overlay" onClick={() => setShowFolderDropdown(false)}></div>
-                                    <div className="folder-dropdown" ref={dropdownRef}>
+                                    <div className="folder-dropdown" ref={dropdownRef} style={ddStyle}>
                                         <div className="folder-dropdown-header">
                                             <h4>Committee Folders</h4>
                                             <button className="folder-dropdown-close" onClick={() => setShowFolderDropdown(false)}>
