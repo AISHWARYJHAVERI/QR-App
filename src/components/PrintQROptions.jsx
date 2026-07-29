@@ -7,8 +7,7 @@ import axios from 'axios';
 const PrintQROptions = ({ visible, onHide, currentItem, selectedItems, type, fetchAllUrl, allItems }) => {
   const [printing, setPrinting] = useState(false);
 
-  const doPrint = async (items) => {
-    setPrinting(true);
+  const printItems = async (items) => {
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const qrData = buildQRData(item, type);
@@ -19,30 +18,19 @@ const PrintQROptions = ({ visible, onHide, currentItem, selectedItems, type, fet
         index: i + 1, total: items.length
       });
     }
-    setPrinting(false);
-    onHide(true);
   };
 
   const handlePrintSelected = async () => {
     const items = (selectedItems && selectedItems.length > 0) ? selectedItems : (currentItem ? [currentItem] : []);
     if (items.length === 0) return;
     setPrinting(true);
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      try {
-        const qrData = buildQRData(item, type);
-        const qrImageUrl = buildQRImageUrl(qrData);
-        await printQRCard({
-          qrImageUrl, name: item.name, phone: item.phone,
-          city: item.city, role: item.role, type,
-          index: i + 1, total: items.length
-        });
-      } catch (e) {
-        console.error('Print failed for', item.name, e);
-      }
+    try {
+      await printItems(items);
+    } catch (e) {
+      console.error('Print failed', e);
     }
     setPrinting(false);
-    onHide(true);
+    onHide('selected');
   };
 
   const handlePrintAll = async () => {
@@ -50,9 +38,10 @@ const PrintQROptions = ({ visible, onHide, currentItem, selectedItems, type, fet
     onHide(true);
     try {
       const items = allItems || (await axios.get(fetchAllUrl)).data;
-      if (items.length === 0) return;
+      if (items.length === 0) { setPrinting(false); return; }
       setPrinting(false);
-      await doPrint(items);
+      await printItems(items);
+      onHide('all');
     } catch (error) {
       console.error('Print All failed:', error);
       setPrinting(false);

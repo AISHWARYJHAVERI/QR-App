@@ -375,6 +375,9 @@ function Users({ isLoggedIn }) {
                 showSuccess('Folder "' + name + '" saved successfully');
             }
             setUnsaved(false);
+            setMode('api');
+            setActiveFolder(null);
+            persistSession('api', null);
             await loadFolders();
         } catch {
             showError('Error saving folder');
@@ -603,9 +606,18 @@ function Users({ isLoggedIn }) {
 
             <PrintQROptions
                 visible={printDialogVisible}
-                onHide={(clearSelection) => {
+                onHide={(action) => {
                     setPrintDialogVisible(false);
-                    if (clearSelection) { setShowSelection(false); setSelectedUsers([]); }
+                    if (action === 'all' && mode === 'folder') {
+                        setMode('api');
+                        setActiveFolder(null);
+                        setUnsaved(false);
+                        persistSession('api', null);
+                    }
+                    if (action === true || action === 'selected' || action === 'all') {
+                        setShowSelection(false);
+                        setSelectedUsers([]);
+                    }
                 }}
                 currentItem={printCurrentItem}
                 selectedItems={showSelection ? selectedUsers : []}
