@@ -140,7 +140,8 @@ function Users({ isLoggedIn }) {
             }
             const dh = d.offsetHeight;
             const dw = Math.min(d.offsetWidth, window.innerWidth - 32);
-            let top = t.bottom + 8;
+            let top = t.top - dh - 8;
+            if (top < 16) top = 16;
             if (top + dh > window.innerHeight - 16) top = Math.max(16, window.innerHeight - dh - 16);
             let left = t.left + t.width / 2 - dw / 2;
             if (left < 16) left = 16;

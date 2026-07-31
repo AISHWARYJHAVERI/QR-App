@@ -1101,7 +1101,7 @@
 @keyframes paperSlideIn {
   from {
     opacity: 0;
-    transform: translateY(42px) scale(0.85);
+    transform: translateY(64px) scale(0.85);
   }
   to {
     opacity: 1;
