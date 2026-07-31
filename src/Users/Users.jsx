@@ -629,7 +629,26 @@ function Users({ isLoggedIn }) {
                                         {unsaved && <span className="mode-banner-unsaved">⚠ Unsaved Changes</span>}
                                     </div>
                                     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                                        <span className="mode-banner-badge-local">Local Mode</span>
+                                        <span 
+                                            className="mode-banner-badge-local"
+                                            style={{
+                                                color: '#ffffff',
+                                                background: 'rgba(16, 185, 129, 0.25)',
+                                                border: '1px solid rgba(16, 185, 129, 0.5)',
+                                                fontSize: '0.8rem',
+                                                fontWeight: 700,
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.05em',
+                                                padding: '4px 12px',
+                                                borderRadius: '20px',
+                                                display: 'inline-block',
+                                                lineHeight: '1.2',
+                                                opacity: 1,
+                                                visibility: 'visible'
+                                            }}
+                                        >
+                                            Local Mode
+                                        </span>
                                         <button className="back-to-db-btn" onClick={switchToApiMode} title="Switch to Global Database">
                                             <i className="pi pi-globe"></i> Database
                                         </button>
@@ -645,7 +664,26 @@ function Users({ isLoggedIn }) {
                                         </span>
                                     </div>
                                     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                                        <span className="mode-banner-badge-global">Global Mode</span>
+                                        <span 
+                                            className="mode-banner-badge-global"
+                                            style={{
+                                                color: '#ffffff',
+                                                background: 'rgba(99, 102, 241, 0.25)',
+                                                border: '1px solid rgba(99, 102, 241, 0.5)',
+                                                fontSize: '0.8rem',
+                                                fontWeight: 700,
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.05em',
+                                                padding: '4px 12px',
+                                                borderRadius: '20px',
+                                                display: 'inline-block',
+                                                lineHeight: '1.2',
+                                                opacity: 1,
+                                                visibility: 'visible'
+                                            }}
+                                        >
+                                            Global Mode
+                                        </span>
                                     </div>
                                 </>
                             )}
