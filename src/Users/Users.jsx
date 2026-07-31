@@ -131,9 +131,16 @@ function Users({ isLoggedIn }) {
     }, [showFolderDropdown]);
 
     useEffect(() => {
+        if (showFolderDropdown) {
+            const prev = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+            return () => { document.body.style.overflow = prev; };
+        }
+    }, [showFolderDropdown]);
+
+    useEffect(() => {
         if (!showFolderDropdown) { setDdStyle({}); return; }
-        requestAnimationFrame(() => {
-            const t = folderTriggerRef.current?.getBoundingClientRect();
+        requestAnimationFrame(() => {            const t = folderTriggerRef.current?.getBoundingClientRect();
             const d = dropdownRef.current;
             if (!t || !d) {
                 setDdStyle({ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', visibility: 'visible' });
