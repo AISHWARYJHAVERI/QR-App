@@ -1211,27 +1211,31 @@
 }
 
 .mode-banner-badge-local {
-  background: rgba(16, 185, 129, 0.15) !important;
-  border: 1px solid rgba(16, 185, 129, 0.3) !important;
-  color: #10b981 !important;
-  font-size: 0.72rem;
-  font-weight: 700;
+  background: rgba(16, 185, 129, 0.2) !important;
+  border: 1px solid rgba(16, 185, 129, 0.45) !important;
+  color: #ffffff !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 4px 10px;
+  letter-spacing: 0.06em;
+  padding: 5px 12px !important;
   border-radius: 20px;
+  display: inline-block;
+  line-height: 1.2;
 }
 
 .mode-banner-badge-global {
-  background: rgba(99, 102, 241, 0.15) !important;
-  border: 1px solid rgba(99, 102, 241, 0.3) !important;
-  color: #a5b4fc !important;
-  font-size: 0.72rem;
-  font-weight: 700;
+  background: rgba(99, 102, 241, 0.2) !important;
+  border: 1px solid rgba(99, 102, 241, 0.45) !important;
+  color: #ffffff !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 4px 10px;
+  letter-spacing: 0.06em;
+  padding: 5px 12px !important;
   border-radius: 20px;
+  display: inline-block;
+  line-height: 1.2;
 }
 
 .back-to-db-btn {
