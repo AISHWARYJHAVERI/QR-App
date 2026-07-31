@@ -616,7 +616,22 @@ function Users({ isLoggedIn }) {
                     <>
                         <AddUser inline={true} onUserAdded={handleUserAdded} showError={showError} showSuccess={showSuccess} localMode={mode === 'folder'} />
 
-                        {mode === 'folder' && (
+                        {mode === 'api' ? (
+                            <div className="mode-banner api-mode-banner" style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+                                <div className="mode-banner-left">
+                                    <i className="pi pi-database" style={{ color: '#10b981', marginRight: '4px' }}></i>
+                                    <span>Viewing: Global User Database</span>
+                                    <span style={{ color: '#94a3b8', fontWeight: 400 }}>
+                                        — {users.length} record{users.length === 1 ? '' : 's'}
+                                    </span>
+                                </div>
+                                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                    <span className="mode-banner-live-badge">
+                                        <span className="live-dot"></span> Live Sync
+                                    </span>
+                                </div>
+                            </div>
+                        ) : (
                             <div className="mode-banner" style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
                                 <div className="mode-banner-left">
                                     <i className="pi pi-folder-open"></i>
