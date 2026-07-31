@@ -91,6 +91,7 @@ function Users({ isLoggedIn }) {
     const [unsavedAction, setUnsavedAction] = useState(null);
     const [showUnsavedPrompt, setShowUnsavedPrompt] = useState(false);
     const [pendingNavigation, setPendingNavigation] = useState(null);
+    const [showNewFolderConfirm, setShowNewFolderConfirm] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -310,11 +311,28 @@ function Users({ isLoggedIn }) {
             setShowFolderDropdown(false);
             return;
         }
+        if (displayData.length > 0) {
+            setShowNewFolderConfirm(true);
+            return;
+        }
+        doStartNewFolder();
+    };
+
+    const doStartNewFolder = () => {
         setActiveFolder(null);
         setMode('folder');
         setUnsaved(false);
         persistSession('folder', null);
         setShowFolderDropdown(false);
+    };
+
+    const handleNewFolderConfirm = () => {
+        setShowNewFolderConfirm(false);
+        doStartNewFolder();
+    };
+
+    const handleNewFolderCancel = () => {
+        setShowNewFolderConfirm(false);
     };
 
     const switchToApiMode = () => {
@@ -743,6 +761,22 @@ function Users({ isLoggedIn }) {
                             <button className="unsaved-cancel" onClick={handleUnsavedCancel}>Cancel</button>
                             <button className="unsaved-discard" onClick={handleUnsavedDiscard}>Discard</button>
                             <button className="unsaved-save" onClick={handleUnsavedSave}>Save First</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showNewFolderConfirm && (
+                <div className="new-folder-toast" role="alertdialog" aria-label="Confirm new folder">
+                    <div className="new-folder-toast-icon">
+                        <i className="pi pi-exclamation-triangle"></i>
+                    </div>
+                    <div className="new-folder-toast-body">
+                        <strong>Start a new folder?</strong>
+                        <p>There is still data in the table. Starting a new folder will clear the current list from view. Are you sure you want to continue?</p>
+                        <div className="new-folder-toast-actions">
+                            <button className="new-folder-toast-cancel" onClick={handleNewFolderCancel}>Cancel</button>
+                            <button className="new-folder-toast-confirm" onClick={handleNewFolderConfirm}>Yes, New Folder</button>
                         </div>
                     </div>
                 </div>

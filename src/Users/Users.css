@@ -1422,6 +1422,108 @@
   color: #f8fafc !important;
 }
 
+/* ─── New Folder Confirm Toast ─── */
+.new-folder-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2100;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 380px;
+  max-width: 92vw;
+  background: rgba(15,23,42,0.98);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  animation: toastSlideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes toastSlideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+.new-folder-toast-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(245,158,11,0.14);
+  border: 1px solid rgba(245,158,11,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f59e0b;
+  font-size: 15px;
+}
+
+.new-folder-toast-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.new-folder-toast-body strong {
+  display: block;
+  color: #f8fafc;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.new-folder-toast-body p {
+  margin: 0 0 12px;
+  color: #94a3b8;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.new-folder-toast-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.new-folder-toast-actions button {
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.new-folder-toast-cancel {
+  background: rgba(255,255,255,0.05) !important;
+  color: #94a3b8 !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+.new-folder-toast-cancel:hover {
+  background: rgba(255,255,255,0.1) !important;
+  color: #f8fafc !important;
+}
+
+.new-folder-toast-confirm {
+  background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+  color: #fff !important;
+}
+
+.new-folder-toast-confirm:hover {
+  transform: scale(1.04);
+  box-shadow: 0 4px 14px rgba(99,102,241,0.4);
+}
+
 /* ─── Save as Folder Confirm ─── */
 @keyframes confirmFadeIn {
   from { opacity: 0; }
