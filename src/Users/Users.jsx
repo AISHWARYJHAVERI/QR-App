@@ -339,6 +339,7 @@ function Users({ isLoggedIn }) {
         setMode('folder');
         setUnsaved(false);
         persistSession('folder', null);
+        setShowFolderDropdown(false);
     };
 
     const handleNewFolderConfirm = () => {
