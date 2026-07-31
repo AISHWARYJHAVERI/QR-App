@@ -627,13 +627,6 @@ function Users({ isLoggedIn }) {
                                     {unsaved && <span className="mode-banner-unsaved">⚠ Unsaved</span>}
                                 </div>
                                 <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                                    <button
-                                        className="mode-banner-save-btn"
-                                        onClick={() => handleSaveClick('folder')}
-                                        disabled={displayData.length === 0 && !unsaved}
-                                    >
-                                        <i className="pi pi-save"></i> Save
-                                    </button>
                                     <button className="back-to-db-btn" onClick={switchToApiMode}>
                                         <i className="pi pi-database"></i> Database
                                     </button>
