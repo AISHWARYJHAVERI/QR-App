@@ -933,7 +933,7 @@
   box-shadow: none;
   backdrop-filter: none;
   visibility: hidden;
-  transform-origin: var(--origin-x, 50%) var(--origin-y, 50%);
+  transform-origin: var(--origin-x, 50%) 100% !important;
   animation: folderBurst 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
