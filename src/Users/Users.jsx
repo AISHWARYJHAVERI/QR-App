@@ -135,21 +135,19 @@ function Users({ isLoggedIn }) {
             const t = folderTriggerRef.current?.getBoundingClientRect();
             const d = dropdownRef.current;
             if (!t || !d) {
-                setDdStyle({ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' });
+                setDdStyle({ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', visibility: 'visible' });
                 return;
             }
             const dh = d.offsetHeight;
             const dw = Math.min(d.offsetWidth, window.innerWidth - 32);
-            const spaceBelow = window.innerHeight - t.bottom - 16;
-            const spaceAbove = t.top - 16;
-            let top = spaceBelow >= dh || spaceBelow >= spaceAbove
-                ? t.bottom + 8 : t.top - dh - 8;
+            let top = t.bottom + 8;
+            if (top + dh > window.innerHeight - 16) top = Math.max(16, window.innerHeight - dh - 16);
             let left = t.left + t.width / 2 - dw / 2;
             if (left < 16) left = 16;
             if (left + dw > window.innerWidth - 16) left = window.innerWidth - dw - 16;
             const originX = t.left + t.width / 2 - left;
             const originY = t.top + t.height / 2 - top;
-            setDdStyle({ position: 'fixed', top: top + 'px', left: left + 'px', '--origin-x': `${originX}px`, '--origin-y': `${originY}px` });
+            setDdStyle({ position: 'fixed', top: top + 'px', left: left + 'px', visibility: 'visible', '--origin-x': `${originX}px`, '--origin-y': `${originY}px` });
         });
     }, [showFolderDropdown]);
 

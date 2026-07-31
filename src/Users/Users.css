@@ -932,6 +932,7 @@
   max-width: none;
   box-shadow: none;
   backdrop-filter: none;
+  visibility: hidden;
   transform-origin: var(--origin-x, 50%) var(--origin-y, 50%);
   animation: folderBurst 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -1053,9 +1054,9 @@
 }
 
 .paper-card-new {
-  background: rgba(255,255,255,0.07);
-  border: 2px dashed rgba(255,255,255,0.25);
-  color: #94a3b8;
+  background: linear-gradient(145deg, #6366f1 0%, #4f46e5 100%);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1065,15 +1066,15 @@
   min-width: 80px;
   padding: 14px 6px;
   transform: none !important;
-  box-shadow: none;
+  box-shadow: 0 6px 18px rgba(99,102,241,0.4);
   border-radius: 16px;
 }
 
 .paper-card-new-plus {
   font-size: 2.4rem;
-  font-weight: 200;
+  font-weight: 300;
   line-height: 1;
-  color: #a5b4fc;
+  color: #fff;
 }
 
 .paper-card-new-label {
@@ -1081,13 +1082,13 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #64748b;
+  color: #e0e7ff;
 }
 
 .paper-card-new:hover {
-  background: rgba(99,102,241,0.18);
-  border-color: #6366f1;
-  color: #818cf8;
+  background: linear-gradient(145deg, #4f46e5 0%, #4338ca 100%);
+  box-shadow: 0 8px 22px rgba(99,102,241,0.5);
+  color: #fff;
   transform: translateY(-3px) !important;
 }
 
