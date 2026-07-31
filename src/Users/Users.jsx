@@ -139,7 +139,7 @@ function Users({ isLoggedIn }) {
                 return;
             }
             const dh = d.offsetHeight;
-            const dw = Math.min(d.offsetWidth, 560);
+            const dw = Math.min(d.offsetWidth, window.innerWidth - 32);
             const spaceBelow = window.innerHeight - t.bottom - 16;
             const spaceAbove = t.top - 16;
             let top = spaceBelow >= dh || spaceBelow >= spaceAbove
@@ -604,26 +604,27 @@ function Users({ isLoggedIn }) {
                                     <div className="folder-dropdown-overlay" onClick={() => setShowFolderDropdown(false)}></div>
                                     <div className="folder-dropdown" ref={dropdownRef} style={ddStyle}>
                                         <div className="paper-cards-row">
+                                            <div className="paper-card paper-card-new" onClick={startNewFolder} title="New Folder">
+                                                <div className="paper-card-inner" style={{ animationDelay: '0.08s' }}>
+                                                    <span className="paper-card-new-plus">+</span>
+                                                    <span className="paper-card-new-label">New</span>
+                                                </div>
+                                            </div>
                                             {folders.map((f, index) => (
                                                 <div
                                                     key={f.id}
                                                     className={`paper-card${activeFolder?.id === f.id ? ' paper-card-active' : ''}`}
                                                     onClick={() => selectFolder(f)}
                                                 >
-                                                    <div className="paper-card-inner" style={{ animationDelay: `${0.08 + index * 0.08}s` }}>
+                                                    <div className="paper-card-inner" style={{ animationDelay: `${0.16 + index * 0.08}s` }}>
+                                                        <span className="paper-card-num">{index + 1}</span>
                                                         <span className="paper-card-name">{f.name}</span>
-                                                        <span className="paper-card-count">{f.entries?.length || 0} entr{(f.entries?.length || 0) === 1 ? 'y' : 'ies'}</span>
                                                         <span className="paper-card-delete" onClick={(e) => handleFolderDelete(e, f)}>
-                                                            <i className="pi pi-times" style={{ fontSize: 8 }}></i>
+                                                            <i className="pi pi-times" style={{ fontSize: 9 }}></i>
                                                         </span>
                                                     </div>
                                                 </div>
                                             ))}
-                                            <div className="paper-card paper-card-new" onClick={startNewFolder} title="New Folder">
-                                                <div className="paper-card-inner" style={{ animationDelay: `${0.08 + folders.length * 0.08}s` }}>
-                                                    +
-                                                </div>
-                                            </div>
                                         </div>
                                         {folders.length === 0 && (
                                             <div className="folder-dropdown-empty">
