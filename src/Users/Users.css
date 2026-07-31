@@ -1423,11 +1423,18 @@
 }
 
 /* ─── New Folder Confirm Toast ─── */
-.new-folder-toast {
+.new-folder-toast-wrap {
   position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
+  inset: 0;
+  z-index: 2050;
+  background: transparent;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 24px;
+}
+
+.new-folder-toast {
   z-index: 2100;
   display: flex;
   align-items: flex-start;
@@ -1445,11 +1452,11 @@
 @keyframes toastSlideUp {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(24px) scale(0.96);
+    transform: translateY(24px) scale(0.96);
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 

@@ -767,16 +767,18 @@ function Users({ isLoggedIn }) {
             )}
 
             {showNewFolderConfirm && (
-                <div className="new-folder-toast" role="alertdialog" aria-label="Confirm new folder">
-                    <div className="new-folder-toast-icon">
-                        <i className="pi pi-exclamation-triangle"></i>
-                    </div>
-                    <div className="new-folder-toast-body">
-                        <strong>Start a new folder?</strong>
-                        <p>There is still data in the table. Starting a new folder will clear the current list from view. Are you sure you want to continue?</p>
-                        <div className="new-folder-toast-actions">
-                            <button className="new-folder-toast-cancel" onClick={handleNewFolderCancel}>Cancel</button>
-                            <button className="new-folder-toast-confirm" onClick={handleNewFolderConfirm}>Yes, New Folder</button>
+                <div className="new-folder-toast-wrap">
+                    <div className="new-folder-toast" role="alertdialog" aria-label="Confirm new folder">
+                        <div className="new-folder-toast-icon">
+                            <i className="pi pi-exclamation-triangle"></i>
+                        </div>
+                        <div className="new-folder-toast-body">
+                            <strong>Start a new folder?</strong>
+                            <p>There is still data in the table. Starting a new folder will clear the current list from view. Are you sure you want to continue?</p>
+                            <div className="new-folder-toast-actions">
+                                <button className="new-folder-toast-cancel" onClick={handleNewFolderCancel}>Cancel</button>
+                                <button className="new-folder-toast-confirm" onClick={handleNewFolderConfirm}>Yes, New Folder</button>
+                            </div>
                         </div>
                     </div>
                 </div>
