@@ -19,7 +19,7 @@ const darkenColor = (hex, percent) => {
   return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
 };
 
-const Folder = ({ color = '#5227FF', size = 1, items = [], className = '' }) => {
+const Folder = ({ color = '#5227FF', size = 1, items = [], className = '', open: controlledOpen }) => {
   const maxItems = 3;
   const papers = items.slice(0, maxItems);
   while (papers.length < maxItems) {
@@ -27,6 +27,7 @@ const Folder = ({ color = '#5227FF', size = 1, items = [], className = '' }) => 
   }
 
   const [open, setOpen] = useState(false);
+  const isOpen = controlledOpen !== undefined ? controlledOpen : open;
   const [paperOffsets, setPaperOffsets] = useState(Array.from({ length: maxItems }, () => ({ x: 0, y: 0 })));
 
   const folderBackColor = darkenColor(color, 0.08);
@@ -35,14 +36,12 @@ const Folder = ({ color = '#5227FF', size = 1, items = [], className = '' }) => 
   const paper3 = '#ffffff';
 
   const handleClick = () => {
+    if (controlledOpen !== undefined) return;
     setOpen(prev => !prev);
-    if (open) {
-      setPaperOffsets(Array.from({ length: maxItems }, () => ({ x: 0, y: 0 })));
-    }
   };
 
   const handlePaperMouseMove = (e, index) => {
-    if (!open) return;
+    if (!isOpen) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
@@ -67,7 +66,7 @@ const Folder = ({ color = '#5227FF', size = 1, items = [], className = '' }) => 
     '--paper-3': paper3
   };
 
-  const folderClassName = `folder ${open ? 'open' : ''}`.trim();
+  const folderClassName = `folder ${isOpen ? 'open' : ''}`.trim();
   const scaleStyle = { transform: `scale(${size})` };
 
   return (
@@ -84,8 +83,8 @@ const Folder = ({ color = '#5227FF', size = 1, items = [], className = '' }) => 
         }}
         tabIndex={0}
         role="button"
-        aria-expanded={open}
-        aria-label={open ? 'Close folder' : 'Open folder'}
+        aria-expanded={isOpen}
+        aria-label={isOpen ? 'Close folder' : 'Open folder'}
       >
         <div className="folder__back">
           {papers.map((item, i) => (
@@ -95,7 +94,7 @@ const Folder = ({ color = '#5227FF', size = 1, items = [], className = '' }) => 
               onMouseMove={e => handlePaperMouseMove(e, i)}
               onMouseLeave={handlePaperMouseLeave}
               style={
-                open
+                isOpen
                   ? {
                       '--magnet-x': `${paperOffsets[i]?.x || 0}px`,
                       '--magnet-y': `${paperOffsets[i]?.y || 0}px`

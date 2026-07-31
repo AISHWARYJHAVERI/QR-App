@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { InputText } from 'primereact/inputtext';
@@ -83,6 +84,7 @@ function Users({ isLoggedIn }) {
 
     const [showSaveDialog, setShowSaveDialog] = useState(false);
     const [showSaveConfirm, setShowSaveConfirm] = useState(false);
+    const [saveSource, setSaveSource] = useState('folder');
     const [saveFolderName, setSaveFolderName] = useState('');
     const [saving, setSaving] = useState(false);
 
@@ -132,7 +134,10 @@ function Users({ isLoggedIn }) {
         requestAnimationFrame(() => {
             const t = folderTriggerRef.current?.getBoundingClientRect();
             const d = dropdownRef.current;
-            if (!t || !d) return;
+            if (!t || !d) {
+                setDdStyle({ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' });
+                return;
+            }
             const dh = d.offsetHeight;
             const dw = Math.min(d.offsetWidth, 560);
             const spaceBelow = window.innerHeight - t.bottom - 16;
@@ -287,6 +292,7 @@ function Users({ isLoggedIn }) {
         if (unsaved) {
             setUnsavedAction({ type: 'select', folder });
             setShowUnsavedPrompt(true);
+            setShowFolderDropdown(false);
             return;
         }
         setActiveFolder(folder);
@@ -300,6 +306,7 @@ function Users({ isLoggedIn }) {
         if (unsaved) {
             setUnsavedAction({ type: 'new' });
             setShowUnsavedPrompt(true);
+            setShowFolderDropdown(false);
             return;
         }
         setActiveFolder(null);
@@ -313,6 +320,7 @@ function Users({ isLoggedIn }) {
         if (unsaved) {
             setUnsavedAction({ type: 'api' });
             setShowUnsavedPrompt(true);
+            setShowFolderDropdown(false);
             return;
         }
         setMode('api');
@@ -371,13 +379,14 @@ function Users({ isLoggedIn }) {
         }
     };
 
-    const handleSaveClick = () => {
+    const handleSaveClick = (source = 'folder') => {
+        setSaveSource(source);
         setShowSaveConfirm(true);
     };
 
     const handleSaveConfirmYes = () => {
         setShowSaveConfirm(false);
-        setSaveFolderName(activeFolder?.name || '');
+        setSaveFolderName(saveSource === 'folder' ? (activeFolder?.name || '') : '');
         setShowSaveDialog(true);
     };
 
@@ -421,7 +430,27 @@ function Users({ isLoggedIn }) {
 
     const confirmSaveFolder = () => {
         if (!saveFolderName.trim()) return;
-        saveCurrentFolderAction();
+        if (saveSource === 'db') {
+            saveDatabaseFolder();
+        } else {
+            saveCurrentFolderAction();
+        }
+    };
+
+    const saveDatabaseFolder = async () => {
+        const name = saveFolderName.trim();
+        if (!name) return;
+        setSaving(true);
+        try {
+            await axios.post('/committeesessions', { name, entries: users });
+            showSuccess('Folder "' + name + '" saved successfully');
+            setShowSaveDialog(false);
+            await loadFolders();
+        } catch {
+            showError('Error saving folder');
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleSaveDialogCancel = () => {
@@ -470,8 +499,17 @@ function Users({ isLoggedIn }) {
                 )}
             </div>
             <div className="header-actions">
+                <button
+                    type="button"
+                    className="db-save-btn"
+                    onClick={() => handleSaveClick('db')}
+                    title="Save database as folder"
+                    disabled={users.length === 0}
+                >
+                    <i className="pi pi-save"></i>
+                </button>
                 <div className="folder-trigger-wrapper" ref={folderTriggerRef} onClick={() => setShowFolderDropdown(prev => !prev)}>
-                    <Folder color="#6366f1" size={0.72} items={[<i key="1" className="pi pi-users" style={{ fontSize: 11, color: '#333' }}></i>]} />
+                    <Folder color="#6366f1" size={0.72} open={showFolderDropdown} items={[<i key="1" className="pi pi-users" style={{ fontSize: 11, color: '#333' }}></i>]} />
                     {folders.length > 0 && (
                         <span className="folder-trigger-badge">{folders.length}</span>
                     )}
@@ -546,7 +584,7 @@ function Users({ isLoggedIn }) {
                                 <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                                     <button
                                         className="mode-banner-save-btn"
-                                        onClick={handleSaveClick}
+                                        onClick={() => handleSaveClick('folder')}
                                         disabled={displayData.length === 0 && !unsaved}
                                     >
                                         <i className="pi pi-save"></i> Save
@@ -561,57 +599,40 @@ function Users({ isLoggedIn }) {
                         <AddUser inline={true} onUserAdded={handleUserAdded} showError={showError} showSuccess={showSuccess} localMode={mode === 'folder'} />
 
                         <div ref={tableContainerRef} style={{ position: 'relative' }}>
-                            {showFolderDropdown && (
+                            {showFolderDropdown && createPortal(
                                 <>
                                     <div className="folder-dropdown-overlay" onClick={() => setShowFolderDropdown(false)}></div>
                                     <div className="folder-dropdown" ref={dropdownRef} style={ddStyle}>
-                                        <div className="folder-dropdown-header">
-                                            <h4>Committee Folders</h4>
-                                            <button className="folder-dropdown-close" onClick={() => setShowFolderDropdown(false)}>
-                                                <i className="pi pi-times"></i>
-                                            </button>
-                                        </div>
-                                        {folders.length === 0 ? (
-                                            <div className="folder-dropdown-empty">
-                                                <i className="pi pi-folder-open"></i>
-                                                No folders yet. Add entries and save as a folder.
-                                            </div>
-                                        ) : (
-                                            <div className="paper-cards-row">
-                                                {folders.map((f, index) => (
-                                                    <div
-                                                        key={f.id}
-                                                        className={`paper-card${activeFolder?.id === f.id ? ' paper-card-active' : ''}`}
-                                                        onClick={() => selectFolder(f)}
-                                                    >
-                                                        <div className="paper-card-inner" style={{ animationDelay: `${0.08 + index * 0.08}s` }}>
-                                                            <span className="paper-card-name">{f.name}</span>
-                                                            <span className="paper-card-count">{f.entries?.length || 0} entr{(f.entries?.length || 0) === 1 ? 'y' : 'ies'}</span>
-                                                            <span className="paper-card-delete" onClick={(e) => handleFolderDelete(e, f)}>
-                                                                <i className="pi pi-times" style={{ fontSize: 8 }}></i>
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                                <div className="paper-card paper-card-new" onClick={startNewFolder} title="New Folder">
-                                                    <div className="paper-card-inner" style={{ animationDelay: `${0.08 + folders.length * 0.08}s` }}>
-                                                        +
+                                        <div className="paper-cards-row">
+                                            {folders.map((f, index) => (
+                                                <div
+                                                    key={f.id}
+                                                    className={`paper-card${activeFolder?.id === f.id ? ' paper-card-active' : ''}`}
+                                                    onClick={() => selectFolder(f)}
+                                                >
+                                                    <div className="paper-card-inner" style={{ animationDelay: `${0.08 + index * 0.08}s` }}>
+                                                        <span className="paper-card-name">{f.name}</span>
+                                                        <span className="paper-card-count">{f.entries?.length || 0} entr{(f.entries?.length || 0) === 1 ? 'y' : 'ies'}</span>
+                                                        <span className="paper-card-delete" onClick={(e) => handleFolderDelete(e, f)}>
+                                                            <i className="pi pi-times" style={{ fontSize: 8 }}></i>
+                                                        </span>
                                                     </div>
                                                 </div>
+                                            ))}
+                                            <div className="paper-card paper-card-new" onClick={startNewFolder} title="New Folder">
+                                                <div className="paper-card-inner" style={{ animationDelay: `${0.08 + folders.length * 0.08}s` }}>
+                                                    +
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {folders.length === 0 && (
+                                            <div className="folder-dropdown-empty">
+                                                No folders yet. Press <b>+</b> to start a new folder.
                                             </div>
                                         )}
-                                        <div className="folder-dropdown-footer">
-                                            <div></div>
-                                            <button
-                                                className="folder-save-btn"
-                                                onClick={handleSaveClick}
-                                                disabled={mode !== 'folder' || (displayData.length === 0 && !unsaved)}
-                                            >
-                                                <i className="pi pi-save"></i> Save as Folder
-                                            </button>
-                                        </div>
                                     </div>
-                                </>
+                                </>,
+                                document.body
                             )}
                             <DataTable value={displayData} header={header} globalFilter={globalFilter} paginator rows={10}
                                 paginatorTemplate={paginatorTemplate}
@@ -680,7 +701,7 @@ function Users({ isLoggedIn }) {
                             <i className="pi pi-save"></i>
                         </div>
                         <h4>Save as a Folder?</h4>
-                        <p>Save the current entries as a committee folder?</p>
+                        <p>{saveSource === 'db' ? 'Save all database users as a new folder?' : 'Save the current entries as a committee folder?'}</p>
                         <div className="save-confirm-actions">
                             <button className="save-confirm-no" onClick={handleSaveConfirmNo}>No</button>
                             <button className="save-confirm-yes" onClick={handleSaveConfirmYes}>Yes</button>
@@ -692,7 +713,7 @@ function Users({ isLoggedIn }) {
             {showSaveDialog && (
                 <div className="folder-save-dialog-overlay" onClick={handleSaveDialogCancel}>
                     <div className="folder-save-dialog" onClick={e => e.stopPropagation()}>
-                        <h4>{activeFolder?.id ? 'Update Folder' : 'Save as New Folder'}</h4>
+                        <h4>{saveSource === 'db' ? 'Save Database as New Folder' : (activeFolder?.id ? 'Update Folder' : 'Save as New Folder')}</h4>
                         <input
                             type="text"
                             placeholder="Enter folder name..."
