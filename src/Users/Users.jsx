@@ -629,28 +629,25 @@ function Users({ isLoggedIn }) {
                                         {unsaved && <span className="mode-banner-unsaved">⚠ Unsaved Changes</span>}
                                     </div>
                                     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                                        <span 
-                                            className="mode-banner-badge-local"
+                                        <button 
+                                            className="back-to-db-btn" 
+                                            onClick={switchToApiMode} 
+                                            title="Switch to Global Database"
                                             style={{
                                                 color: '#ffffff',
-                                                background: 'rgba(16, 185, 129, 0.25)',
-                                                border: '1px solid rgba(16, 185, 129, 0.5)',
-                                                fontSize: '0.8rem',
-                                                fontWeight: 700,
-                                                textTransform: 'uppercase',
-                                                letterSpacing: '0.05em',
-                                                padding: '4px 12px',
-                                                borderRadius: '20px',
-                                                display: 'inline-block',
-                                                lineHeight: '1.2',
-                                                opacity: 1,
-                                                visibility: 'visible'
+                                                background: 'rgba(99, 102, 241, 0.2)',
+                                                border: '1px solid rgba(99, 102, 241, 0.4)',
+                                                padding: '6px 16px',
+                                                borderRadius: '8px',
+                                                fontWeight: 600,
+                                                fontSize: '0.82rem',
+                                                cursor: 'pointer',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '8px'
                                             }}
                                         >
-                                            Local Mode
-                                        </span>
-                                        <button className="back-to-db-btn" onClick={switchToApiMode} title="Switch to Global Database">
-                                            <i className="pi pi-globe"></i> Database
+                                            <i className="pi pi-globe" style={{ color: '#a5b4fc' }}></i> Go to Global Database
                                         </button>
                                     </div>
                                 </>
@@ -661,28 +658,6 @@ function Users({ isLoggedIn }) {
                                         <span>Universal Database — Viewing <b style={{ color: '#ffffff' }}>Global Data</b></span>
                                         <span style={{ color: '#94a3b8', fontWeight: 400 }}>
                                             — {users.length} total user{users.length === 1 ? '' : 's'}
-                                        </span>
-                                    </div>
-                                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                                        <span 
-                                            className="mode-banner-badge-global"
-                                            style={{
-                                                color: '#ffffff',
-                                                background: 'rgba(99, 102, 241, 0.25)',
-                                                border: '1px solid rgba(99, 102, 241, 0.5)',
-                                                fontSize: '0.8rem',
-                                                fontWeight: 700,
-                                                textTransform: 'uppercase',
-                                                letterSpacing: '0.05em',
-                                                padding: '4px 12px',
-                                                borderRadius: '20px',
-                                                display: 'inline-block',
-                                                lineHeight: '1.2',
-                                                opacity: 1,
-                                                visibility: 'visible'
-                                            }}
-                                        >
-                                            Global Mode
                                         </span>
                                     </div>
                                 </>
