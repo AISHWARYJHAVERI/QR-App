@@ -1210,6 +1210,30 @@
   border: 1px solid rgba(251,191,36,0.2);
 }
 
+.mode-banner-badge-local {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  color: #10b981 !important;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.mode-banner-badge-global {
+  background: rgba(99, 102, 241, 0.15) !important;
+  border: 1px solid rgba(99, 102, 241, 0.3) !important;
+  color: #a5b4fc !important;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
 .back-to-db-btn {
   display: inline-flex;
   align-items: center;
@@ -1713,52 +1737,5 @@
 
   .paper-card-new-label {
     font-size: 0.65rem;
-  }
-}
-
-/* ─── Global DB Mode Banner Styles ─── */
-.api-mode-banner {
-  background: rgba(16, 185, 129, 0.08) !important;
-  border: 1px solid rgba(16, 185, 129, 0.15) !important;
-}
-
-.mode-banner-live-badge {
-  color: #34d399;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 4px 10px;
-  border-radius: 6px;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.live-dot {
-  width: 7px;
-  height: 7px;
-  background-color: #10b981;
-  border-radius: 50%;
-  display: inline-block;
-  box-shadow: 0 0 8px #10b981;
-  animation: livePulse 2s infinite ease-in-out;
-}
-
-@keyframes livePulse {
-  0% {
-    transform: scale(0.9);
-    opacity: 0.6;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 1;
-    box-shadow: 0 0 12px #10b981;
-  }
-  100% {
-    transform: scale(0.9);
-    opacity: 0.6;
   }
 }

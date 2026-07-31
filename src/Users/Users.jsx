@@ -616,38 +616,39 @@ function Users({ isLoggedIn }) {
                     <>
                         <AddUser inline={true} onUserAdded={handleUserAdded} showError={showError} showSuccess={showSuccess} localMode={mode === 'folder'} />
 
-                        {mode === 'api' ? (
-                            <div className="mode-banner api-mode-banner" style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
-                                <div className="mode-banner-left">
-                                    <i className="pi pi-database" style={{ color: '#10b981', marginRight: '4px' }}></i>
-                                    <span>Viewing: Global User Database</span>
-                                    <span style={{ color: '#94a3b8', fontWeight: 400 }}>
-                                        — {users.length} record{users.length === 1 ? '' : 's'}
-                                    </span>
-                                </div>
-                                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                                    <span className="mode-banner-live-badge">
-                                        <span className="live-dot"></span> Live Sync
-                                    </span>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="mode-banner" style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
-                                <div className="mode-banner-left">
-                                    <i className="pi pi-folder-open"></i>
-                                    <span>Editing: {activeFolder?.name || 'New Folder'}</span>
-                                    <span style={{ color: '#94a3b8', fontWeight: 400 }}>
-                                        — {displayData.length} entr{displayData.length === 1 ? 'y' : 'ies'}
-                                    </span>
-                                    {unsaved && <span className="mode-banner-unsaved">⚠ Unsaved</span>}
-                                </div>
-                                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                                    <button className="back-to-db-btn" onClick={switchToApiMode}>
-                                        <i className="pi pi-database"></i> Database
-                                    </button>
-                                </div>
-                            </div>
-                        )}
+                        <div className="mode-banner" style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+                            {mode === 'folder' ? (
+                                <>
+                                    <div className="mode-banner-left">
+                                        <i className="pi pi-folder-open" style={{ color: '#10b981' }}></i>
+                                        <span>Local Folder Session — Editing: <b style={{ color: '#ffffff' }}>{activeFolder?.name || 'New Folder'}</b></span>
+                                        <span style={{ color: '#94a3b8', fontWeight: 400 }}>
+                                            — {displayData.length} entr{displayData.length === 1 ? 'y' : 'ies'}
+                                        </span>
+                                        {unsaved && <span className="mode-banner-unsaved">⚠ Unsaved Changes</span>}
+                                    </div>
+                                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                                        <span className="mode-banner-badge-local">Local Mode</span>
+                                        <button className="back-to-db-btn" onClick={switchToApiMode} title="Switch to Global Database">
+                                            <i className="pi pi-globe"></i> Database
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="mode-banner-left">
+                                        <i className="pi pi-globe" style={{ color: '#6366f1' }}></i>
+                                        <span>Universal Database — Viewing <b style={{ color: '#ffffff' }}>Global Data</b></span>
+                                        <span style={{ color: '#94a3b8', fontWeight: 400 }}>
+                                            — {users.length} total user{users.length === 1 ? '' : 's'}
+                                        </span>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                                        <span className="mode-banner-badge-global">Global Mode</span>
+                                    </div>
+                                </>
+                            )}
+                        </div>
 
                         <div ref={tableContainerRef} style={{ position: 'relative' }}>
                             {showFolderDropdown && createPortal(
