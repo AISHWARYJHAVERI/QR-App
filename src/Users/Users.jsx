@@ -603,8 +603,10 @@ function Users({ isLoggedIn }) {
 
                 {activeTab === 'users' ? (
                     <>
+                        <AddUser inline={true} onUserAdded={handleUserAdded} showError={showError} showSuccess={showSuccess} localMode={mode === 'folder'} />
+
                         {mode === 'folder' && (
-                            <div className="mode-banner">
+                            <div className="mode-banner" style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
                                 <div className="mode-banner-left">
                                     <i className="pi pi-folder-open"></i>
                                     <span>Editing: {activeFolder?.name || 'New Folder'}</span>
@@ -627,8 +629,6 @@ function Users({ isLoggedIn }) {
                                 </div>
                             </div>
                         )}
-
-                        <AddUser inline={true} onUserAdded={handleUserAdded} showError={showError} showSuccess={showSuccess} localMode={mode === 'folder'} />
 
                         <div ref={tableContainerRef} style={{ position: 'relative' }}>
                             {showFolderDropdown && createPortal(
