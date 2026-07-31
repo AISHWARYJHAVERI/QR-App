@@ -545,9 +545,9 @@ function Users({ isLoggedIn }) {
                 <button
                     type="button"
                     className="db-save-btn"
-                    onClick={() => handleSaveClick('db')}
-                    title="Save database as folder"
-                    disabled={users.length === 0}
+                    onClick={() => handleSaveClick(mode === 'folder' ? 'folder' : 'db')}
+                    title={mode === 'folder' ? "Save current folder" : "Save database as folder"}
+                    disabled={mode === 'folder' ? (displayData.length === 0 && !unsaved) : (users.length === 0)}
                 >
                     <i className="pi pi-save"></i>
                 </button>
