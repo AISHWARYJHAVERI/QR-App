@@ -67,6 +67,7 @@ function Users({ isLoggedIn }) {
     const dropdownRef = useRef(null);
     const folderTriggerRef = useRef(null);
     const newFolderToastRef = useRef(null);
+    const newFolderInfoRef = useRef(null);
     const [ddStyle, setDdStyle] = useState({});
 
     useEffect(() => { showSelectionRef.current = showSelection; }, [showSelection]);
@@ -93,6 +94,7 @@ function Users({ isLoggedIn }) {
     const [showUnsavedPrompt, setShowUnsavedPrompt] = useState(false);
     const [pendingNavigation, setPendingNavigation] = useState(null);
     const [showNewFolderConfirm, setShowNewFolderConfirm] = useState(false);
+    const [showNewFolderInfo, setShowNewFolderInfo] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -124,7 +126,8 @@ function Users({ isLoggedIn }) {
         const handleClick = (e) => {
             if (dropdownRef.current && !dropdownRef.current.contains(e.target) &&
                 !folderTriggerRef.current?.contains(e.target) &&
-                !newFolderToastRef.current?.contains(e.target)) {
+                !newFolderToastRef.current?.contains(e.target) &&
+                !newFolderInfoRef.current?.contains(e.target)) {
                 setShowFolderDropdown(false);
             }
         };
@@ -314,6 +317,10 @@ function Users({ isLoggedIn }) {
     };
 
     const startNewFolder = () => {
+        if (mode === 'folder' && !activeFolder) {
+            setShowNewFolderInfo(true);
+            return;
+        }
         if (unsaved) {
             setUnsavedAction({ type: 'new' });
             setShowUnsavedPrompt(true);
@@ -346,6 +353,10 @@ function Users({ isLoggedIn }) {
     const handleNewFolderDismissAll = () => {
         setShowNewFolderConfirm(false);
         setShowFolderDropdown(false);
+    };
+
+    const handleNewFolderInfoDismiss = () => {
+        setShowNewFolderInfo(false);
     };
 
     const switchToApiMode = () => {
@@ -791,6 +802,23 @@ function Users({ isLoggedIn }) {
                             <div className="new-folder-toast-actions">
                                 <button className="new-folder-toast-cancel" onClick={handleNewFolderCancel}>Cancel</button>
                                 <button className="new-folder-toast-confirm" onClick={handleNewFolderConfirm}>Yes, New Folder</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showNewFolderInfo && (
+                <div className="new-folder-toast-wrap" ref={newFolderInfoRef} onClick={handleNewFolderInfoDismiss}>
+                    <div className="new-folder-toast" role="status" aria-label="Already on new folder" onClick={e => e.stopPropagation()}>
+                        <div className="new-folder-toast-icon new-folder-toast-icon-info">
+                            <i className="pi pi-info-circle"></i>
+                        </div>
+                        <div className="new-folder-toast-body">
+                            <strong>Already on a new folder</strong>
+                            <p>You are already on a new folder. There's nothing new to create — just add your data and save it when you're ready.</p>
+                            <div className="new-folder-toast-actions">
+                                <button className="new-folder-toast-confirm" onClick={handleNewFolderInfoDismiss}>OK</button>
                             </div>
                         </div>
                     </div>

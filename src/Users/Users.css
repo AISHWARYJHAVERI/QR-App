@@ -1474,6 +1474,12 @@
   font-size: 15px;
 }
 
+.new-folder-toast-icon-info {
+  background: rgba(99,102,241,0.14);
+  border-color: rgba(99,102,241,0.35);
+  color: #818cf8;
+}
+
 .new-folder-toast-body {
   flex: 1;
   min-width: 0;
