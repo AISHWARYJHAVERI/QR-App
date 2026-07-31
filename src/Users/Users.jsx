@@ -82,11 +82,13 @@ function Users({ isLoggedIn }) {
     }, [mode, users, activeFolder]);
 
     const [showSaveDialog, setShowSaveDialog] = useState(false);
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
     const [saveFolderName, setSaveFolderName] = useState('');
     const [saving, setSaving] = useState(false);
 
     const [unsavedAction, setUnsavedAction] = useState(null);
     const [showUnsavedPrompt, setShowUnsavedPrompt] = useState(false);
+    const [pendingNavigation, setPendingNavigation] = useState(null);
 
     useEffect(() => {
         fetchUsers();
@@ -182,16 +184,21 @@ function Users({ isLoggedIn }) {
             const saved = localStorage.getItem('committee_active_session');
             if (saved) {
                 const parsed = JSON.parse(saved);
-                if (parsed.mode === 'folder' && parsed.activeFolderId) {
-                    axios.get(`/committeesessions/${parsed.activeFolderId}`).then(res => {
-                        const folder = res.data;
-                        if (folder) {
-                            setActiveFolder(folder);
-                            setMode('folder');
-                        }
-                    }).catch(() => {
-                        localStorage.removeItem('committee_active_session');
-                    });
+                if (parsed.mode === 'folder') {
+                    if (parsed.activeFolderId) {
+                        axios.get(`/committeesessions/${parsed.activeFolderId}`).then(res => {
+                            const folder = res.data;
+                            if (folder) {
+                                setActiveFolder(folder);
+                                setMode('folder');
+                            }
+                        }).catch(() => {
+                            localStorage.removeItem('committee_active_session');
+                        });
+                    } else {
+                        setActiveFolder(null);
+                        setMode('folder');
+                    }
                 }
             }
         } catch { }
@@ -317,14 +324,24 @@ function Users({ isLoggedIn }) {
 
     const handleUnsavedSave = async () => {
         setShowUnsavedPrompt(false);
-        await saveCurrentFolderAction();
-        executeUnsavedAction();
+        const action = unsavedAction;
+        setUnsavedAction(null);
+        if (!activeFolder?.id) {
+            setPendingNavigation(action);
+            setSaveFolderName('');
+            setShowSaveDialog(true);
+            return;
+        }
+        await saveCurrentFolderAction(activeFolder.name);
+        navigateAfter(action);
     };
 
     const handleUnsavedDiscard = () => {
         setShowUnsavedPrompt(false);
         setUnsaved(false);
-        executeUnsavedAction();
+        const action = unsavedAction;
+        setUnsavedAction(null);
+        navigateAfter(action);
     };
 
     const handleUnsavedCancel = () => {
@@ -332,12 +349,14 @@ function Users({ isLoggedIn }) {
         setUnsavedAction(null);
     };
 
-    const executeUnsavedAction = () => {
-        const action = unsavedAction;
-        setUnsavedAction(null);
+    const navigateAfter = (action) => {
         if (!action) return;
         if (action.type === 'select') {
-            selectFolder(action.folder);
+            setActiveFolder(action.folder);
+            setMode('folder');
+            setUnsaved(false);
+            persistSession('folder', action.folder);
+            setShowFolderDropdown(false);
         } else if (action.type === 'new') {
             setActiveFolder(null);
             setMode('folder');
@@ -352,13 +371,22 @@ function Users({ isLoggedIn }) {
         }
     };
 
-    const openSaveDialog = () => {
+    const handleSaveClick = () => {
+        setShowSaveConfirm(true);
+    };
+
+    const handleSaveConfirmYes = () => {
+        setShowSaveConfirm(false);
         setSaveFolderName(activeFolder?.name || '');
         setShowSaveDialog(true);
     };
 
-    const saveCurrentFolderAction = async () => {
-        const name = saveFolderName.trim() || activeFolder?.name;
+    const handleSaveConfirmNo = () => {
+        setShowSaveConfirm(false);
+    };
+
+    const saveCurrentFolderAction = async (overrideName) => {
+        const name = (overrideName ?? saveFolderName).trim() || activeFolder?.name;
         const entries = activeFolder?.entries || [];
         if (!name) return;
         setSaving(true);
@@ -375,10 +403,14 @@ function Users({ isLoggedIn }) {
                 showSuccess('Folder "' + name + '" saved successfully');
             }
             setUnsaved(false);
-            setMode('api');
             setActiveFolder(null);
-            persistSession('api', null);
+            persistSession('folder', null);
             await loadFolders();
+            if (pendingNavigation) {
+                const action = pendingNavigation;
+                setPendingNavigation(null);
+                navigateAfter(action);
+            }
         } catch {
             showError('Error saving folder');
         } finally {
@@ -390,6 +422,11 @@ function Users({ isLoggedIn }) {
     const confirmSaveFolder = () => {
         if (!saveFolderName.trim()) return;
         saveCurrentFolderAction();
+    };
+
+    const handleSaveDialogCancel = () => {
+        setPendingNavigation(null);
+        setShowSaveDialog(false);
     };
 
     const handleFolderDelete = async (e, folder) => {
@@ -507,6 +544,13 @@ function Users({ isLoggedIn }) {
                                     {unsaved && <span className="mode-banner-unsaved">⚠ Unsaved</span>}
                                 </div>
                                 <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                    <button
+                                        className="mode-banner-save-btn"
+                                        onClick={handleSaveClick}
+                                        disabled={displayData.length === 0 && !unsaved}
+                                    >
+                                        <i className="pi pi-save"></i> Save
+                                    </button>
                                     <button className="back-to-db-btn" onClick={switchToApiMode}>
                                         <i className="pi pi-database"></i> Database
                                     </button>
@@ -534,21 +578,25 @@ function Users({ isLoggedIn }) {
                                             </div>
                                         ) : (
                                             <div className="paper-cards-row">
-                                                {folders.map((f) => (
+                                                {folders.map((f, index) => (
                                                     <div
                                                         key={f.id}
                                                         className={`paper-card${activeFolder?.id === f.id ? ' paper-card-active' : ''}`}
                                                         onClick={() => selectFolder(f)}
                                                     >
-                                                        <span className="paper-card-name">{f.name}</span>
-                                                        <span className="paper-card-count">{f.entries?.length || 0} entr{(f.entries?.length || 0) === 1 ? 'y' : 'ies'}</span>
-                                                        <span className="paper-card-delete" onClick={(e) => handleFolderDelete(e, f)}>
-                                                            <i className="pi pi-times" style={{ fontSize: 8 }}></i>
-                                                        </span>
+                                                        <div className="paper-card-inner" style={{ animationDelay: `${0.08 + index * 0.08}s` }}>
+                                                            <span className="paper-card-name">{f.name}</span>
+                                                            <span className="paper-card-count">{f.entries?.length || 0} entr{(f.entries?.length || 0) === 1 ? 'y' : 'ies'}</span>
+                                                            <span className="paper-card-delete" onClick={(e) => handleFolderDelete(e, f)}>
+                                                                <i className="pi pi-times" style={{ fontSize: 8 }}></i>
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 ))}
                                                 <div className="paper-card paper-card-new" onClick={startNewFolder} title="New Folder">
-                                                    +
+                                                    <div className="paper-card-inner" style={{ animationDelay: `${0.08 + folders.length * 0.08}s` }}>
+                                                        +
+                                                    </div>
                                                 </div>
                                             </div>
                                         )}
@@ -556,8 +604,8 @@ function Users({ isLoggedIn }) {
                                             <div></div>
                                             <button
                                                 className="folder-save-btn"
-                                                onClick={openSaveDialog}
-                                                disabled={mode !== 'folder' || displayData.length === 0}
+                                                onClick={handleSaveClick}
+                                                disabled={mode !== 'folder' || (displayData.length === 0 && !unsaved)}
                                             >
                                                 <i className="pi pi-save"></i> Save as Folder
                                             </button>
@@ -609,10 +657,9 @@ function Users({ isLoggedIn }) {
                 onHide={(action) => {
                     setPrintDialogVisible(false);
                     if (action === 'all' && mode === 'folder') {
-                        setMode('api');
                         setActiveFolder(null);
                         setUnsaved(false);
-                        persistSession('api', null);
+                        persistSession('folder', null);
                     }
                     if (action === true || action === 'selected' || action === 'all') {
                         setShowSelection(false);
@@ -626,8 +673,24 @@ function Users({ isLoggedIn }) {
                 allItems={mode === 'folder' ? displayData : undefined}
             />
 
+            {showSaveConfirm && (
+                <div className="save-confirm-overlay" onClick={handleSaveConfirmNo}>
+                    <div className="save-confirm-dialog" onClick={e => e.stopPropagation()}>
+                        <div className="save-confirm-icon">
+                            <i className="pi pi-save"></i>
+                        </div>
+                        <h4>Save as a Folder?</h4>
+                        <p>Save the current entries as a committee folder?</p>
+                        <div className="save-confirm-actions">
+                            <button className="save-confirm-no" onClick={handleSaveConfirmNo}>No</button>
+                            <button className="save-confirm-yes" onClick={handleSaveConfirmYes}>Yes</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {showSaveDialog && (
-                <div className="folder-save-dialog-overlay" onClick={() => setShowSaveDialog(false)}>
+                <div className="folder-save-dialog-overlay" onClick={handleSaveDialogCancel}>
                     <div className="folder-save-dialog" onClick={e => e.stopPropagation()}>
                         <h4>{activeFolder?.id ? 'Update Folder' : 'Save as New Folder'}</h4>
                         <input
@@ -639,7 +702,7 @@ function Users({ isLoggedIn }) {
                             autoFocus
                         />
                         <div className="folder-save-dialog-actions">
-                            <button className="folder-save-cancel" onClick={() => setShowSaveDialog(false)}>Cancel</button>
+                            <button className="folder-save-cancel" onClick={handleSaveDialogCancel}>Cancel</button>
                             <button className="folder-save-confirm" onClick={confirmSaveFolder} disabled={saving || !saveFolderName.trim()}>
                                 {saving ? 'Saving...' : activeFolder?.id ? 'Update' : 'Save'}
                             </button>

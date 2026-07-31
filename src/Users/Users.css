@@ -932,6 +932,18 @@
   max-width: 560px;
   box-shadow: 0 25px 80px rgba(0,0,0,0.6);
   backdrop-filter: blur(24px);
+  animation: overlayPopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes overlayPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .folder-dropdown-header {
@@ -1099,6 +1111,33 @@
   box-shadow: 0 0 0 2px rgba(16,185,129,0.3), 1px 2px 6px rgba(0,0,0,0.08) !important;
 }
 
+/* ─── Paper Card Sequential Entrance ─── */
+@keyframes paperSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(34px) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.paper-card-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  animation: paperSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.paper-card-new .paper-card-inner {
+  animation-delay: 0.2s;
+}
+
 /* ─── Dropdown Footer ─── */
 .folder-dropdown-footer {
   display: flex;
@@ -1207,6 +1246,34 @@
 .back-to-db-btn:hover {
   background: rgba(255,255,255,0.1);
   color: #f8fafc;
+}
+
+.mode-banner-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1px solid rgba(16,185,129,0.25);
+  background: rgba(16,185,129,0.15);
+  color: #34d399;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.mode-banner-save-btn:hover {
+  background: rgba(16,185,129,0.25);
+  border-color: rgba(16,185,129,0.4);
+  transform: scale(1.04);
+}
+
+.mode-banner-save-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
 }
 
 /* ─── Save Dialog ─── */
@@ -1371,6 +1438,115 @@
 .unsaved-cancel:hover {
   background: rgba(255,255,255,0.1) !important;
   color: #f8fafc !important;
+}
+
+/* ─── Save as Folder Confirm ─── */
+@keyframes confirmFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes confirmPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.save-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: confirmFadeIn 0.2s ease;
+}
+
+.save-confirm-dialog {
+  background: rgba(15,23,42,0.98);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 18px;
+  padding: 30px 32px;
+  width: 380px;
+  max-width: 90vw;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+  text-align: center;
+  animation: confirmPopIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.save-confirm-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: rgba(16,185,129,0.12);
+  border: 1px solid rgba(16,185,129,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.save-confirm-icon i {
+  font-size: 1.5rem;
+  color: #34d399;
+}
+
+.save-confirm-dialog h4 {
+  margin: 0 0 8px;
+  color: #f8fafc;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.save-confirm-dialog p {
+  margin: 0 0 22px;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.save-confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.save-confirm-actions button {
+  padding: 10px 30px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.save-confirm-no {
+  background: rgba(255,255,255,0.05) !important;
+  color: #94a3b8 !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+.save-confirm-no:hover {
+  background: rgba(255,255,255,0.1) !important;
+  color: #f8fafc !important;
+}
+
+.save-confirm-yes {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 15px rgba(16,185,129,0.3);
+}
+
+.save-confirm-yes:hover {
+  transform: scale(1.04);
+  box-shadow: 0 6px 20px rgba(16,185,129,0.4);
 }
 
 /* ─── Responsive ─── */
