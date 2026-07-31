@@ -66,6 +66,7 @@ function Users({ isLoggedIn }) {
     const showSelectionRef = useRef(showSelection);
     const dropdownRef = useRef(null);
     const folderTriggerRef = useRef(null);
+    const newFolderToastRef = useRef(null);
     const [ddStyle, setDdStyle] = useState({});
 
     useEffect(() => { showSelectionRef.current = showSelection; }, [showSelection]);
@@ -122,7 +123,8 @@ function Users({ isLoggedIn }) {
         if (!showFolderDropdown) return;
         const handleClick = (e) => {
             if (dropdownRef.current && !dropdownRef.current.contains(e.target) &&
-                !folderTriggerRef.current?.contains(e.target)) {
+                !folderTriggerRef.current?.contains(e.target) &&
+                !newFolderToastRef.current?.contains(e.target)) {
                 setShowFolderDropdown(false);
             }
         };
@@ -339,6 +341,11 @@ function Users({ isLoggedIn }) {
 
     const handleNewFolderCancel = () => {
         setShowNewFolderConfirm(false);
+    };
+
+    const handleNewFolderDismissAll = () => {
+        setShowNewFolderConfirm(false);
+        setShowFolderDropdown(false);
     };
 
     const switchToApiMode = () => {
@@ -773,8 +780,8 @@ function Users({ isLoggedIn }) {
             )}
 
             {showNewFolderConfirm && (
-                <div className="new-folder-toast-wrap">
-                    <div className="new-folder-toast" role="alertdialog" aria-label="Confirm new folder">
+                <div className="new-folder-toast-wrap" ref={newFolderToastRef} onClick={handleNewFolderDismissAll}>
+                    <div className="new-folder-toast" role="alertdialog" aria-label="Confirm new folder" onClick={e => e.stopPropagation()}>
                         <div className="new-folder-toast-icon">
                             <i className="pi pi-exclamation-triangle"></i>
                         </div>
