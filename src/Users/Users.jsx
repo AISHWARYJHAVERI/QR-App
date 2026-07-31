@@ -147,7 +147,9 @@ function Users({ isLoggedIn }) {
             let left = t.left + t.width / 2 - dw / 2;
             if (left < 16) left = 16;
             if (left + dw > window.innerWidth - 16) left = window.innerWidth - dw - 16;
-            setDdStyle({ position: 'fixed', top: top + 'px', left: left + 'px' });
+            const originX = t.left + t.width / 2 - left;
+            const originY = t.top + t.height / 2 - top;
+            setDdStyle({ position: 'fixed', top: top + 'px', left: left + 'px', '--origin-x': `${originX}px`, '--origin-y': `${originY}px` });
         });
     }, [showFolderDropdown]);
 
@@ -509,7 +511,7 @@ function Users({ isLoggedIn }) {
                     <i className="pi pi-save"></i>
                 </button>
                 <div className="folder-trigger-wrapper" ref={folderTriggerRef} onClick={() => setShowFolderDropdown(prev => !prev)}>
-                    <Folder color="#6366f1" size={0.72} open={showFolderDropdown} items={[<i key="1" className="pi pi-users" style={{ fontSize: 11, color: '#333' }}></i>]} />
+                    <Folder color="#6366f1" size={0.72} open={showFolderDropdown} hidePapers items={[]} />
                     {folders.length > 0 && (
                         <span className="folder-trigger-badge">{folders.length}</span>
                     )}

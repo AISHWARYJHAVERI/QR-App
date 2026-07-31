@@ -19,7 +19,7 @@ const darkenColor = (hex, percent) => {
   return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
 };
 
-const Folder = ({ color = '#5227FF', size = 1, items = [], className = '', open: controlledOpen }) => {
+const Folder = ({ color = '#5227FF', size = 1, items = [], className = '', open: controlledOpen, hidePapers = false }) => {
   const maxItems = 3;
   const papers = items.slice(0, maxItems);
   while (papers.length < maxItems) {
@@ -66,7 +66,7 @@ const Folder = ({ color = '#5227FF', size = 1, items = [], className = '', open:
     '--paper-3': paper3
   };
 
-  const folderClassName = `folder ${isOpen ? 'open' : ''}`.trim();
+  const folderClassName = `folder ${isOpen ? 'open' : ''}${hidePapers ? ' papers-hidden' : ''}`.trim();
   const scaleStyle = { transform: `scale(${size})` };
 
   return (
