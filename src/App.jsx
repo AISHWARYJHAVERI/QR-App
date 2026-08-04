@@ -244,17 +244,17 @@ function App() {
 
   return (
     <div className="App" style={{ position: 'relative' }}>
-      <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 1, pointerEvents: 'none', overflow: 'hidden' }}>
         <DotField
-          dotRadius={1.2}
-          dotSpacing={16}
+          dotRadius={1.8}
+          dotSpacing={18}
           bulgeStrength={60}
-          glowRadius={150}
+          glowRadius={160}
           sparkle={true}
           waveAmplitude={0}
-          gradientFrom="rgba(99, 102, 241, 0.15)"
-          gradientTo="rgba(168, 85, 247, 0.1)"
-          glowColor="rgba(99, 102, 241, 0.05)"
+          gradientFrom="rgba(99, 102, 241, 0.5)"
+          gradientTo="rgba(168, 85, 247, 0.45)"
+          glowColor="rgba(99, 102, 241, 0.15)"
         />
       </div>
       <Toast ref={appToast} />
