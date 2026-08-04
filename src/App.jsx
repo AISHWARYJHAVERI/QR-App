@@ -10,7 +10,7 @@ import Solutions from './pages/Solutions';
 import Developer from './pages/Developer';
 import About from './pages/About';
 import Contact from './pages/Contact';
-import DotField from './components/DotField';
+import Galaxy from './components/Galaxy';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -245,16 +245,18 @@ function App() {
   return (
     <div className="App" style={{ position: 'relative' }}>
       <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 5, pointerEvents: 'none', overflow: 'hidden' }}>
-        <DotField
-          dotRadius={1.8}
-          dotSpacing={18}
-          bulgeStrength={60}
-          glowRadius={160}
-          sparkle={true}
-          waveAmplitude={0}
-          gradientFrom="rgba(99, 102, 241, 0.5)"
-          gradientTo="rgba(168, 85, 247, 0.45)"
-          glowColor="rgba(99, 102, 241, 0.15)"
+        <Galaxy 
+          mouseRepulsion={true}
+          mouseInteraction={true}
+          density={1.6}
+          glowIntensity={0.6}
+          saturation={0.7}
+          hueShift={250}
+          starSpeed={0.3}
+          repulsionStrength={2.5}
+          twinkleIntensity={0.5}
+          rotationSpeed={0.03}
+          transparent={true}
         />
       </div>
       <Toast ref={appToast} />
