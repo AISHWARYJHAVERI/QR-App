@@ -10,7 +10,7 @@ import Solutions from './pages/Solutions';
 import Developer from './pages/Developer';
 import About from './pages/About';
 import Contact from './pages/Contact';
-import SideRays from './components/SideRays';
+import DotField from './components/DotField';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -244,58 +244,17 @@ function App() {
 
   return (
     <div className="App" style={{ position: 'relative' }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '1000px', zIndex: 1, pointerEvents: 'none', opacity: 0.5, overflow: 'hidden' }}>
-        <SideRays
-          speed={2.0}
-          rayColor1="#EAB308"
-          rayColor2="#96c8ff"
-          intensity={1.2}
-          spread={2.0}
-          origin="top-right"
-          tilt={0}
-          saturation={1.5}
-          blend={0.75}
-          falloff={1.6}
-          opacity={0.8}
-        />
-        <SideRays
-          speed={2.0}
-          rayColor1="#96c8ff"
-          rayColor2="#EAB308"
-          intensity={1.2}
-          spread={2.0}
-          origin="top-left"
-          tilt={0}
-          saturation={1.5}
-          blend={0.75}
-          falloff={1.6}
-          opacity={0.8}
-        />
-        <SideRays
-          speed={2.0}
-          rayColor1="#EAB308"
-          rayColor2="#96c8ff"
-          intensity={1.2}
-          spread={2.0}
-          origin="bottom-right"
-          tilt={0}
-          saturation={1.5}
-          blend={0.75}
-          falloff={1.6}
-          opacity={0.8}
-        />
-        <SideRays
-          speed={2.0}
-          rayColor1="#96c8ff"
-          rayColor2="#EAB308"
-          intensity={1.2}
-          spread={2.0}
-          origin="bottom-left"
-          tilt={0}
-          saturation={1.5}
-          blend={0.75}
-          falloff={1.6}
-          opacity={0.8}
+      <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+        <DotField
+          dotRadius={1.2}
+          dotSpacing={16}
+          bulgeStrength={60}
+          glowRadius={150}
+          sparkle={true}
+          waveAmplitude={0}
+          gradientFrom="rgba(99, 102, 241, 0.15)"
+          gradientTo="rgba(168, 85, 247, 0.1)"
+          glowColor="rgba(99, 102, 241, 0.05)"
         />
       </div>
       <Toast ref={appToast} />
