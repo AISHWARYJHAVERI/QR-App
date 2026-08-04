@@ -244,7 +244,7 @@ function App() {
 
   return (
     <div className="App" style={{ position: 'relative' }}>
-      <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 1, pointerEvents: 'none', overflow: 'hidden' }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 5, pointerEvents: 'none', overflow: 'hidden' }}>
         <DotField
           dotRadius={1.8}
           dotSpacing={18}
