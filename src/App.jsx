@@ -244,18 +244,19 @@ function App() {
 
   return (
     <div className="App" style={{ position: 'relative' }}>
-      <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 5, pointerEvents: 'none', overflow: 'hidden' }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
         <Galaxy 
           mouseRepulsion={true}
           mouseInteraction={true}
-          density={1.6}
-          glowIntensity={0.6}
-          saturation={0.7}
+          density={2.2}
+          glowIntensity={1.0}
+          saturation={0.85}
           hueShift={250}
-          starSpeed={0.3}
+          starSpeed={0.35}
           repulsionStrength={2.5}
-          twinkleIntensity={0.5}
-          rotationSpeed={0.03}
+          twinkleIntensity={0.75}
+          rotationSpeed={0.05}
+          speed={1.2}
           transparent={true}
         />
       </div>
