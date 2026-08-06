@@ -1177,8 +1177,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  gap: 0.4rem;
+  padding: 0.55rem 1.2rem;
   border-radius: 12px;
   border: 1px solid rgba(16,185,129,0.25);
   background: rgba(16,185,129,0.1);
@@ -1186,6 +1186,14 @@
   cursor: pointer;
   transition: all 0.2s;
   flex-shrink: 0;
+  white-space: nowrap;
+  font-family: 'Chillax', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.db-save-label {
+  display: inline-block;
 }
 
 .db-save-btn i {
@@ -1814,9 +1822,11 @@
   .header-actions > .folder-trigger-wrapper {
     order: 1;
     grid-column: 1 / -1;
-    width: 100%;
-    min-height: 52px;
-    justify-content: center;
+    justify-self: start;
+    width: fit-content;
+    min-height: 44px;
+    justify-content: flex-start;
+    padding: 4px 1rem;
     background: rgba(15, 23, 42, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
@@ -1825,6 +1835,7 @@
   .header-actions > .db-save-btn {
     order: 2;
     width: 100% !important;
+    min-width: 0 !important;
     height: 44px;
     justify-content: center;
   }
@@ -1833,6 +1844,7 @@
     order: 3;
     width: 100% !important;
     min-width: 0 !important;
+    height: 44px !important;
     justify-content: center;
   }
 
@@ -1847,7 +1859,12 @@
   .header-actions > .import-btn {
     width: 100% !important;
     min-width: 0 !important;
+    height: 44px;
     justify-content: center;
+    border-radius: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .header-actions > .p-input-icon-left {
@@ -1860,6 +1877,21 @@
   .header-actions > .p-input-icon-left .p-inputtext {
     width: 100% !important;
     max-width: 100% !important;
+  }
+}
+
+@media screen and (max-width: 420px) {
+  .header-actions > .import-btn,
+  .header-actions > .db-save-btn {
+    font-size: 0.78rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .header-actions > .p-button {
+    font-size: 0.85rem !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
   }
 }
 

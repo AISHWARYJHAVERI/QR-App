@@ -115,6 +115,15 @@ function App() {
   }, [showLogin]);
 
   useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
     const keepAlive = setInterval(() => {
       axios.get('/').catch(() => {});
     }, 4 * 60 * 1000);

@@ -558,7 +558,7 @@ function Users({ isLoggedIn }) {
                     title={mode === 'folder' ? "Save current folder" : "Save database as folder"}
                     disabled={mode === 'folder' ? (displayData.length === 0 && !unsaved) : (users.length === 0)}
                 >
-                    <i className="pi pi-save"></i>
+                    <i className="pi pi-save"></i><span className="db-save-label">Save</span>
                 </button>
                 <div className="folder-trigger-wrapper" ref={folderTriggerRef} onClick={() => setShowFolderDropdown(prev => !prev)}>
                     <Folder color="#6366f1" size={0.72} open={showFolderDropdown} hidePapers items={[]} />
