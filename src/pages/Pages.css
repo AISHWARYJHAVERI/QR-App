@@ -542,6 +542,31 @@
   .contact-form-wrapper {
     padding: 1.25rem;
   }
+  .glass-card {
+    padding: 1.25rem;
+    border-radius: 1.25rem;
+  }
+  .feature-item,
+  .about-card {
+    padding: 1.25rem;
+    border-radius: 1rem;
+  }
+  .step-item {
+    padding: 1rem;
+  }
+  .step-number {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 0.9rem;
+  }
+  .page-header h2 {
+    font-size: 1.8rem;
+  }
+  .dev-avatar {
+    width: 110px;
+    height: 110px;
+    font-size: 2.3rem;
+  }
 }
 
 @media (max-width: 375px) {

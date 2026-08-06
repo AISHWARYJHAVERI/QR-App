@@ -763,6 +763,7 @@
     justify-content: center;
     gap: clamp(0.25rem, 1vw, 0.75rem);
     margin: 0 auto 2.5rem;
+    flex-wrap: nowrap;
 }
 
 .tab-btn i {
@@ -1771,5 +1772,142 @@
 
   .paper-card-new-label {
     font-size: 0.65rem;
+  }
+}
+
+/* ─── Responsive: tabs → single horizontally scrollable row ─── */
+@media screen and (max-width: 768px) {
+  .tabs-container {
+    justify-content: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    flex-wrap: nowrap;
+    margin-bottom: 1.5rem;
+  }
+
+  .tabs-container::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .tab-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+}
+
+/* ─── Responsive: header toolbar grid (search full-width, buttons 2x2) ─── */
+@media screen and (max-width: 767px) {
+  .header-actions {
+    flex-direction: row;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .header-actions .p-input-icon-left {
+    grid-column: 1 / -1;
+    width: 100% !important;
+  }
+
+  .header-actions .p-input-icon-left .p-inputtext {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .header-actions .btn-action-add,
+  .header-actions .p-button,
+  .header-actions .import-btn,
+  .header-actions .print-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    justify-content: center;
+  }
+
+  .header-actions .db-save-btn {
+    justify-self: stretch;
+  }
+
+  .header-actions .folder-trigger-wrapper {
+    justify-self: stretch;
+    justify-content: center;
+  }
+}
+
+/* ─── Responsive: Add User card buttons full-width + row gutter ─── */
+@media screen and (max-width: 576px) {
+  .add-user-card .d-flex .p-button {
+    width: 100% !important;
+  }
+
+  .users-card .row,
+  .add-user-card .row {
+    --bs-gutter-x: 1rem;
+  }
+}
+
+/* ─── Responsive: paginator compact ─── */
+@media screen and (max-width: 768px) {
+  .p-paginator .p-paginator-first,
+  .p-paginator .p-paginator-last {
+    display: none !important;
+  }
+
+  .p-paginator {
+    flex-wrap: wrap;
+    gap: 0.2rem;
+    padding-top: 1rem !important;
+  }
+
+  .p-paginator .p-paginator-pages .p-paginator-page {
+    min-width: 2rem !important;
+    height: 2rem !important;
+    margin: 0 0.15rem !important;
+    font-size: 0.85rem !important;
+  }
+
+  .p-paginator .p-paginator-prev,
+  .p-paginator .p-paginator-next {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+
+  .p-paginator .p-paginator-current {
+    margin-left: 0 !important;
+    font-size: 0.78rem !important;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ─── Responsive: mode banner ─── */
+@media screen and (max-width: 576px) {
+  .mode-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .mode-banner-left {
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .mode-banner > div:last-child,
+  .mode-banner-right {
+    width: 100%;
+    justify-content: flex-start !important;
+  }
+
+  .back-to-db-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
