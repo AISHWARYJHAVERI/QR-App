@@ -271,7 +271,7 @@ function App() {
       </div>
       <Toast ref={appToast} />
       
-      <header className="hero-nav" style={{ position: 'relative', zIndex: 1 }}>
+      <header className="hero-nav" style={{ position: 'relative', zIndex: 100 }}>
         <Link className="brand" to="/">AJ</Link>
         
         <nav className="capsule-nav" ref={navRef}>
