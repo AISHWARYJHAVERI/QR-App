@@ -1800,43 +1800,66 @@
   }
 }
 
-/* ─── Responsive: header toolbar grid (search full-width, buttons 2x2) ─── */
+/* ─── Responsive: header toolbar grid (folder section / Save+Print / Template+Import / Search) ─── */
 @media screen and (max-width: 767px) {
   .header-actions {
-    flex-direction: row;
     display: grid !important;
     grid-template-columns: 1fr 1fr;
     gap: 0.6rem;
     width: 100%;
     align-items: stretch;
+    flex-direction: row;
   }
 
-  .header-actions .p-input-icon-left {
+  .header-actions > .folder-trigger-wrapper {
+    order: 1;
     grid-column: 1 / -1;
-    width: 100% !important;
+    width: 100%;
+    min-height: 52px;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
   }
 
-  .header-actions .p-input-icon-left .p-inputtext {
+  .header-actions > .db-save-btn {
+    order: 2;
     width: 100% !important;
-    max-width: 100% !important;
+    height: 44px;
+    justify-content: center;
   }
 
-  .header-actions .btn-action-add,
-  .header-actions .p-button,
-  .header-actions .import-btn,
-  .header-actions .print-btn {
+  .header-actions > .p-button {
+    order: 3;
     width: 100% !important;
     min-width: 0 !important;
     justify-content: center;
   }
 
-  .header-actions .db-save-btn {
-    justify-self: stretch;
+  .header-actions > .import-btn.template-btn {
+    order: 4;
   }
 
-  .header-actions .folder-trigger-wrapper {
-    justify-self: stretch;
+  .header-actions > .import-btn:not(.template-btn) {
+    order: 5;
+  }
+
+  .header-actions > .import-btn {
+    width: 100% !important;
+    min-width: 0 !important;
     justify-content: center;
+  }
+
+  .header-actions > .p-input-icon-left {
+    order: 6;
+    grid-column: 1 / -1;
+    width: 100% !important;
+    margin-top: 0.15rem;
+  }
+
+  .header-actions > .p-input-icon-left .p-inputtext {
+    width: 100% !important;
+    max-width: 100% !important;
   }
 }
 
