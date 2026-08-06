@@ -1,23 +1,14 @@
 import { useState } from 'react';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
-import { printQRCard, buildQRData, buildQRImageUrl } from '../utils/printQR';
+import { printQRCards } from '../utils/printQR';
 import axios from 'axios';
 
 const PrintQROptions = ({ visible, onHide, currentItem, selectedItems, type, fetchAllUrl, allItems, committeeItems, committeeDisabled }) => {
   const [printing, setPrinting] = useState(false);
 
   const printItems = async (items) => {
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      const qrData = buildQRData(item, type);
-      const qrImageUrl = buildQRImageUrl(qrData);
-      await printQRCard({
-        qrImageUrl, name: item.name, phone: item.phone,
-        city: item.city, role: item.role, type,
-        index: i + 1, total: items.length
-      });
-    }
+    await printQRCards({ items, type });
   };
 
   const handlePrintSelected = async () => {

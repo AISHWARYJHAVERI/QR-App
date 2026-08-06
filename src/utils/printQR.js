@@ -1,32 +1,31 @@
-export const printQRCard = ({ qrImageUrl, name, phone, city, role, type, index, total }) => {
+export const printQRCards = ({ items, type }) => {
   return new Promise((resolve) => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) { resolve(); return; }
 
-    let infoHtml = '';
-    infoHtml += `<div class="info-row"><span class="info-label">Name</span><span class="info-value">${name}</span></div>`;
-    infoHtml += `<div class="info-row"><span class="info-label">Mobile</span><span class="info-value">${phone}</span></div>`;
-    if (city) infoHtml += `<div class="info-row"><span class="info-label">City</span><span class="info-value">${city}</span></div>`;
-    if (role) infoHtml += `<div class="info-row"><span class="info-label">Role</span><span class="info-value">${role}</span></div>`;
-
-    const counterHtml = total ? `<div class="counter">${index} / ${total}</div>` : '';
+    const cardHtml = items.map((item, index) => buildCardHtml({
+      qrImageUrl: buildQRImageUrl(buildQRData(item, type)),
+      name: item.name, phone: item.phone,
+      city: item.city, role: item.role, type,
+      index: index + 1, total: items.length
+    })).join('\n<div class="page-break"></div>');
 
     const html = `<!DOCTYPE html>
 <html>
 <head>
-  <title>Print QR - ${name}</title>
+  <title>Print QR</title>
   <style>
     @page { size: 125mm 88mm; margin: 0; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      width: 125mm; height: 88mm;
-      display: flex; align-items: center; justify-content: center;
+      width: 125mm;
       font-family: Georgia, 'Times New Roman', serif;
       background: #faf5eb;
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
+    .page-break { page-break-after: always; break-after: page; }
     .card {
-      width: 119mm; height: 82mm;
+      width: 125mm; height: 88mm;
       background: #faf5eb;
       border: 2.5px solid #c8a96e;
       border-radius: 4px;
@@ -81,23 +80,7 @@ export const printQRCard = ({ qrImageUrl, name, phone, city, role, type, index, 
   </style>
 </head>
 <body>
-  <div class="card">
-    ${counterHtml}
-    <div class="main-header">
-      Shri Patan Visa Shrimali<br/>Soni Gnyati Patan
-    </div>
-    <div class="divider"></div>
-    <div class="sub-header">
-      Shri Dashavtar Mahavishnu Yagna
-    </div>
-    <div class="info-section">${infoHtml}</div>
-    <div class="qr-wrap"><img src="${qrImageUrl}" alt="QR"/></div>
-    <div class="footer-divider"></div>
-    <div class="footer-text">
-      <div class="name">Aishwary Jhaveri</div>
-      <div>www.qr-app.vercel.app</div>
-    </div>
-  </div>
+  ${cardHtml}
   <script>
     window.onload = function() {
       setTimeout(function() { window.print(); }, 300);
@@ -119,6 +102,35 @@ export const printQRCard = ({ qrImageUrl, name, phone, city, role, type, index, 
       }
     }, 500);
   });
+};
+
+const buildCardHtml = ({ qrImageUrl, name, phone, city, role, index, total }) => {
+  let infoHtml = '';
+  infoHtml += `<div class="info-row"><span class="info-label">Name</span><span class="info-value">${name}</span></div>`;
+  infoHtml += `<div class="info-row"><span class="info-label">Mobile</span><span class="info-value">${phone}</span></div>`;
+  if (city) infoHtml += `<div class="info-row"><span class="info-label">City</span><span class="info-value">${city}</span></div>`;
+  if (role) infoHtml += `<div class="info-row"><span class="info-label">Role</span><span class="info-value">${role}</span></div>`;
+
+  const counterHtml = total ? `<div class="counter">${index} / ${total}</div>` : '';
+
+  return `
+  <div class="card">
+    ${counterHtml}
+    <div class="main-header">
+      Shri Patan Visa Shrimali<br/>Soni Gnyati Patan
+    </div>
+    <div class="divider"></div>
+    <div class="sub-header">
+      Shri Dashavtar Mahavishnu Yagna
+    </div>
+    <div class="info-section">${infoHtml}</div>
+    <div class="qr-wrap"><img src="${qrImageUrl}" alt="QR"/></div>
+    <div class="footer-divider"></div>
+    <div class="footer-text">
+      <div class="name">Aishwary Jhaveri</div>
+      <div>www.qr-app.vercel.app</div>
+    </div>
+  </div>`;
 };
 
 export const buildQRData = (item, type) => {
