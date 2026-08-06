@@ -1054,6 +1054,36 @@
   opacity: 1;
 }
 
+.paper-card-print {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #14b8a6;
+  color: #fff;
+  border: 2px solid rgba(15, 23, 42, 0.95);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+  line-height: 1;
+  padding: 0;
+  z-index: 6;
+}
+
+.paper-card:hover .paper-card-print {
+  opacity: 1;
+}
+
+.paper-card-print:hover {
+  background: #0d9488;
+}
+
 .paper-card-new {
   background: linear-gradient(145deg, #6366f1 0%, #4f46e5 100%);
   border: 1px solid rgba(255,255,255,0.15);

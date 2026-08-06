@@ -4,7 +4,7 @@ import { Dialog } from 'primereact/dialog';
 import { printQRCard, buildQRData, buildQRImageUrl } from '../utils/printQR';
 import axios from 'axios';
 
-const PrintQROptions = ({ visible, onHide, currentItem, selectedItems, type, fetchAllUrl, allItems }) => {
+const PrintQROptions = ({ visible, onHide, currentItem, selectedItems, type, fetchAllUrl, allItems, committeeItems, committeeDisabled }) => {
   const [printing, setPrinting] = useState(false);
 
   const printItems = async (items) => {
@@ -48,6 +48,19 @@ const PrintQROptions = ({ visible, onHide, currentItem, selectedItems, type, fet
     }
   };
 
+  const handlePrintCommittee = async () => {
+    const items = committeeItems || [];
+    if (items.length === 0 || committeeDisabled) return;
+    setPrinting(true);
+    try {
+      await printItems(items);
+    } catch (e) {
+      console.error('Print committee failed', e);
+    }
+    setPrinting(false);
+    onHide('committee');
+  };
+
   const handleCancel = () => {
     if (!printing) onHide(false);
   };
@@ -66,6 +79,9 @@ const PrintQROptions = ({ visible, onHide, currentItem, selectedItems, type, fet
             style={{ backgroundColor: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.7rem 1.5rem', fontWeight: 600 }} />
           <Button label="Print Selected" icon="pi pi-file" onClick={handlePrintSelected} disabled={printing}
             style={{ backgroundColor: '#14b8a6', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.7rem 1.5rem', fontWeight: 600 }} />
+          <Button label="Print Committee" icon="pi pi-folder-open" onClick={handlePrintCommittee} disabled={printing || committeeDisabled || !committeeItems || committeeItems.length === 0}
+            title={committeeDisabled ? 'Open a committee to print its QR codes' : 'Print the current committee QR codes'}
+            style={{ backgroundColor: '#f59e0b', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.7rem 1.5rem', fontWeight: 600 }} />
         </div>
         <Button label="Cancel" icon="pi pi-times" onClick={handleCancel} disabled={printing}
           style={{ backgroundColor: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.7rem 2rem', fontWeight: 600, minWidth: '120px' }} />

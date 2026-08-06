@@ -61,6 +61,7 @@ function Users({ isLoggedIn }) {
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [printDialogVisible, setPrintDialogVisible] = useState(false);
     const [printCurrentItem, setPrintCurrentItem] = useState(null);
+    const [printFolder, setPrintFolder] = useState(null);
     const toast = useRef(null);
     const tableContainerRef = useRef(null);
     const showSelectionRef = useRef(showSelection);
@@ -520,6 +521,13 @@ function Users({ isLoggedIn }) {
         }
     };
 
+    const handleFolderPrint = (e, f) => {
+        e.stopPropagation();
+        setPrintFolder(f);
+        setPrintCurrentItem(null);
+        setPrintDialogVisible(true);
+    };
+
     const actionBodyTemplate = (rowData) => {
         return (
             <div className="action-buttons">
@@ -685,6 +693,9 @@ function Users({ isLoggedIn }) {
                                                     <div className="paper-card-inner" style={{ animationDelay: `${0.16 + index * 0.08}s` }}>
                                                         <span className="paper-card-num">{index + 1}</span>
                                                         <span className="paper-card-name">{f.name}</span>
+                                                        <span className="paper-card-print" onClick={(e) => handleFolderPrint(e, f)} title={`Print ${f.name} QRs`}>
+                                                            <i className="pi pi-print" style={{ fontSize: 9 }}></i>
+                                                        </span>
                                                         <span className="paper-card-delete" onClick={(e) => handleFolderDelete(e, f)}>
                                                             <i className="pi pi-times" style={{ fontSize: 9 }}></i>
                                                         </span>
@@ -743,13 +754,15 @@ function Users({ isLoggedIn }) {
             <PrintQROptions
                 visible={printDialogVisible}
                 onHide={(action) => {
+                    const wasFolderPrint = !!printFolder;
+                    setPrintFolder(null);
                     setPrintDialogVisible(false);
-                    if (action === 'all' && mode === 'folder') {
+                    if (action === 'all' && mode === 'folder' && !wasFolderPrint) {
                         setActiveFolder(null);
                         setUnsaved(false);
                         persistSession('folder', null);
                     }
-                    if (action === true || action === 'selected' || action === 'all') {
+                    if (action === true || action === 'selected' || action === 'all' || action === 'committee') {
                         setShowSelection(false);
                         setSelectedUsers([]);
                     }
@@ -758,7 +771,9 @@ function Users({ isLoggedIn }) {
                 selectedItems={showSelection ? selectedUsers : []}
                 type="U"
                 fetchAllUrl="/users"
-                allItems={mode === 'folder' ? displayData : undefined}
+                allItems={printFolder ? printFolder.entries : (mode === 'folder' ? displayData : undefined)}
+                committeeItems={mode === 'folder' && activeFolder ? activeFolder.entries : []}
+                committeeDisabled={mode !== 'folder' || !activeFolder}
             />
 
             {showSaveConfirm && (
