@@ -248,15 +248,15 @@ function App() {
         <Galaxy 
           mouseRepulsion={true}
           mouseInteraction={true}
-          density={2.2}
-          glowIntensity={1.0}
-          saturation={0.85}
-          hueShift={250}
-          starSpeed={0.35}
+          density={0.9}
+          glowIntensity={0.35}
+          saturation={0}
+          hueShift={0}
+          starSpeed={0.3}
           repulsionStrength={2.5}
-          twinkleIntensity={0.75}
-          rotationSpeed={0.05}
-          speed={1.2}
+          twinkleIntensity={0.25}
+          rotationSpeed={0.02}
+          speed={0.9}
           transparent={true}
         />
       </div>
