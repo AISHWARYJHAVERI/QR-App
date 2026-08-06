@@ -40,6 +40,9 @@ function App() {
   
   const appToast = useRef(null);
   const navRef = useRef(null);
+  const hamburgerRef = useRef(null);
+
+  const [menuPanelStyle, setMenuPanelStyle] = useState({});
 
   useEffect(() => {
     const handleGlobalMouseMove = (e) => {
@@ -121,6 +124,20 @@ function App() {
       document.body.style.overflow = '';
     }
     return () => { document.body.style.overflow = ''; };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) { setMenuPanelStyle({}); return; }
+    requestAnimationFrame(() => {
+      const btn = hamburgerRef.current;
+      if (!btn) { setMenuPanelStyle({ top: '64px', left: '16px', width: '290px' }); return; }
+      const r = btn.getBoundingClientRect();
+      const panelWidth = Math.min(290, window.innerWidth - 24);
+      let left = r.left;
+      if (left + panelWidth > window.innerWidth - 12) left = window.innerWidth - panelWidth - 12;
+      if (left < 12) left = 12;
+      setMenuPanelStyle({ top: (r.bottom + 10) + 'px', left: left + 'px', width: panelWidth + 'px' });
+    });
   }, [mobileMenuOpen]);
 
   useEffect(() => {
@@ -279,6 +296,7 @@ function App() {
             className={`hamburger-btn ${mobileMenuOpen ? 'open' : ''}`}
             onClick={() => setMobileMenuOpen(prev => !prev)}
             aria-label="Toggle navigation menu"
+            ref={hamburgerRef}
           >
             <span></span><span></span><span></span>
           </button>
@@ -291,8 +309,9 @@ function App() {
         </nav>
 
         {mobileMenuOpen && (
-          <div className="mobile-overlay" onClick={() => setMobileMenuOpen(false)}>
-            <nav className="mobile-panel" onClick={e => e.stopPropagation()}>
+          <>
+            <div className="mobile-backdrop" onClick={() => setMobileMenuOpen(false)}></div>
+            <nav className="mobile-panel" style={menuPanelStyle} onClick={e => e.stopPropagation()}>
               <button className="mobile-close" onClick={() => setMobileMenuOpen(false)}>✕</button>
               <Link to="/" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Home</Link>
               <Link to="/features" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Features</Link>
@@ -301,7 +320,7 @@ function App() {
               <Link to="/about" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>About Us</Link>
               <Link to="/contact" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Contact Us</Link>
             </nav>
-          </div>
+          </>
         )}
 
         <div className="header-right">
