@@ -312,7 +312,6 @@ function App() {
           <>
             <div className="mobile-backdrop" onClick={() => setMobileMenuOpen(false)}></div>
             <nav className="mobile-panel" style={menuPanelStyle} onClick={e => e.stopPropagation()}>
-              <button className="mobile-close" onClick={() => setMobileMenuOpen(false)}>✕</button>
               <Link to="/" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Home</Link>
               <Link to="/features" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Features</Link>
               <Link to="/solutions" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Solutions</Link>
