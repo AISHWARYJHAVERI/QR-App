@@ -25,7 +25,7 @@ const highlights = [
   {
     icon: 'pi pi-moon',
     title: 'Dark Futuristic UI',
-    desc: 'A cohesive dark theme with radial gradient backgrounds, glassmorphic cards with backdrop blur, and animated hue-rotating text gradients throughout the interface.'
+    desc: 'A cohesive deep navy theme with subtle radial glows, glassmorphic cards with backdrop blur, and clean solid typography throughout the interface.'
   },
   {
     icon: 'pi pi-database',
