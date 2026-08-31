@@ -11,6 +11,7 @@ import Developer from './pages/Developer';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Galaxy from './components/Galaxy';
+import MoltenMetal from './components/MoltenMetal';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -284,6 +285,26 @@ function App() {
           rotationSpeed={0.02}
           speed={0.8}
           transparent={true}
+        />
+        <MoltenMetal
+          color1="#1e2a5a"
+          color2="#4f6bff"
+          color3="#a5c8ff"
+          speed={0.25}
+          scale={3}
+          detail={3}
+          glow={0.9}
+          coreSize={0.06}
+          swirl={1}
+          fold={-0.2}
+          blackPoint={0.15}
+          brightness={0.8}
+          colorMode="molten"
+          grain={true}
+          grainIntensity={0.03}
+          mouseInteraction={true}
+          mouseStrength={0.2}
+          opacity={0.35}
         />
       </div>
       <Toast ref={appToast} />
