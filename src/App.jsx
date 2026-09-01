@@ -10,7 +10,6 @@ import Solutions from './pages/Solutions';
 import Developer from './pages/Developer';
 import About from './pages/About';
 import Contact from './pages/Contact';
-import Galaxy from './components/Galaxy';
 import MoltenMetal from './components/MoltenMetal';
 
 function App() {
@@ -272,39 +271,25 @@ function App() {
   return (
     <div className="App" style={{ position: 'relative' }}>
       <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-        <Galaxy 
-          mouseRepulsion={true}
-          mouseInteraction={true}
-          density={0.7}
-          glowIntensity={0.5}
-          saturation={0}
-          hueShift={0}
-          starSpeed={0.3}
-          repulsionStrength={2.5}
-          twinkleIntensity={0.4}
-          rotationSpeed={0.02}
-          speed={0.8}
-          transparent={true}
-        />
         <MoltenMetal
-          color1="#1e2a5a"
-          color2="#4f6bff"
-          color3="#a5c8ff"
-          speed={0.25}
-          scale={3}
+          color1="#5227FF"
+          color2="#FF9FFC"
+          color3="#FFFFFF"
+          speed={0.35}
+          scale={4}
           detail={3}
-          glow={0.9}
-          coreSize={0.06}
+          glow={1.6}
+          coreSize={0.1}
           swirl={1}
           fold={-0.2}
-          blackPoint={0.15}
-          brightness={0.8}
+          blackPoint={0.05}
+          brightness={1.3}
           colorMode="molten"
           grain={true}
-          grainIntensity={0.03}
+          grainIntensity={0.05}
           mouseInteraction={true}
-          mouseStrength={0.2}
-          opacity={0.35}
+          mouseStrength={0.3}
+          opacity={1.0}
         />
       </div>
       <Toast ref={appToast} />
