@@ -89,12 +89,11 @@
   z-index: 1;
   max-width: 1100px;
   text-align: center;
-  padding: 2.5rem;
-  border: 1px solid rgba(125, 211, 252, 0.15);
-  border-radius: 2rem;
-  background: rgba(10, 18, 42, 0.72);
-  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
+  padding: 2.5rem 1rem;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .eyebrow {
