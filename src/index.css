@@ -57,7 +57,10 @@ button:hover {
 
 /* Animated Gradient Text Utility */
 .animated-gradient {
-  color: #f8fafc;
+  background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 50%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 10px rgba(168, 85, 247, 0.3));
 }
 
 .gradient-heading,
@@ -71,7 +74,10 @@ h6,
 .p-dialog .p-dialog-title,
 .profile-header h3,
 .table-header h4 {
-  color: #f8fafc;
+  background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 50%, #cbd5e1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.02em;
 }
 
 /* PrimeReact Customization */
