@@ -3,84 +3,160 @@ export const printQRCards = ({ items, type }) => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) { resolve(); return; }
 
-    const cardHtml = items.map((item, index) => buildCardHtml({
-      qrImageUrl: buildQRImageUrl(buildQRData(item, type)),
-      name: item.name, phone: item.phone,
-      city: item.city, role: item.role, type,
-      index: index + 1, total: items.length
-    })).join('\n<div class="page-break"></div>');
+    const CARDS_PER_PAGE = 9; // 3 columns x 3 rows on A4 portrait
+    const pages = [];
+    for (let i = 0; i < items.length; i += CARDS_PER_PAGE) {
+      pages.push(items.slice(i, i + CARDS_PER_PAGE));
+    }
+
+    const pagesHtml = pages.map((pageItems) => {
+      const cardsHtml = pageItems.map((item) => buildCardHtml({
+        qrImageUrl: buildQRImageUrl(buildQRData(item, type)),
+        name: item.name,
+        city: item.city
+      })).join('');
+
+      return `<div class="a4-sheet"><div class="grid-container">${cardsHtml}</div></div>`;
+    }).join('\n');
 
     const html = `<!DOCTYPE html>
 <html>
 <head>
-  <title>Print QR</title>
+  <title>Print QR - A4</title>
   <style>
-    @page { size: 125mm 88mm; margin: 0; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @page {
+      size: A4 portrait;
+      margin: 8mm 6mm;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
-      width: 125mm;
-      font-family: Georgia, 'Times New Roman', serif;
-      background: #faf5eb;
-      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      background: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
-    .page-break { page-break-after: always; break-after: page; }
+    .a4-sheet {
+      width: 100%;
+      min-height: 280mm;
+      page-break-after: always;
+      break-after: page;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      margin-bottom: 5mm;
+    }
+    .a4-sheet:last-child {
+      page-break-after: auto;
+      break-after: auto;
+      margin-bottom: 0;
+    }
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(3, 58mm);
+      grid-gap: 5mm 5mm;
+      justify-content: center;
+      align-content: start;
+      width: 100%;
+      padding: 2mm 0;
+    }
     .card {
-      width: 125mm; height: 88mm;
-      background: #faf5eb;
-      border: 2.5px solid #c8a96e;
-      border-radius: 4px;
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; padding: 3mm 4mm; text-align: center;
+      width: 58mm;
+      height: 87mm;
+      background: #ffffff;
+      border: 1.5px solid #1e293b;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
       position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
-    .counter {
-      position: absolute; top: 2mm; right: 3mm;
-      font-size: 7px; color: #a0896a; font-family: Arial, sans-serif;
+    .card-header {
+      width: 100%;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 3.2mm 2mm 2.8mm 2mm;
+      text-align: center;
+      border-bottom: 1.5px solid #e2e8f0;
     }
-    .main-header {
-      font-size: 13.5px; font-weight: 700; color: #6b1a1a;
-      letter-spacing: 0.02em; line-height: 1.3; margin-bottom: 1mm;
+    .header-title {
+      font-size: 8.5px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      line-height: 1.25;
+      text-transform: uppercase;
+      color: #ffffff;
     }
-    .divider {
-      width: 70%; height: 1px; background: #c8a96e; margin: 1.5mm auto;
-      opacity: 0.6;
+    .card-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 2mm 2mm;
     }
-    .sub-header {
-      font-size: 10px; color: #8b6914; font-style: italic;
-      letter-spacing: 0.04em; line-height: 1.4; margin-bottom: 2mm;
-    }
-    .info-section {
-      margin: 0.5mm 0; text-align: left; width: 85%;
-    }
-    .info-row {
-      display: flex; justify-content: space-between;
-      padding: 0.5mm 0; font-size: 8.5px;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      border-bottom: 1px dotted #e0d5c0;
-    }
-    .info-row:last-child { border-bottom: none; }
-    .info-label { color: #8b6914; font-weight: 600; }
-    .info-value { color: #2d2d2d; font-weight: 500; }
     .qr-wrap {
-      margin: 1mm 0;
-      background: #ffffff; padding: 2mm; border-radius: 3px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      padding: 1.5mm;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 2mm;
     }
-    .qr-wrap img { width: 22mm; height: 22mm; display: block; }
-    .footer-divider {
-      width: 80%; height: 1px; background: #c8a96e; margin: 1mm auto;
-      opacity: 0.4;
+    .qr-wrap img {
+      width: 38mm;
+      height: 38mm;
+      display: block;
     }
-    .footer-text {
-      font-size: 7px; color: #666;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      line-height: 1.4; margin-top: 0.5mm;
+    .person-name {
+      font-size: 11px;
+      font-weight: 800;
+      color: #0f172a;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      line-height: 1.2;
+      margin-bottom: 1mm;
+      max-width: 95%;
+      word-break: break-word;
     }
-    .footer-text .name { font-weight: 600; color: #444; }
+    .person-city {
+      font-size: 9.5px;
+      font-weight: 600;
+      color: #475569;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .card-footer {
+      width: 100%;
+      background: #f1f5f9;
+      border-top: 1px solid #cbd5e1;
+      padding: 2mm 2mm;
+      text-align: center;
+    }
+    .footer-author {
+      font-size: 8px;
+      font-weight: 600;
+      color: #334155;
+      letter-spacing: 0.04em;
+    }
   </style>
 </head>
 <body>
-  ${cardHtml}
+  ${pagesHtml}
   <script>
     window.onload = function() {
       setTimeout(function() { window.print(); }, 300);
@@ -104,31 +180,21 @@ export const printQRCards = ({ items, type }) => {
   });
 };
 
-const buildCardHtml = ({ qrImageUrl, name, phone, city, role, index, total }) => {
-  let infoHtml = '';
-  infoHtml += `<div class="info-row"><span class="info-label">Name</span><span class="info-value">${name}</span></div>`;
-  infoHtml += `<div class="info-row"><span class="info-label">Mobile</span><span class="info-value">${phone}</span></div>`;
-  if (city) infoHtml += `<div class="info-row"><span class="info-label">City</span><span class="info-value">${city}</span></div>`;
-  if (role) infoHtml += `<div class="info-row"><span class="info-label">Role</span><span class="info-value">${role}</span></div>`;
-
-  const counterHtml = total ? `<div class="counter">${index} / ${total}</div>` : '';
-
+const buildCardHtml = ({ qrImageUrl, name, city }) => {
   return `
   <div class="card">
-    ${counterHtml}
-    <div class="main-header">
-      Shri Patan Visa Shrimali<br/>Soni Gnyati Patan
+    <div class="card-header">
+      <div class="header-title">Shri Patan Visha Shrimali Soni Vishnuyag Yagn</div>
     </div>
-    <div class="divider"></div>
-    <div class="sub-header">
-      Shri Dashavtar Mahavishnu Yagna
+    <div class="card-body">
+      <div class="qr-wrap">
+        <img src="${qrImageUrl}" alt="QR Code"/>
+      </div>
+      <div class="person-name">${name || ''}</div>
+      ${city ? `<div class="person-city">${city}</div>` : ''}
     </div>
-    <div class="info-section">${infoHtml}</div>
-    <div class="qr-wrap"><img src="${qrImageUrl}" alt="QR"/></div>
-    <div class="footer-divider"></div>
-    <div class="footer-text">
-      <div class="name">Aishwary Jhaveri</div>
-      <div>www.qr-app.vercel.app</div>
+    <div class="card-footer">
+      <div class="footer-author">Aishwary Jhaveri</div>
     </div>
   </div>`;
 };
@@ -142,5 +208,5 @@ export const buildQRData = (item, type) => {
 };
 
 export const buildQRImageUrl = (qrData) => {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}&color=050816&bgcolor=ffffff`;
+  return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrData)}&color=050816&bgcolor=ffffff`;
 };
