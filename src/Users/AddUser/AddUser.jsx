@@ -23,7 +23,10 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMod
     const dayCountRequired = Array.isArray(defaultDays) ? defaultDays.length : 0;
 
     const [lastDefault, setLastDefault] = useState(defaultDays);
-    if (defaultDays !== lastDefault) {
+    const sameDays = Array.isArray(defaultDays) && Array.isArray(lastDefault)
+        && defaultDays.length === lastDefault.length
+        && defaultDays.every((v, i) => v === lastDefault[i]);
+    if (!sameDays) {
         setLastDefault(defaultDays);
         setUserDays(defaultDays || []);
     }
