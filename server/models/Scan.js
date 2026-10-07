@@ -5,6 +5,7 @@ const scanSchema = new mongoose.Schema({
   scannedBy: { type: String, default: '' },
   timeSlot: { type: String, enum: ['morning', 'afternoon', 'evening', 'night'], required: true },
   scannedAt: { type: Date, default: Date.now },
+  dayStatus: { type: String, enum: ['allowed', 'wrong', 'none'], default: 'none' },
   source: { type: String, default: 'scanner' },
 }, { timestamps: true, toJSON: { virtuals: true } });
 

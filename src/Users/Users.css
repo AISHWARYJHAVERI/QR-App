@@ -1968,3 +1968,455 @@
     justify-content: center;
   }
 }
+/* ===== Day-based folders: type picker ===== */
+.type-picker-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.type-picker-dialog {
+  background: rgba(15,23,42,0.98);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 26px;
+  width: 440px;
+  max-width: 92vw;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+  text-align: center;
+}
+
+.type-picker-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 10px;
+  border-radius: 14px;
+  background: rgba(16,185,129,0.12);
+  border: 1px solid rgba(16,185,129,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.type-picker-icon i {
+  color: #10b981;
+  font-size: 1.3rem;
+}
+
+.type-picker-dialog h4 {
+  margin: 0 0 6px;
+  color: #f8fafc;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.type-picker-sub {
+  margin: 0 0 16px;
+  color: #94a3b8;
+  font-size: 0.83rem;
+  line-height: 1.4;
+}
+
+.type-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.type-card {
+  position: relative;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px;
+  padding: 12px 6px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transition: all 0.18s;
+  color: #e2e8f0;
+}
+
+.type-card:hover:not(:disabled) {
+  border-color: rgba(99,102,241,0.5);
+  background: rgba(99,102,241,0.1);
+  transform: translateY(-2px);
+}
+
+.type-card-count {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #6366f1;
+  line-height: 1;
+}
+
+.type-card-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.type-card-active {
+  border-color: #10b981;
+  background: rgba(16,185,129,0.14);
+  box-shadow: 0 0 0 2px rgba(16,185,129,0.25);
+}
+
+.type-card-active .type-card-count {
+  color: #10b981;
+}
+
+.type-card-used {
+  opacity: 0.35;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.type-card-used-tag {
+  position: absolute;
+  top: -7px;
+  right: -4px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(239,68,68,0.18);
+  color: #f87171;
+  border: 1px solid rgba(239,68,68,0.35);
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+
+.type-picker-all-used {
+  margin: 0 0 14px;
+  color: #fbbf24;
+  font-size: 0.8rem;
+  background: rgba(251,191,36,0.08);
+  border: 1px solid rgba(251,191,36,0.25);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.type-picker-chips {
+  margin-bottom: 16px;
+}
+
+.type-picker-chips-label {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.type-picker-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.date-chip {
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.05);
+  color: #cbd5e1;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.date-chip b {
+  font-size: 0.65rem;
+  color: #6366f1;
+  background: rgba(99,102,241,0.15);
+  border-radius: 5px;
+  padding: 1px 5px;
+  letter-spacing: 0.03em;
+}
+
+.date-chip:hover:not(:disabled) {
+  border-color: rgba(16,185,129,0.5);
+}
+
+.date-chip-active {
+  background: rgba(16,185,129,0.16);
+  border-color: #10b981;
+  color: #ecfdf5;
+}
+
+.date-chip-active b {
+  color: #10b981;
+  background: rgba(16,185,129,0.18);
+}
+
+.date-chip-locked {
+  cursor: default;
+  opacity: 0.9;
+}
+
+.type-picker-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.type-picker-actions button {
+  padding: 9px 18px;
+  border-radius: 9px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.type-picker-cancel {
+  background: rgba(255,255,255,0.05);
+  color: #94a3b8;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+.type-picker-cancel:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.type-picker-create {
+  background: #10b981;
+  color: #fff;
+}
+
+.type-picker-create:hover:not(:disabled) {
+  transform: scale(1.04);
+  box-shadow: 0 6px 18px rgba(16,185,129,0.35);
+}
+
+.type-picker-create:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ===== Event dates dialog ===== */
+.dates-input-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.dates-input-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dates-input-item span {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dates-input-item input {
+  width: 100%;
+  text-align: center;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 9px;
+  color: #f8fafc;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 9px 6px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.dates-input-item input:focus {
+  border-color: #6366f1;
+}
+
+/* ===== Days column + chips ===== */
+.days-cell {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  max-width: 100%;
+}
+
+.days-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(99,102,241,0.12);
+  border: 1px solid rgba(99,102,241,0.3);
+  color: #c7d2fe;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.days-chip b {
+  font-size: 0.6rem;
+  color: #6366f1;
+  letter-spacing: 0.03em;
+}
+
+.days-none {
+  color: #64748b;
+}
+
+.banner-days {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: 4px;
+}
+
+/* ===== Folder card day label ===== */
+.paper-card-days {
+  font-size: 0.62rem;
+  color: #94a3b8;
+  letter-spacing: 0.03em;
+}
+
+/* ===== Event dates button in folder dropdown ===== */
+.folder-dropdown-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 2px 8px;
+}
+
+.folder-dropdown-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #94a3b8;
+}
+
+.event-dates-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #a5b4fc;
+  background: rgba(99,102,241,0.12);
+  border: 1px solid rgba(99,102,241,0.3);
+  border-radius: 999px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.event-dates-btn:hover {
+  background: rgba(99,102,241,0.22);
+  color: #e0e7ff;
+}
+
+/* ===== Add/Edit user day chips ===== */
+.user-days-field label {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.user-days-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.user-day-chip {
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.05);
+  color: #cbd5e1;
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.user-day-chip b {
+  font-size: 0.65rem;
+  color: #6366f1;
+  background: rgba(99,102,241,0.15);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+
+.user-day-chip:hover {
+  border-color: rgba(16,185,129,0.5);
+}
+
+.user-day-chip-active {
+  background: rgba(16,185,129,0.16);
+  border-color: #10b981;
+  color: #ecfdf5;
+}
+
+.user-day-chip-active b {
+  color: #10b981;
+  background: rgba(16,185,129,0.18);
+}
+
+.qr-days-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+/* ===== Responsive: day-folder dialogs ===== */
+@media (max-width: 576px) {
+  .type-picker-dialog {
+    padding: 20px 16px;
+    width: calc(100vw - 24px);
+  }
+  .type-picker-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .dates-input-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .type-picker-actions {
+    flex-direction: row;
+  }
+  .type-picker-actions button {
+    flex: 1;
+    padding: 10px 12px;
+  }
+  .date-chip {
+    padding: 7px 11px;
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .type-picker-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+  .type-card-count {
+    font-size: 1.2rem;
+  }
+}

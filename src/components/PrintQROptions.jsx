@@ -4,11 +4,11 @@ import { Dialog } from 'primereact/dialog';
 import { printQRCards } from '../utils/printQR';
 import axios from 'axios';
 
-const PrintQROptions = ({ visible, onHide, currentItem, selectedItems, type, fetchAllUrl, allItems, committeeItems, committeeDisabled }) => {
+const PrintQROptions = ({ visible, onHide, currentItem, selectedItems, type, fetchAllUrl, allItems, committeeItems, committeeDisabled, eventDates = [] }) => {
   const [printing, setPrinting] = useState(false);
 
   const printItems = async (items) => {
-    await printQRCards({ items, type });
+    await printQRCards({ items, type, eventDates });
   };
 
   const handlePrintSelected = async () => {

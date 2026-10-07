@@ -438,3 +438,27 @@
     font-size: 1.1rem;
   }
 }
+
+/* ===== Day column mapping (auto-route) ===== */
+.import-mapping-days {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.import-mapping-days .import-mapping-field label {
+  font-size: 0.78rem;
+}
+
+.import-mapping-days p.import-mapping-hint {
+  grid-column: 1 / -1;
+  font-size: 0.75rem;
+  color: #10b981;
+}
+
+@media (max-width: 576px) {
+  .import-mapping-days {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

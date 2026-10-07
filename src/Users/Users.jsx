@@ -11,7 +11,6 @@ import './Users.css';
 import Folder from '../components/Folder';
 import AddUser from './AddUser/AddUser';
 import EditUser from './EditUser/EditUser';
-import ViewUser from './ViewUser/ViewUser';
 import DeleteUser from './DeleteUser/DeleteUser';
 import GenerateQR from './GenerateQR/GenerateQR';
 import ImportExcel from './ImportExcel/ImportExcel';
@@ -96,6 +95,29 @@ function Users({ isLoggedIn }) {
     const [pendingNavigation, setPendingNavigation] = useState(null);
     const [showNewFolderConfirm, setShowNewFolderConfirm] = useState(false);
     const [showNewFolderInfo, setShowNewFolderInfo] = useState(false);
+
+    const [eventDates, setEventDates] = useState(() => {
+        try {
+            const s = JSON.parse(localStorage.getItem('qr_event_dates'));
+            if (Array.isArray(s) && s.length === 4 && s.every(n => Number(n) > 0)) return s.map(Number);
+        } catch { /* bad saved value — use default */ }
+        return [17, 18, 19, 20];
+    });
+    const [showDatesDialog, setShowDatesDialog] = useState(false);
+    const [datesDraft, setDatesDraft] = useState(['17', '18', '19', '20']);
+    const [showTypePicker, setShowTypePicker] = useState(false);
+    const [pickerCount, setPickerCount] = useState(0);
+    const [pickerDays, setPickerDays] = useState([]);
+
+    const folderTypeCount = (f) => {
+        if (Array.isArray(f?.days) && f.days.length > 0) return f.days.length;
+        return parseInt(f?.name, 10) || 0;
+    };
+    const typeLabel = (n) => (n === 1 ? '1 day' : `${n} days`);
+    const usedTypes = useMemo(() => new Set(folders.map(folderTypeCount).filter(n => n >= 1 && n <= 4)), [folders]);
+    const sortedFolders = useMemo(() => [...folders].sort((a, b) => folderTypeCount(b) - folderTypeCount(a)), [folders]);
+    const dayIndexOf = (d) => eventDates.indexOf(d);
+    const orderedDays = (days) => [...days].sort((a, b) => dayIndexOf(a) - dayIndexOf(b));
 
     useEffect(() => {
         fetchUsers();
@@ -243,7 +265,10 @@ function Users({ isLoggedIn }) {
     const handleUserAdded = (newUser) => {
         if (mode === 'folder') {
             const id = `fl_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`;
-            const entry = { ...newUser, id };
+            const days = Array.isArray(newUser.days) && newUser.days.length > 0
+                ? newUser.days
+                : (activeFolder?.days || []);
+            const entry = { ...newUser, id, days };
             const newEntries = [...(activeFolder?.entries || []), entry];
             setActiveFolder(prev => ({ ...prev, entries: newEntries }));
             setUnsaved(true);
@@ -291,7 +316,8 @@ function Users({ isLoggedIn }) {
     const handleFolderImport = (importedData, failedCount) => {
         const newEntries = importedData.map(item => ({
             ...item,
-            id: `fl_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`
+            id: `fl_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`,
+            days: Array.isArray(item.days) && item.days.length ? item.days : (activeFolder?.days || [])
         }));
         const allEntries = [...(activeFolder?.entries || []), ...newEntries];
         setActiveFolder(prev => ({ ...prev, entries: allEntries }));
@@ -300,6 +326,60 @@ function Users({ isLoggedIn }) {
             showSuccess('Imported ' + newEntries.length + ' user' + (newEntries.length > 1 ? 's' : '') + ' successfully.' + (failedCount > 0 ? ' ' + failedCount + ' row' + (failedCount > 1 ? 's' : '') + ' skipped.' : ''));
         } else {
             showError('No records could be imported.');
+        }
+    };
+
+    const handleRouteImport = async (groups, skipped) => {
+        if (!groups || groups.length === 0) {
+            const reasons = (skipped || []).slice(0, 5).map(s => `${s.name || 'Unnamed'}: ${s.reason}`).join('; ');
+            showError('No rows could be routed.' + (reasons ? ` Skipped — ${reasons}` : '') + ((skipped || []).length > 5 ? ` (+${skipped.length - 5} more)` : ''));
+            return;
+        }
+        let routed = 0;
+        const newId = () => `fl_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`;
+        try {
+            for (const g of groups) {
+                const entries = g.entries.map(e => ({ ...e, id: newId() }));
+                if (activeFolder && folderTypeCount(activeFolder) === g.count) {
+                    if (activeFolder.id) {
+                        const merged = [...(activeFolder.entries || []), ...entries];
+                        const updated = { ...activeFolder, entries: merged };
+                        await axios.put(`/committeesessions/${activeFolder.id}`, updated);
+                        setActiveFolder(updated);
+                    } else {
+                        setActiveFolder(prev => ({ ...prev, entries: [...(prev?.entries || []), ...entries] }));
+                        setUnsaved(true);
+                    }
+                    routed += entries.length;
+                    continue;
+                }
+                const existing = folders.find(f => f.id !== activeFolder?.id && folderTypeCount(f) === g.count);
+                if (existing) {
+                    const merged = [...(existing.entries || []), ...entries];
+                    await axios.put(`/committeesessions/${existing.id}`, { ...existing, entries: merged });
+                    routed += entries.length;
+                    continue;
+                }
+                const comboCounts = {};
+                entries.forEach(e => {
+                    const key = (e.days || []).join(',');
+                    comboCounts[key] = (comboCounts[key] || 0) + 1;
+                });
+                const topKey = Object.keys(comboCounts).sort((a, b) => comboCounts[b] - comboCounts[a])[0];
+                const defaultDays = topKey ? topKey.split(',').map(Number) : eventDates.slice(0, g.count);
+                const folderName = typeLabel(g.count);
+                await axios.post('/committeesessions', { name: folderName, days: defaultDays, entries });
+                routed += entries.length;
+            }
+            await loadFolders();
+            const skippedCount = (skipped || []).length;
+            showSuccess(`Routed ${routed} user${routed === 1 ? '' : 's'} into ${groups.length} folder${groups.length === 1 ? '' : 's'}.` + (skippedCount > 0 ? ` ${skippedCount} row${skippedCount > 1 ? 's' : ''} skipped.` : ''));
+            if (skippedCount > 0) {
+                const reasons = skipped.slice(0, 5).map(s => `${s.name || 'Unnamed'}: ${s.reason}`).join('; ');
+                showError(`Skipped ${skippedCount} row${skippedCount > 1 ? 's' : ''} — ${reasons}${skippedCount > 5 ? ` (+${skippedCount - 5} more)` : ''}`);
+            }
+        } catch {
+            showError('Error routing imported users to folders.');
         }
     };
 
@@ -318,7 +398,7 @@ function Users({ isLoggedIn }) {
     };
 
     const startNewFolder = () => {
-        if (mode === 'folder' && !activeFolder) {
+        if (mode === 'folder' && activeFolder && !activeFolder.id) {
             setShowNewFolderInfo(true);
             return;
         }
@@ -332,20 +412,68 @@ function Users({ isLoggedIn }) {
             setShowNewFolderConfirm(true);
             return;
         }
-        doStartNewFolder();
+        openTypePicker();
     };
 
-    const doStartNewFolder = () => {
-        setActiveFolder(null);
+    const openTypePicker = () => {
+        setShowFolderDropdown(false);
+        setPickerCount(0);
+        setPickerDays([]);
+        setShowTypePicker(true);
+    };
+
+    const closeTypePicker = () => {
+        setShowTypePicker(false);
+        setPickerCount(0);
+        setPickerDays([]);
+    };
+
+    const selectPickerType = (n) => {
+        setPickerCount(n);
+        setPickerDays(n === 4 ? [...eventDates] : []);
+    };
+
+    const togglePickerDay = (d) => {
+        setPickerDays(prev => {
+            if (prev.includes(d)) return prev.filter(x => x !== d);
+            if (prev.length >= pickerCount) {
+                showError(`Select exactly ${pickerCount} date${pickerCount > 1 ? 's' : ''}.`);
+                return prev;
+            }
+            return [...prev, d];
+        });
+    };
+
+    const doStartNewFolder = (preset = null) => {
+        setActiveFolder(preset ? { name: preset.name, days: preset.days, entries: [] } : null);
         setMode('folder');
         setUnsaved(false);
         persistSession('folder', null);
         setShowFolderDropdown(false);
+        closeTypePicker();
+    };
+
+    const handlePickerCreate = () => {
+        if (!pickerCount || pickerDays.length !== pickerCount) return;
+        doStartNewFolder({
+            name: typeLabel(pickerCount),
+            days: orderedDays(pickerDays)
+        });
     };
 
     const handleNewFolderConfirm = () => {
         setShowNewFolderConfirm(false);
-        doStartNewFolder();
+        openTypePicker();
+    };
+
+    const handleDatesSave = () => {
+        const nums = datesDraft.map(n => parseInt(n, 10));
+        if (nums.some(n => !n || n < 1 || n > 31)) { showError('Dates must be numbers between 1 and 31.'); return; }
+        if (new Set(nums).size !== 4) { showError('The 4 event dates must be different.'); return; }
+        setEventDates(nums);
+        localStorage.setItem('qr_event_dates', JSON.stringify(nums));
+        setShowDatesDialog(false);
+        showSuccess('Event dates updated.');
     };
 
     const handleNewFolderCancel = () => {
@@ -415,7 +543,7 @@ function Users({ isLoggedIn }) {
             setMode('folder');
             setUnsaved(false);
             persistSession('folder', null);
-            setShowFolderDropdown(false);
+            openTypePicker();
         } else if (action.type === 'api') {
             setMode('api');
             setActiveFolder(null);
@@ -442,15 +570,24 @@ function Users({ isLoggedIn }) {
     const saveCurrentFolderAction = async (overrideName) => {
         const name = (overrideName ?? saveFolderName).trim() || activeFolder?.name;
         const entries = activeFolder?.entries || [];
+        const days = Array.isArray(activeFolder?.days) ? activeFolder.days : [];
         if (!name) return;
+        const typeN = days.length;
+        if (typeN >= 1) {
+            const dup = folders.find(f => f.id !== activeFolder?.id && folderTypeCount(f) === typeN);
+            if (dup) {
+                showError(`A "${typeLabel(typeN)}" folder already exists ("${dup.name}"). Delete it first, then save this one.`);
+                return;
+            }
+        }
         setSaving(true);
         try {
             if (activeFolder?.id) {
-                const updated = { ...activeFolder, name, entries };
+                const updated = { ...activeFolder, name, days, entries };
                 await axios.put(`/committeesessions/${activeFolder.id}`, updated);
                 showSuccess('Folder "' + name + '" updated successfully');
             } else {
-                const payload = { name, entries };
+                const payload = { name, days, entries };
                 const res = await axios.post('/committeesessions', payload);
                 setActiveFolder(res.data);
                 persistSession('folder', res.data);
@@ -531,12 +668,28 @@ function Users({ isLoggedIn }) {
     const actionBodyTemplate = (rowData) => {
         return (
             <div className="action-buttons">
-                <ViewUser rowData={rowData} />
-                <EditUser rowData={rowData} onUserUpdated={handleUserUpdated} showError={showError} showSuccess={showSuccess} localMode={mode === 'folder'} />
-                <GenerateQR rowData={rowData} onPrintClick={(item) => { setPrintCurrentItem(item); setPrintDialogVisible(true); }} />
+                <EditUser rowData={rowData} onUserUpdated={handleUserUpdated} showError={showError} showSuccess={showSuccess} localMode={mode === 'folder'} eventDates={eventDates} dayCount={mode === 'folder' ? (activeFolder?.days?.length || 0) : 0} />
+                <GenerateQR rowData={rowData} eventDates={eventDates} onPrintClick={(item) => { setPrintCurrentItem(item); setPrintDialogVisible(true); }} />
                 <DeleteUser rowData={rowData} onUserDeleted={handleUserDeleted} showError={showError} showSuccess={showSuccess} localMode={mode === 'folder'} />
                 <Button icon="pi pi-print" className="p-button-rounded p-button-text p-button-sm print-icon-btn" onClick={() => { setPrintCurrentItem(rowData); setPrintDialogVisible(true); }} title="Print QR" />
             </div>
+        );
+    };
+
+    const daysBodyTemplate = (rowData) => {
+        const days = Array.isArray(rowData.days) ? rowData.days : [];
+        if (days.length === 0) return <span className="days-none">—</span>;
+        return (
+            <span className="days-cell">
+                {orderedDays(days).map(d => {
+                    const idx = dayIndexOf(d);
+                    return (
+                        <span key={d} className="days-chip">
+                            {idx >= 0 && <b>D{idx + 1}</b>}{d}
+                        </span>
+                    );
+                })}
+            </span>
         );
     };
 
@@ -577,6 +730,8 @@ function Users({ isLoggedIn }) {
                 <ImportExcel
                     onImported={handleImported}
                     onImport={mode === 'folder' ? handleFolderImport : undefined}
+                    onRouteImport={handleRouteImport}
+                    eventDates={eventDates}
                     showError={showError}
                     showSuccess={showSuccess}
                 />
@@ -623,7 +778,7 @@ function Users({ isLoggedIn }) {
 
                 {activeTab === 'users' ? (
                     <>
-                        <AddUser inline={true} onUserAdded={handleUserAdded} showError={showError} showSuccess={showSuccess} localMode={mode === 'folder'} />
+                        <AddUser inline={true} onUserAdded={handleUserAdded} showError={showError} showSuccess={showSuccess} localMode={mode === 'folder'} eventDates={eventDates} defaultDays={activeFolder?.days} />
 
                         <div className="mode-banner" style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
                             {mode === 'folder' ? (
@@ -634,6 +789,14 @@ function Users({ isLoggedIn }) {
                                         <span style={{ color: '#94a3b8', fontWeight: 400 }}>
                                             — {displayData.length} entr{displayData.length === 1 ? 'y' : 'ies'}
                                         </span>
+                                        {Array.isArray(activeFolder?.days) && activeFolder.days.length > 0 && (
+                                            <span className="banner-days">
+                                                {orderedDays(activeFolder.days).map(d => {
+                                                    const idx = dayIndexOf(d);
+                                                    return <span key={d} className="days-chip">{idx >= 0 && <b>D{idx + 1}</b>}{d}</span>;
+                                                })}
+                                            </span>
+                                        )}
                                         {unsaved && <span className="mode-banner-unsaved">⚠ Unsaved Changes</span>}
                                     </div>
                                     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
@@ -677,6 +840,17 @@ function Users({ isLoggedIn }) {
                                 <>
                                     <div className="folder-dropdown-overlay" onClick={() => setShowFolderDropdown(false)}></div>
                                     <div className="folder-dropdown" ref={dropdownRef} style={ddStyle}>
+                                        <div className="folder-dropdown-head">
+                                            <span className="folder-dropdown-title">Event Folders</span>
+                                            <button
+                                                type="button"
+                                                className="event-dates-btn"
+                                                onClick={(e) => { e.stopPropagation(); setDatesDraft(eventDates.map(String)); setShowDatesDialog(true); }}
+                                                title="Edit event dates"
+                                            >
+                                                <i className="pi pi-calendar"></i> Dates
+                                            </button>
+                                        </div>
                                         <div className="paper-cards-row">
                                             <div className="paper-card paper-card-new" onClick={startNewFolder} title="New Folder">
                                                 <div className="paper-card-inner" style={{ animationDelay: '0.08s' }}>
@@ -684,7 +858,7 @@ function Users({ isLoggedIn }) {
                                                     <span className="paper-card-new-label">New</span>
                                                 </div>
                                             </div>
-                                            {folders.map((f, index) => (
+                                            {sortedFolders.map((f, index) => (
                                                 <div
                                                     key={f.id}
                                                     className={`paper-card${activeFolder?.id === f.id ? ' paper-card-active' : ''}`}
@@ -693,6 +867,11 @@ function Users({ isLoggedIn }) {
                                                     <div className="paper-card-inner" style={{ animationDelay: `${0.16 + index * 0.08}s` }}>
                                                         <span className="paper-card-num">{index + 1}</span>
                                                         <span className="paper-card-name">{f.name}</span>
+                                                        {Array.isArray(f.days) && f.days.length > 0 && (
+                                                            <span className="paper-card-days">
+                                                                {orderedDays(f.days).join(' · ')}
+                                                            </span>
+                                                        )}
                                                         <span className="paper-card-print" onClick={(e) => handleFolderPrint(e, f)} title={`Print ${f.name} QRs`}>
                                                             <i className="pi pi-print" style={{ fontSize: 9 }}></i>
                                                         </span>
@@ -736,11 +915,12 @@ function Users({ isLoggedIn }) {
                                 {showSelection && (
                                     <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
                                 )}
-                                <Column header="ID" body={(rowData, options) => options.rowIndex + 1} align="center" style={{ width: '6%' }}></Column>
-                                <Column field="name" header="Name" align="left" style={{ width: '22%' }} className="pl-6"></Column>
-                                <Column field="phone" header="Mobile Number" align="left" style={{ width: '18%' }} className="pl-6"></Column>
-                                <Column field="city" header="City" align="left" style={{ width: '16%' }} className="pl-6" body={(rowData) => rowData.city || rowData.address?.city || 'N/A'}></Column>
-                                <Column body={actionBodyTemplate} exportable={false} align="right" alignHeader="center" style={{ width: '38%' }} header="Actions"></Column>
+                                <Column header="ID" body={(rowData, options) => options.rowIndex + 1} align="center" style={{ width: '5%' }}></Column>
+                                <Column field="name" header="Name" align="left" style={{ width: '20%' }} className="pl-6"></Column>
+                                <Column field="phone" header="Mobile Number" align="left" style={{ width: '15%' }} className="pl-6"></Column>
+                                <Column field="city" header="City" align="left" style={{ width: '13%' }} className="pl-6" body={(rowData) => rowData.city || rowData.address?.city || 'N/A'}></Column>
+                                <Column header="Days" body={daysBodyTemplate} align="center" style={{ width: '15%' }}></Column>
+                                <Column body={actionBodyTemplate} exportable={false} align="right" alignHeader="center" style={{ width: '32%' }} header="Actions"></Column>
                             </DataTable>
                         </div>
                     </>
@@ -774,6 +954,7 @@ function Users({ isLoggedIn }) {
                 allItems={printFolder ? printFolder.entries : (mode === 'folder' ? displayData : undefined)}
                 committeeItems={mode === 'folder' && activeFolder ? activeFolder.entries : []}
                 committeeDisabled={mode !== 'folder' || !activeFolder}
+                eventDates={eventDates}
             />
 
             {showSaveConfirm && (
@@ -841,6 +1022,108 @@ function Users({ isLoggedIn }) {
                                 <button className="new-folder-toast-cancel" onClick={handleNewFolderCancel}>Cancel</button>
                                 <button className="new-folder-toast-confirm" onClick={handleNewFolderConfirm}>Yes, New Folder</button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showTypePicker && (
+                <div className="type-picker-overlay" onClick={closeTypePicker}>
+                    <div className="type-picker-dialog" onClick={e => e.stopPropagation()}>
+                        <div className="type-picker-icon">
+                            <i className="pi pi-folder-plus"></i>
+                        </div>
+                        <h4>New Folder</h4>
+                        <p className="type-picker-sub">Pick how many days this folder covers, then tick its dates.</p>
+                        <div className="type-picker-grid">
+                            {[4, 3, 2, 1].map(n => {
+                                const used = usedTypes.has(n);
+                                return (
+                                    <button
+                                        key={n}
+                                        type="button"
+                                        className={`type-card${pickerCount === n ? ' type-card-active' : ''}${used ? ' type-card-used' : ''}`}
+                                        disabled={used}
+                                        onClick={() => selectPickerType(n)}
+                                    >
+                                        <span className="type-card-count">{n}</span>
+                                        <span className="type-card-label">{typeLabel(n)}</span>
+                                        {used && <span className="type-card-used-tag">In use</span>}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        {pickerCount > 0 ? (
+                            <div className="type-picker-chips">
+                                <div className="type-picker-chips-label">
+                                    {pickerCount === 4
+                                        ? 'All dates selected'
+                                        : `Select exactly ${pickerCount} date${pickerCount > 1 ? 's' : ''} — ${pickerDays.length}/${pickerCount}`}
+                                </div>
+                                <div className="type-picker-chip-row">
+                                    {eventDates.map((d, i) => {
+                                        const selected = pickerDays.includes(d);
+                                        const locked = pickerCount === 4;
+                                        return (
+                                            <button
+                                                key={`${d}-${i}`}
+                                                type="button"
+                                                className={`date-chip${selected ? ' date-chip-active' : ''}${locked ? ' date-chip-locked' : ''}`}
+                                                disabled={locked}
+                                                onClick={() => togglePickerDay(d)}
+                                            >
+                                                <b>D{i + 1}</b>{d}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ) : (
+                            usedTypes.size >= 4 && (
+                                <p className="type-picker-all-used">
+                                    All 4 day-counts are in use. Delete a folder first to recreate one.
+                                </p>
+                            )
+                        )}
+                        <div className="type-picker-actions">
+                            <button className="type-picker-cancel" onClick={closeTypePicker}>Cancel</button>
+                            <button
+                                className="type-picker-create"
+                                disabled={!pickerCount || pickerDays.length !== pickerCount}
+                                onClick={handlePickerCreate}
+                            >
+                                Create Folder
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showDatesDialog && (
+                <div className="type-picker-overlay" onClick={() => setShowDatesDialog(false)}>
+                    <div className="type-picker-dialog" onClick={e => e.stopPropagation()}>
+                        <div className="type-picker-icon">
+                            <i className="pi pi-calendar"></i>
+                        </div>
+                        <h4>Event Dates</h4>
+                        <p className="type-picker-sub">Set the 4 event days (day of month). Day 1–4 labels follow this order.</p>
+                        <div className="dates-input-row">
+                            {datesDraft.map((v, i) => (
+                                <label key={i} className="dates-input-item">
+                                    <span>Day {i + 1}</span>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max="31"
+                                        value={v}
+                                        onChange={e => setDatesDraft(prev => prev.map((x, j) => (j === i ? e.target.value : x)))}
+                                    />
+                                </label>
+                            ))}
+                        </div>
+                        <div className="type-picker-actions">
+                            <button className="type-picker-cancel" onClick={() => setShowDatesDialog(false)}>Cancel</button>
+                            <button className="type-picker-create" onClick={handleDatesSave}>Save Dates</button>
                         </div>
                     </div>
                 </div>

@@ -5,17 +5,33 @@ import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import axios from 'axios';
 
-const EditUser = ({ rowData, onUserUpdated, showError, showSuccess, localMode = false }) => {
+const EditUser = ({ rowData, onUserUpdated, showError, showSuccess, localMode = false, eventDates = [], dayCount = 0 }) => {
     const [userDialog, setUserDialog] = useState(false);
     const [user, setUser] = useState({ name: '', phone: '', city: '', ...rowData });
     const [submitted, setSubmitted] = useState(false);
+    const [editDays, setEditDays] = useState(Array.isArray(rowData.days) ? rowData.days : []);
 
     useEffect(() => {
         setUser({ name: '', phone: '', city: '', ...rowData });
+        setEditDays(Array.isArray(rowData.days) ? rowData.days : []);
     }, [rowData]);
+
+    const toggleEditDay = (d) => {
+        setEditDays(prev => {
+            if (prev.includes(d)) return prev.filter(x => x !== d);
+            if (dayCount > 0 && prev.length >= dayCount) {
+                showError(`This folder allows exactly ${dayCount} day${dayCount > 1 ? 's' : ''}.`);
+                return prev;
+            }
+            return [...prev, d];
+        });
+    };
+
+    const daysValid = dayCount === 0 || editDays.length === dayCount;
 
     const openEdit = () => {
         setUser({ name: '', phone: '', city: '', ...rowData });
+        setEditDays(Array.isArray(rowData.days) ? rowData.days : []);
         setSubmitted(false);
         setUserDialog(true);
     };
@@ -29,7 +45,11 @@ const EditUser = ({ rowData, onUserUpdated, showError, showSuccess, localMode = 
         setSubmitted(true);
 
         if (user.name.trim() && user.phone.trim() && (user.city || '').trim()) {
-            let _user = { ...user };
+            if (!daysValid) {
+                showError(`Select exactly ${dayCount} day${dayCount > 1 ? 's' : ''} (${editDays.length}/${dayCount}).`);
+                return;
+            }
+            let _user = { ...user, days: [...editDays] };
             if (localMode) {
                 showSuccess("User Updated Successfully");
                 onUserUpdated(_user);
@@ -86,6 +106,24 @@ const EditUser = ({ rowData, onUserUpdated, showError, showSuccess, localMode = 
                             <label htmlFor={`city-${user.id}`} className="font-bold">City</label>
                             <InputText id={`city-${user.id}`} value={displayCity} onChange={(e) => onInputChange(e, 'city')} required className={classNames({ 'p-invalid': submitted && !user.city && !user.address?.city })} />
                             {submitted && !user.city && !user.address?.city && <small className="p-error">City is required.</small>}
+                        </div>
+                        <div className="field mb-0">
+                            <label className="font-bold">Allowed Days</label>
+                            <div className="user-days-chips">
+                                {eventDates.map((d, i) => (
+                                    <button
+                                        key={`${d}-${i}`}
+                                        type="button"
+                                        className={`user-day-chip${editDays.includes(d) ? ' user-day-chip-active' : ''}`}
+                                        onClick={() => toggleEditDay(d)}
+                                    >
+                                        <b>D{i + 1}</b>{d}
+                                    </button>
+                                ))}
+                            </div>
+                            {!daysValid && editDays.length > 0 && (
+                                <small className="p-error">Select exactly {dayCount} day{dayCount > 1 ? 's' : ''} ({editDays.length}/{dayCount}).</small>
+                            )}
                         </div>
                     </div>
                 </div>

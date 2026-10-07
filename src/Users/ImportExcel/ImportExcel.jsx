@@ -6,34 +6,53 @@ import './ImportExcel.css';
 
 const EXPECTED_COLUMNS = ['name', 'full name', 'phone', 'mobile', 'contact', 'city', 'location', 'address'];
 
-const downloadTemplate = () => {
+const isYes = (v) => {
+  if (typeof v === 'boolean') return v;
+  if (typeof v === 'number') return v > 0;
+  const s = String(v || '').trim().toLowerCase();
+  return ['y', 'yes', 'true', '1', 'x', '✓', 'v'].includes(s);
+};
+
+const downloadTemplate = (eventDates = [17, 18, 19, 20]) => {
   const wb = XLSX.utils.book_new();
-  const data = [
-    { Name: 'John Doe', Phone: '9876543210', City: 'Mumbai' }
-  ];
-  const ws = XLSX.utils.json_to_sheet(data);
+  const row = { Name: 'John Doe', Phone: '9876543210', City: 'Mumbai' };
+  eventDates.forEach((d, i) => {
+    row[`Day ${i + 1} (${d})`] = i < 2 ? 'yes' : 'no';
+  });
+  const ws = XLSX.utils.json_to_sheet([row]);
   XLSX.utils.book_append_sheet(wb, ws, 'Template');
   XLSX.writeFile(wb, 'user_import_template.xlsx');
 };
 
-function ImportExcel({ onImported, showError, showSuccess, onImport }) {
+function ImportExcel({ onImported, showError, showSuccess, onImport, onRouteImport, eventDates = [17, 18, 19, 20] }) {
   const [showModal, setShowModal] = useState(false);
   const [file, setFile] = useState(null);
   const [parsedData, setParsedData] = useState([]);
-  const [columnMap, setColumnMap] = useState({ name: '', phone: '', city: '' });
+  const [columnMap, setColumnMap] = useState({ name: '', phone: '', city: '', days: ['', '', '', ''] });
   const [availableColumns, setAvailableColumns] = useState([]);
   const [importing, setImporting] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef(null);
 
   const detectColumn = (headers) => {
-    const map = { name: '', phone: '', city: '' };
+    const map = { name: '', phone: '', city: '', days: ['', '', '', ''] };
     headers.forEach((h) => {
       const lower = h.toLowerCase().trim();
       if (EXPECTED_COLUMNS.includes(lower)) {
         if (['name', 'full name'].includes(lower)) map.name = h;
         else if (['phone', 'mobile', 'contact'].includes(lower)) map.phone = h;
         else if (['city', 'location', 'address'].includes(lower)) map.city = h;
+      }
+    });
+    headers.forEach((h) => {
+      const lower = h.toLowerCase().trim().replace(/\s+/g, ' ');
+      for (let i = 0; i < 4; i++) {
+        if (map.days[i]) continue;
+        const dayNum = i + 1;
+        const re = new RegExp(`^day\\s*0?${dayNum}\\b`);
+        if (re.test(lower) || lower === String(eventDates[i])) {
+          map.days[i] = h;
+        }
       }
     });
     return map;
@@ -102,6 +121,36 @@ function ImportExcel({ onImported, showError, showSuccess, onImport }) {
       return;
     }
 
+    const dayCols = Array.isArray(columnMap.days) ? columnMap.days : ['', '', '', ''];
+    const mappedDayCols = dayCols.filter(Boolean).length;
+
+    if (onRouteImport && mappedDayCols > 0) {
+      const groups = {};
+      const skipped = [];
+      for (const row of parsedData) {
+        const name = String(row[nameCol] || '').trim();
+        const phone = String(row[phoneCol] || '').trim();
+        const city = String(row[cityCol] || '').trim();
+        if (!name) { skipped.push({ name: '', reason: 'missing name' }); continue; }
+        const days = [];
+        dayCols.forEach((col, i) => {
+          if (col && isYes(row[col])) days.push(eventDates[i]);
+        });
+        if (days.length === 0) { skipped.push({ name, reason: 'no day marked yes' }); continue; }
+        const payload = { name, days };
+        if (phone) payload.phone = phone;
+        if (city) payload.city = city;
+        const key = days.length;
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(payload);
+      }
+      const groupArr = Object.keys(groups).map(k => ({ count: Number(k), entries: groups[k] }))
+        .sort((a, b) => b.count - a.count);
+      onRouteImport(groupArr, skipped);
+      closeModal();
+      return;
+    }
+
     if (onImport) {
       setImporting(false);
       const imported = [];
@@ -160,19 +209,43 @@ function ImportExcel({ onImported, showError, showSuccess, onImport }) {
     setFile(null);
     setParsedData([]);
     setAvailableColumns([]);
-    setColumnMap({ name: '', phone: '', city: '' });
+    setColumnMap({ name: '', phone: '', city: '', days: ['', '', '', ''] });
     setDragOver(false);
   };
 
   const handleColumnChange = (field, value) => {
+    if (field.startsWith('day')) {
+      const idx = parseInt(field.slice(3), 10);
+      setColumnMap((prev) => {
+        const days = [...(prev.days || ['', '', '', ''])];
+        days[idx] = value;
+        return { ...prev, days };
+      });
+      return;
+    }
     setColumnMap((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const dayColsMapped = (columnMap.days || []).filter(Boolean).length;
+  const routingMode = !!onRouteImport && dayColsMapped > 0;
+
+  const buildImportLabel = () => {
+    if (routingMode) {
+      const dayRows = parsedData.filter(row => {
+        const name = String(row[columnMap.name] || '').trim();
+        if (!name) return false;
+        return         (columnMap.days || []).some((col) => col && isYes(row[col]));
+      }).length;
+      return `Route ${dayRows} Record${dayRows !== 1 ? 's' : ''} to Folders`;
+    }
+    return `Import ${parsedData.length} Record${parsedData.length !== 1 ? 's' : ''}`;
   };
 
   const previewRows = parsedData.slice(0, 3);
 
   return (
     <>
-      <button className="import-btn template-btn" onClick={downloadTemplate} title="Download Excel template">
+      <button className="import-btn template-btn" onClick={() => downloadTemplate(eventDates)} title="Download Excel template">
         <i className="pi pi-download mr-2"></i> Download Template
       </button>
       <button className="import-btn" onClick={() => setShowModal(true)} title="Import users from Excel or CSV">
@@ -256,6 +329,24 @@ function ImportExcel({ onImported, showError, showSuccess, onImport }) {
                       </select>
                     </div>
                   </div>
+                  <div className="import-mapping-row import-mapping-days">
+                    {[0, 1, 2, 3].map(i => (
+                      <div className="import-mapping-field" key={i}>
+                        <label>Day {i + 1} <span style={{ color: '#94a3b8', fontWeight: 400 }}>({eventDates[i]})</span></label>
+                        <select value={(columnMap.days || [])[i] || ''} onChange={(e) => handleColumnChange(`day${i}`, e.target.value)}>
+                          <option value="">-- Skip --</option>
+                          {availableColumns.map((col) => (
+                            <option key={col} value={col}>{col}</option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
+                    <p className="import-mapping-hint" style={{ margin: '4px 0 0' }}>
+                      {routingMode
+                        ? `Yes/no day columns found — import will route rows into matching day-count folders.`
+                        : 'Map the 4 yes/no day columns to enable automatic folder routing.'}
+                    </p>
+                  </div>
                 </div>
 
                 {previewRows.length > 0 && (
@@ -296,7 +387,7 @@ function ImportExcel({ onImported, showError, showSuccess, onImport }) {
                     {importing ? (
                       <span><i className="pi pi-spin pi-spinner mr-2"></i> Importing...</span>
                     ) : (
-                      <span><i className="pi pi-upload mr-2"></i> Import {parsedData.length} Record{parsedData.length !== 1 ? 's' : ''}</span>
+                      <span><i className={`pi ${routingMode ? 'pi-sitemap' : 'pi-upload'} mr-2`}></i> {buildImportLabel()}</span>
                     )}
                   </button>
                 </div>

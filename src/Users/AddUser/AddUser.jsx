@@ -6,7 +6,7 @@ import { classNames } from 'primereact/utils';
 import axios from 'axios';
 import PrintQROptions from '../../components/PrintQROptions';
 
-const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMode = false }) => {
+const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMode = false, eventDates = [], defaultDays = [] }) => {
     let emptyUser = {
         name: '',
         phone: '',
@@ -18,6 +18,49 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMod
     const [printDialogVisible, setPrintDialogVisible] = useState(false);
     const [user, setUser] = useState(emptyUser);
     const [submitted, setSubmitted] = useState(false);
+    const [userDays, setUserDays] = useState(defaultDays || []);
+
+    const dayCountRequired = Array.isArray(defaultDays) ? defaultDays.length : 0;
+
+    const [lastDefault, setLastDefault] = useState(defaultDays);
+    if (defaultDays !== lastDefault) {
+        setLastDefault(defaultDays);
+        setUserDays(defaultDays || []);
+    }
+
+    const toggleUserDay = (d) => {
+        setUserDays(prev => {
+            if (prev.includes(d)) return prev.filter(x => x !== d);
+            if (dayCountRequired > 0 && prev.length >= dayCountRequired) {
+                showError(`This folder allows exactly ${dayCountRequired} day${dayCountRequired > 1 ? 's' : ''}.`);
+                return prev;
+            }
+            return [...prev, d];
+        });
+    };
+
+    const daysValid = dayCountRequired === 0 || userDays.length === dayCountRequired;
+
+    const daysField = (
+        <div className="user-days-field">
+            <label className="font-bold">Allowed Days</label>
+            <div className="user-days-chips">
+                {eventDates.map((d, i) => (
+                    <button
+                        key={`${d}-${i}`}
+                        type="button"
+                        className={`user-day-chip${userDays.includes(d) ? ' user-day-chip-active' : ''}`}
+                        onClick={() => toggleUserDay(d)}
+                    >
+                        <b>D{i + 1}</b>{d}
+                    </button>
+                ))}
+            </div>
+            {!daysValid && (submitted || userDays.length > 0) && (
+                <small className="p-error">Select exactly {dayCountRequired} day{dayCountRequired > 1 ? 's' : ''} ({userDays.length}/{dayCountRequired}).</small>
+            )}
+        </div>
+    );
 
     const openNew = () => {
         setUser(emptyUser);
@@ -34,7 +77,11 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMod
         setSubmitted(true);
 
         if (user.name.trim() && user.phone.trim() && user.city.trim()) {
-            let _user = { ...user };
+            if (!daysValid) {
+                showError(`Select exactly ${dayCountRequired} day${dayCountRequired > 1 ? 's' : ''}.`);
+                return;
+            }
+            let _user = { ...user, days: [...userDays] };
             if (localMode) {
                 showSuccess("User Added Successfully");
                 onUserAdded(_user);
@@ -83,8 +130,19 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMod
     );
 
     const isFormValid = user.name.trim() && user.phone.trim() && user.city.trim();
-    const qrData = `{"app":"QRAPP","type":"U","name":"${user.name}","phone":"${user.phone}","city":"${user.city}"}`;
+    const orderedUserDays = [...userDays].sort((a, b) => eventDates.indexOf(a) - eventDates.indexOf(b));
+    const qrData = `{"app":"QRAPP","type":"U","name":"${user.name}","phone":"${user.phone}","city":"${user.city}"${orderedUserDays.length > 0 ? `,"days":[${orderedUserDays.join(',')}]` : ''}}`;
     const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}&color=050816&bgcolor=ffffff`;
+    const itemForPrint = { ...user, days: orderedUserDays };
+
+    const daysBadges = orderedUserDays.length > 0 && (
+        <div className="qr-days-row">
+            {orderedUserDays.map(d => {
+                const idx = eventDates.indexOf(d);
+                return <span key={d} className="days-chip">{idx >= 0 && <b>D{idx + 1}</b>}{d}</span>;
+            })}
+        </div>
+    );
 
     if (inline) {
         return (
@@ -107,6 +165,9 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMod
                         {submitted && !user.city && <small className="p-error">City is required.</small>}
                     </div>
                 </div>
+                <div className="row">
+                    <div className="col-12 field">{daysField}</div>
+                </div>
 
                 <div className="d-flex flex-wrap gap-3 mt-4 justify-content-end">
                     <Button
@@ -114,7 +175,7 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMod
                         label="Print QR"
                         icon="pi pi-print"
                         onClick={() => setPrintDialogVisible(true)}
-                        disabled={!isFormValid}
+                        disabled={!isFormValid || !daysValid}
                         style={{ width: '240px', borderRadius: '12px', padding: '0.6rem 1.5rem', backgroundColor: '#6366f1', color: '#ffffff', border: '1px solid transparent' }}
                     />
                     <Button
@@ -124,7 +185,7 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMod
                         severity="help"
                         outlined
                         onClick={() => setQrDialog(true)}
-                        disabled={!isFormValid}
+                        disabled={!isFormValid || !daysValid}
                         style={{ width: '240px', borderRadius: '12px', padding: '0.6rem 1.5rem' }}
                     />
                     <Button
@@ -147,16 +208,18 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMod
                             <h4 style={{ color: '#f8fafc', fontWeight: '700', fontSize: '1.25rem', marginBottom: '0.25rem' }}>{user.name}</h4>
                             <p style={{ color: '#94a3b8', fontSize: '1.05rem', fontWeight: '500', margin: '0.25rem 0' }}>{user.phone}</p>
                             <p style={{ color: '#94a3b8', fontSize: '1.05rem', fontWeight: '500', margin: 0 }}>{user.city}</p>
+                            {daysBadges}
                         </div>
                     </div>
                 </Dialog>
                 <PrintQROptions
                     visible={printDialogVisible}
                     onHide={(clearSelection) => { setPrintDialogVisible(false); }}
-                    currentItem={user}
+                    currentItem={itemForPrint}
                     selectedItems={[]}
                     type="U"
                     fetchAllUrl="/users"
+                 eventDates={eventDates}
                 />
             </div>
         );
@@ -182,9 +245,11 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMod
                         </div>
                         <div className="field">
                             <label htmlFor="city" className="font-bold">City</label>
-                            <InputText id="city" value={user.city} onChange={(e) => onInputChange(e, 'city')} required className={classNames({ 'p-invalid': submitted && !user.city })} />
+                            <InputText id="city" value={user.city} onChange={(e) => onInputChange(e, 'city')} placeholder="Enter city" required className={classNames({ 'p-invalid': submitted && !user.city })} />
                             {submitted && !user.city && <small className="p-error">City is required.</small>}
                         </div>
+
+                        {daysField}
 
                         <div className="mt-4 d-flex flex-wrap gap-2 justify-content-center">
                             <Button
@@ -192,7 +257,7 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMod
                                 label="Print QR"
                                 icon="pi pi-print"
                                 onClick={() => setPrintDialogVisible(true)}
-                                disabled={!isFormValid}
+                                disabled={!isFormValid || !daysValid}
                                 style={{ borderRadius: '12px', padding: '0.6rem 1.5rem', backgroundColor: '#6366f1', color: '#ffffff', border: '1px solid transparent', width: '240px' }}
                             />
                             <Button
@@ -202,7 +267,7 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMod
                                 severity="help"
                                 outlined
                                 onClick={() => setQrDialog(true)}
-                                disabled={!isFormValid}
+                                disabled={!isFormValid || !daysValid}
                                 style={{ borderRadius: '12px', padding: '0.6rem 1.5rem', width: '240px' }}
                             />
                         </div>
@@ -231,6 +296,7 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMod
                 selectedItems={[]}
                 type="U"
                 fetchAllUrl="/users"
+             eventDates={eventDates}
             />
         </>
     );

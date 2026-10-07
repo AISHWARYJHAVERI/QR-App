@@ -3,17 +3,31 @@ import Scan from '../models/Scan.js';
 
 const router = Router();
 
+const computeDayStatus = (qrValue, when) => {
+  try {
+    const data = JSON.parse(qrValue);
+    const days = Array.isArray(data.days) ? data.days.map(Number).filter(n => !Number.isNaN(n)) : [];
+    if (days.length === 0) return 'none';
+    const scanDay = new Date(when).getDate();
+    return days.includes(scanDay) ? 'allowed' : 'wrong';
+  } catch {
+    return 'none';
+  }
+};
+
 router.post('/', async (req, res) => {
   try {
     const { qrValue, scannedBy, timeSlot, scannedAt } = req.body;
     if (!qrValue || !timeSlot) {
       return res.status(400).json({ error: 'qrValue and timeSlot required' });
     }
+    const at = scannedAt ? new Date(scannedAt) : new Date();
     const scan = await Scan.create({
       qrValue,
       scannedBy: scannedBy || '',
       timeSlot,
-      scannedAt: scannedAt ? new Date(scannedAt) : new Date(),
+      scannedAt: at,
+      dayStatus: computeDayStatus(qrValue, at),
       source: 'scanner',
     });
     res.status(201).json(scan);
@@ -39,7 +53,13 @@ router.get('/', async (req, res) => {
         .limit(limit)
         .lean(),
     ]);
-    res.json({ scans, total, page, totalPages: Math.ceil(total / limit), limit });
+    const hydrated = scans.map(s => ({
+      ...s,
+      dayStatus: s.dayStatus && s.dayStatus !== 'none'
+        ? s.dayStatus
+        : computeDayStatus(s.qrValue, s.scannedAt),
+    }));
+    res.json({ scans: hydrated, total, page, totalPages: Math.ceil(total / limit), limit });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

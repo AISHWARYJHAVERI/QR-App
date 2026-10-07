@@ -1,4 +1,4 @@
-export const printQRCards = ({ items, type }) => {
+export const printQRCards = ({ items, type, eventDates = [] }) => {
   return new Promise((resolve) => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) { resolve(); return; }
@@ -13,7 +13,9 @@ export const printQRCards = ({ items, type }) => {
       const cardsHtml = pageItems.map((item) => buildCardHtml({
         qrImageUrl: buildQRImageUrl(buildQRData(item, type)),
         name: item.name,
-        city: item.city
+        city: item.city,
+        days: item.days,
+        eventDates
       })).join('');
 
       return `<div class="a4-sheet"><div class="grid-container">${cardsHtml}</div></div>`;
@@ -140,6 +142,41 @@ export const printQRCards = ({ items, type }) => {
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
+    .person-days {
+      width: 100%;
+      text-align: center;
+      margin-top: 1.5mm;
+    }
+    .days-label {
+      display: block;
+      font-size: 7px;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.8mm;
+    }
+    .days-chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1mm;
+    }
+    .day-chip {
+      display: inline-block;
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 8px;
+      font-weight: 700;
+      padding: 0.6mm 1.6mm;
+      border-radius: 3px;
+      letter-spacing: 0.03em;
+    }
+    .day-chip b {
+      font-size: 6.5px;
+      color: #93c5fd;
+      margin-right: 0.8mm;
+    }
     .card-footer {
       width: 100%;
       background: #f1f5f9;
@@ -180,7 +217,17 @@ export const printQRCards = ({ items, type }) => {
   });
 };
 
-const buildCardHtml = ({ qrImageUrl, name, city }) => {
+const buildDaysHtml = (days, eventDates) => {
+  if (!Array.isArray(days) || days.length === 0) return '';
+  const chips = days.map((d) => {
+    const idx = eventDates.indexOf(d);
+    const label = idx >= 0 ? `D${idx + 1}` : '';
+    return `<span class="day-chip">${label ? `<b>${label}</b>` : ''}${d}</span>`;
+  }).join('');
+  return `<div class="person-days"><span class="days-label">Allowed Days</span><div class="days-chips">${chips}</div></div>`;
+};
+
+const buildCardHtml = ({ qrImageUrl, name, city, days, eventDates = [] }) => {
   return `
   <div class="card">
     <div class="card-header">
@@ -192,6 +239,7 @@ const buildCardHtml = ({ qrImageUrl, name, city }) => {
       </div>
       <div class="person-name">${name || ''}</div>
       ${city ? `<div class="person-city">${city}</div>` : ''}
+      ${buildDaysHtml(days, eventDates)}
     </div>
     <div class="card-footer">
       <div class="footer-author">Aishwary Jhaveri</div>
@@ -202,7 +250,10 @@ const buildCardHtml = ({ qrImageUrl, name, city }) => {
 export const buildQRData = (item, type) => {
   if (type === 'U') {
     const city = item.city ? `,"city":"${item.city}"` : '';
-    return `{"app":"QRAPP","type":"U","name":"${item.name}","phone":"${item.phone}"${city}}`;
+    const days = Array.isArray(item.days) && item.days.length > 0
+      ? `,"days":[${[...new Set(item.days.map(Number))].filter(n => !Number.isNaN(n)).join(',')}]`
+      : '';
+    return `{"app":"QRAPP","type":"U","name":"${item.name}","phone":"${item.phone}"${city}${days}}`;
   }
   return `{"app":"QRAPP","type":"A","name":"${item.name}","role":"${item.role}","phone":"${item.phone}"}`;
 };

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 
-const GenerateQR = ({ rowData, onPrintClick }) => {
+const GenerateQR = ({ rowData, onPrintClick, eventDates = [] }) => {
     const [qrDialog, setQrDialog] = useState(false);
 
     const openQR = () => {
@@ -13,7 +13,9 @@ const GenerateQR = ({ rowData, onPrintClick }) => {
         setQrDialog(false);
     };
 
-    const qrData = `{"app":"QRAPP","type":"U","name":"${rowData.name}","phone":"${rowData.phone}"}`;
+    const rowDays = Array.isArray(rowData.days) ? rowData.days : [];
+    const orderedDays = [...rowDays].sort((a, b) => eventDates.indexOf(a) - eventDates.indexOf(b));
+    const qrData = `{"app":"QRAPP","type":"U","name":"${rowData.name}","phone":"${rowData.phone}"${orderedDays.length > 0 ? `,"days":[${orderedDays.join(',')}]` : ''}}`;
     const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}&color=050816&bgcolor=ffffff`;
 
     const qrDialogFooter = (
@@ -38,6 +40,14 @@ const GenerateQR = ({ rowData, onPrintClick }) => {
                     <div style={{ marginTop: '0.5rem' }}>
                         <h4 style={{ color: '#f8fafc', fontWeight: '700', fontSize: '1.25rem', marginBottom: '0.25rem' }}>{rowData.name}</h4>
                         <p style={{ color: '#94a3b8', fontSize: '1rem', fontWeight: '500', margin: 0 }}>{rowData.phone}</p>
+                        {orderedDays.length > 0 && (
+                            <div className="qr-days-row">
+                                {orderedDays.map(d => {
+                                    const idx = eventDates.indexOf(d);
+                                    return <span key={d} className="days-chip">{idx >= 0 && <b>D{idx + 1}</b>}{d}</span>;
+                                })}
+                            </div>
+                        )}
                     </div>
                 </div>
             </Dialog>
