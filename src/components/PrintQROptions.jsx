@@ -11,8 +11,20 @@ const PrintQROptions = ({ visible, onHide, currentItem, selectedItems, type, fet
     await printQRCards({ items, type, eventDates });
   };
 
+  const handlePrintSpecific = async () => {
+    if (!currentItem) return;
+    setPrinting(true);
+    try {
+      await printItems([currentItem]);
+    } catch (e) {
+      console.error('Print failed', e);
+    }
+    setPrinting(false);
+    onHide('specific');
+  };
+
   const handlePrintSelected = async () => {
-    const items = (selectedItems && selectedItems.length > 0) ? selectedItems : (currentItem ? [currentItem] : []);
+    const items = selectedItems || [];
     if (items.length === 0) return;
     setPrinting(true);
     try {
@@ -66,10 +78,16 @@ const PrintQROptions = ({ visible, onHide, currentItem, selectedItems, type, fet
       <div className="d-flex flex-column align-items-center text-center" style={{ gap: '1.5rem', padding: '1rem 0' }}>
         <p style={{ color: '#94a3b8', fontSize: '0.95rem', margin: 0 }}>Choose print option:</p>
         <div className="d-flex flex-wrap justify-content-center" style={{ gap: '0.75rem' }}>
+          {currentItem && (
+            <Button label="Print This QR" icon="pi pi-user" onClick={handlePrintSpecific} disabled={printing}
+              style={{ backgroundColor: '#10b981', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.7rem 1.5rem', fontWeight: 600, width: '100%' }} />
+          )}
+          {selectedItems && selectedItems.length > 0 && (
+            <Button label={`Print Selected (${selectedItems.length})`} icon="pi pi-check-square" onClick={handlePrintSelected} disabled={printing}
+              style={{ backgroundColor: '#14b8a6', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.7rem 1.5rem', fontWeight: 600, width: '100%' }} />
+          )}
           <Button label="Print All" icon="pi pi-print" onClick={handlePrintAll} disabled={printing}
             style={{ backgroundColor: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.7rem 1.5rem', fontWeight: 600 }} />
-          <Button label="Print Selected" icon="pi pi-file" onClick={handlePrintSelected} disabled={printing}
-            style={{ backgroundColor: '#14b8a6', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.7rem 1.5rem', fontWeight: 600 }} />
           <Button label="Print Committee" icon="pi pi-folder-open" onClick={handlePrintCommittee} disabled={printing || committeeDisabled || !committeeItems || committeeItems.length === 0}
             title={committeeDisabled ? 'Open a committee to print its QR codes' : 'Print the current committee QR codes'}
             style={{ backgroundColor: '#f59e0b', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.7rem 1.5rem', fontWeight: 600 }} />

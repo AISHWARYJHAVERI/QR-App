@@ -28,7 +28,7 @@ export const printQRCards = ({ items, type, eventDates = [] }) => {
   <style>
     @page {
       size: A4 portrait;
-      margin: 8mm 6mm;
+      margin: 0;
     }
     * {
       margin: 0;
@@ -40,21 +40,24 @@ export const printQRCards = ({ items, type, eventDates = [] }) => {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
+      margin: 0;
     }
     .a4-sheet {
-      width: 100%;
-      min-height: 280mm;
+      width: 210mm;
+      height: 297mm;
+      padding: 8mm 6mm;
+      box-sizing: border-box;
       page-break-after: always;
       break-after: page;
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      margin-bottom: 5mm;
+      margin: 0 auto;
+      position: relative;
     }
     .a4-sheet:last-child {
       page-break-after: auto;
       break-after: auto;
-      margin-bottom: 0;
     }
     .grid-container {
       display: grid;
@@ -63,7 +66,6 @@ export const printQRCards = ({ items, type, eventDates = [] }) => {
       justify-content: center;
       align-content: start;
       width: 100%;
-      padding: 2mm 0;
     }
     .card {
       width: 58mm;
