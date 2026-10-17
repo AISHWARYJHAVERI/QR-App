@@ -6,7 +6,7 @@ import { classNames } from 'primereact/utils';
 import axios from 'axios';
 import PrintQROptions from '../../components/PrintQROptions';
 
-const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMode = false, eventDates = [], defaultDays = [] }) => {
+const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, eventDates = [], defaultDays = [], ensureFolder }) => {
     let emptyUser = {
         name: '',
         phone: '',
@@ -34,15 +34,19 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMod
     const toggleUserDay = (d) => {
         setUserDays(prev => {
             if (prev.includes(d)) return prev.filter(x => x !== d);
-            if (dayCountRequired > 0 && prev.length >= dayCountRequired) {
-                showError(`This folder allows exactly ${dayCountRequired} day${dayCountRequired > 1 ? 's' : ''}.`);
-                return prev;
+            if (dayCountRequired > 0) {
+                if (prev.length >= dayCountRequired) {
+                    showError(`This folder allows exactly ${dayCountRequired} day${dayCountRequired > 1 ? 's' : ''}.`);
+                    return prev;
+                }
+                return [...prev, d];
             }
+            if (prev.length >= 4) return prev;
             return [...prev, d];
         });
     };
 
-    const daysValid = dayCountRequired === 0 || userDays.length === dayCountRequired;
+    const daysValid = dayCountRequired > 0 ? userDays.length === dayCountRequired : userDays.length >= 1;
 
     const daysField = (
         <div className="user-days-field">
@@ -60,7 +64,11 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMod
                 ))}
             </div>
             {!daysValid && (submitted || userDays.length > 0) && (
-                <small className="p-error">Select exactly {dayCountRequired} day{dayCountRequired > 1 ? 's' : ''} ({userDays.length}/{dayCountRequired}).</small>
+                <small className="p-error">
+                    {dayCountRequired > 0
+                        ? `Select exactly ${dayCountRequired} day${dayCountRequired > 1 ? 's' : ''} (${userDays.length}/${dayCountRequired}).`
+                        : 'Select at least 1 day.'}
+                </small>
             )}
         </div>
     );
@@ -81,18 +89,16 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, localMod
 
         if (user.name.trim() && user.phone.trim() && user.city.trim()) {
             if (!daysValid) {
-                showError(`Select exactly ${dayCountRequired} day${dayCountRequired > 1 ? 's' : ''}.`);
+                showError(dayCountRequired > 0
+                    ? `Select exactly ${dayCountRequired} day${dayCountRequired > 1 ? 's' : ''}.`
+                    : 'Select at least 1 day.');
                 return;
+            }
+            if (ensureFolder) {
+                const ok = await ensureFolder([...userDays]);
+                if (!ok) return;
             }
             let _user = { ...user, days: [...userDays] };
-            if (localMode) {
-                showSuccess("User Added Successfully");
-                onUserAdded(_user);
-                setUserDialog(false);
-                setUser(emptyUser);
-                setSubmitted(false);
-                return;
-            }
             try {
                 const response = await axios.post('/users', _user);
                 showSuccess("User Created Successfully");

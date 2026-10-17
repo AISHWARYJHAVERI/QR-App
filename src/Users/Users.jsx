@@ -66,35 +66,13 @@ function Users({ isLoggedIn }) {
     const showSelectionRef = useRef(showSelection);
     const dropdownRef = useRef(null);
     const folderTriggerRef = useRef(null);
-    const newFolderToastRef = useRef(null);
-    const newFolderInfoRef = useRef(null);
     const [ddStyle, setDdStyle] = useState({});
 
     useEffect(() => { showSelectionRef.current = showSelection; }, [showSelection]);
 
-    const [mode, setMode] = useState('api');
     const [activeFolder, setActiveFolder] = useState(null);
     const [folders, setFolders] = useState([]);
     const [showFolderDropdown, setShowFolderDropdown] = useState(false);
-    const [unsaved, setUnsaved] = useState(false);
-
-    const displayData = useMemo(() => {
-        if (mode === 'api') return users;
-        if (activeFolder) return activeFolder.entries;
-        return [];
-    }, [mode, users, activeFolder]);
-
-    const [showSaveDialog, setShowSaveDialog] = useState(false);
-    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
-    const [saveSource, setSaveSource] = useState('folder');
-    const [saveFolderName, setSaveFolderName] = useState('');
-    const [saving, setSaving] = useState(false);
-
-    const [unsavedAction, setUnsavedAction] = useState(null);
-    const [showUnsavedPrompt, setShowUnsavedPrompt] = useState(false);
-    const [pendingNavigation, setPendingNavigation] = useState(null);
-    const [showNewFolderConfirm, setShowNewFolderConfirm] = useState(false);
-    const [showNewFolderInfo, setShowNewFolderInfo] = useState(false);
 
     const [eventDates, setEventDates] = useState(() => {
         try {
@@ -108,6 +86,15 @@ function Users({ isLoggedIn }) {
     const [showTypePicker, setShowTypePicker] = useState(false);
     const [pickerCount, setPickerCount] = useState(0);
     const [pickerDays, setPickerDays] = useState([]);
+    const [pickerCustom, setPickerCustom] = useState(false);
+    const [pickerName, setPickerName] = useState('');
+    const [creatingFolder, setCreatingFolder] = useState(false);
+
+    const [showChangeDays, setShowChangeDays] = useState(false);
+    const [changeDaysDraft, setChangeDaysDraft] = useState([]);
+    const [reprintItems, setReprintItems] = useState([]);
+    const [folderMissing, setFolderMissing] = useState(null);
+    const folderMissingResolve = useRef(null);
 
     const folderTypeCount = (f) => {
         if (Array.isArray(f?.days) && f.days.length > 0) return f.days.length;
@@ -118,6 +105,20 @@ function Users({ isLoggedIn }) {
     const sortedFolders = useMemo(() => [...folders].sort((a, b) => folderTypeCount(b) - folderTypeCount(a)), [folders]);
     const dayIndexOf = (d) => eventDates.indexOf(d);
     const orderedDays = (days) => [...days].sort((a, b) => dayIndexOf(a) - dayIndexOf(b));
+
+    const isFolderView = !!activeFolder;
+
+    const folderMembers = (f) => {
+        if (!f) return users;
+        const n = folderTypeCount(f);
+        return users.filter(u => (Array.isArray(u.days) ? u.days.length : 0) === n);
+    };
+
+    const displayData = useMemo(() => {
+        if (!activeFolder) return users;
+        const n = folderTypeCount(activeFolder);
+        return users.filter(u => (Array.isArray(u.days) ? u.days.length : 0) === n);
+    }, [users, activeFolder]);
 
     useEffect(() => {
         fetchUsers();
@@ -148,9 +149,7 @@ function Users({ isLoggedIn }) {
         if (!showFolderDropdown) return;
         const handleClick = (e) => {
             if (dropdownRef.current && !dropdownRef.current.contains(e.target) &&
-                !folderTriggerRef.current?.contains(e.target) &&
-                !newFolderToastRef.current?.contains(e.target) &&
-                !newFolderInfoRef.current?.contains(e.target)) {
+                !folderTriggerRef.current?.contains(e.target)) {
                 setShowFolderDropdown(false);
             }
         };
@@ -168,7 +167,8 @@ function Users({ isLoggedIn }) {
 
     useEffect(() => {
         if (!showFolderDropdown) { setDdStyle({}); return; }
-        requestAnimationFrame(() => {            const t = folderTriggerRef.current?.getBoundingClientRect();
+        requestAnimationFrame(() => {
+            const t = folderTriggerRef.current?.getBoundingClientRect();
             const d = dropdownRef.current;
             if (!t || !d) {
                 setDdStyle({ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', visibility: 'visible' });
@@ -232,14 +232,12 @@ function Users({ isLoggedIn }) {
                             const folder = res.data;
                             if (folder) {
                                 setActiveFolder(folder);
-                                setMode('folder');
                             }
                         }).catch(() => {
                             localStorage.removeItem('committee_active_session');
                         });
                     } else {
                         setActiveFolder(null);
-                        setMode('folder');
                     }
                 }
             }
@@ -263,155 +261,85 @@ function Users({ isLoggedIn }) {
     };
 
     const handleUserAdded = (newUser) => {
-        if (mode === 'folder') {
-            const id = `fl_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`;
-            const days = Array.isArray(newUser.days) && newUser.days.length > 0
-                ? newUser.days
-                : (activeFolder?.days || []);
-            const entry = { ...newUser, id, days };
-            const newEntries = [...(activeFolder?.entries || []), entry];
-            setActiveFolder(prev => ({ ...prev, entries: newEntries }));
-            setUnsaved(true);
-        } else {
-            const updated = [...users, newUser];
-            setUsers(updated);
-            localStorage.setItem('users_cache', JSON.stringify(updated));
-        }
+        const updated = [...users, newUser];
+        setUsers(updated);
+        localStorage.setItem('users_cache', JSON.stringify(updated));
     };
 
     const handleUserUpdated = (updatedUser) => {
-        if (mode === 'folder') {
-            const newEntries = (activeFolder?.entries || []).map(u =>
-                u.id === updatedUser.id ? { ...updatedUser } : u
-            );
-            setActiveFolder(prev => ({ ...prev, entries: newEntries }));
-            setUnsaved(true);
-        } else {
-            const index = users.findIndex(u => u.id === updatedUser.id);
-            if (index !== -1) {
-                const _users = [...users];
-                _users[index] = updatedUser;
-                setUsers(_users);
-                localStorage.setItem('users_cache', JSON.stringify(_users));
-            }
+        const prev = users.find(u => u.id === updatedUser.id);
+        const prevDays = orderedDays(Array.isArray(prev?.days) ? prev.days : []).join(',');
+        const newDays = orderedDays(Array.isArray(updatedUser.days) ? updatedUser.days : []).join(',');
+        const index = users.findIndex(u => u.id === updatedUser.id);
+        if (index !== -1) {
+            const _users = [...users];
+            _users[index] = updatedUser;
+            setUsers(_users);
+            localStorage.setItem('users_cache', JSON.stringify(_users));
+        }
+        if (prev && prevDays !== newDays) {
+            setReprintItems([{ ...updatedUser }]);
         }
     };
 
     const handleUserDeleted = (deletedUserId) => {
-        if (mode === 'folder') {
-            const newEntries = (activeFolder?.entries || []).filter(u => u.id !== deletedUserId);
-            setActiveFolder(prev => ({ ...prev, entries: newEntries }));
-            setUnsaved(true);
-        } else {
-            const updated = users.filter(u => u.id !== deletedUserId);
-            setUsers(updated);
-            localStorage.setItem('users_cache', JSON.stringify(updated));
-        }
+        const updated = users.filter(u => u.id !== deletedUserId);
+        setUsers(updated);
+        localStorage.setItem('users_cache', JSON.stringify(updated));
     };
 
     const handleImported = () => {
         fetchUsers();
     };
 
-    const handleFolderImport = (importedData, failedCount) => {
-        const newEntries = importedData.map(item => ({
-            ...item,
-            id: `fl_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`,
-            days: Array.isArray(item.days) && item.days.length ? item.days : (activeFolder?.days || [])
-        }));
-        const allEntries = [...(activeFolder?.entries || []), ...newEntries];
-        setActiveFolder(prev => ({ ...prev, entries: allEntries }));
-        setUnsaved(true);
-        if (newEntries.length > 0) {
-            showSuccess('Imported ' + newEntries.length + ' user' + (newEntries.length > 1 ? 's' : '') + ' successfully.' + (failedCount > 0 ? ' ' + failedCount + ' row' + (failedCount > 1 ? 's' : '') + ' skipped.' : ''));
-        } else {
-            showError('No records could be imported.');
-        }
-    };
-
     const handleRouteImport = async (groups, skipped) => {
         if (!groups || groups.length === 0) {
             const reasons = (skipped || []).slice(0, 5).map(s => `${s.name || 'Unnamed'}: ${s.reason}`).join('; ');
-            showError('No rows could be routed.' + (reasons ? ` Skipped — ${reasons}` : '') + ((skipped || []).length > 5 ? ` (+${skipped.length - 5} more)` : ''));
+            showError('No rows could be imported.' + (reasons ? ` Skipped — ${reasons}` : '') + ((skipped || []).length > 5 ? ` (+${skipped.length - 5} more)` : ''));
             return;
         }
-        let routed = 0;
-        const newId = () => `fl_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`;
+        let imported = 0;
+        let createdFolders = 0;
         try {
             for (const g of groups) {
-                const entries = g.entries.map(e => ({ ...e, id: newId() }));
-                if (activeFolder && folderTypeCount(activeFolder) === g.count) {
-                    if (activeFolder.id) {
-                        const merged = [...(activeFolder.entries || []), ...entries];
-                        const updated = { ...activeFolder, entries: merged };
-                        await axios.put(`/committeesessions/${activeFolder.id}`, updated);
-                        setActiveFolder(updated);
-                    } else {
-                        setActiveFolder(prev => ({ ...prev, entries: [...(prev?.entries || []), ...entries] }));
-                        setUnsaved(true);
-                    }
-                    routed += entries.length;
-                    continue;
+                let folder = folders.find(f => folderTypeCount(f) === g.count);
+                if (!folder) {
+                    const comboCounts = {};
+                    g.entries.forEach(e => {
+                        const key = (e.days || []).join(',');
+                        comboCounts[key] = (comboCounts[key] || 0) + 1;
+                    });
+                    const topKey = Object.keys(comboCounts).sort((a, b) => comboCounts[b] - comboCounts[a])[0];
+                    const defaultDays = topKey ? topKey.split(',').map(Number) : eventDates.slice(0, g.count);
+                    const res = await axios.post('/committeesessions', { name: typeLabel(g.count), days: orderedDays(defaultDays) });
+                    folder = res.data;
+                    createdFolders++;
                 }
-                const existing = folders.find(f => f.id !== activeFolder?.id && folderTypeCount(f) === g.count);
-                if (existing) {
-                    const merged = [...(existing.entries || []), ...entries];
-                    await axios.put(`/committeesessions/${existing.id}`, { ...existing, entries: merged });
-                    routed += entries.length;
-                    continue;
+                for (const e of g.entries) {
+                    await axios.post('/users', { name: e.name, phone: e.phone || '', city: e.city || '', days: e.days });
+                    imported++;
                 }
-                const comboCounts = {};
-                entries.forEach(e => {
-                    const key = (e.days || []).join(',');
-                    comboCounts[key] = (comboCounts[key] || 0) + 1;
-                });
-                const topKey = Object.keys(comboCounts).sort((a, b) => comboCounts[b] - comboCounts[a])[0];
-                const defaultDays = topKey ? topKey.split(',').map(Number) : eventDates.slice(0, g.count);
-                const folderName = typeLabel(g.count);
-                await axios.post('/committeesessions', { name: folderName, days: defaultDays, entries });
-                routed += entries.length;
             }
             await loadFolders();
+            await fetchUsers();
             const skippedCount = (skipped || []).length;
-            showSuccess(`Routed ${routed} user${routed === 1 ? '' : 's'} into ${groups.length} folder${groups.length === 1 ? '' : 's'}.` + (skippedCount > 0 ? ` ${skippedCount} row${skippedCount > 1 ? 's' : ''} skipped.` : ''));
+            showSuccess(`Imported ${imported} user${imported === 1 ? '' : 's'} into Global` + (createdFolders > 0 ? ` and created ${createdFolders} folder${createdFolders === 1 ? '' : 's'}` : '') + '.' + (skippedCount > 0 ? ` ${skippedCount} row${skippedCount > 1 ? 's' : ''} skipped.` : ''));
             if (skippedCount > 0) {
                 const reasons = skipped.slice(0, 5).map(s => `${s.name || 'Unnamed'}: ${s.reason}`).join('; ');
                 showError(`Skipped ${skippedCount} row${skippedCount > 1 ? 's' : ''} — ${reasons}${skippedCount > 5 ? ` (+${skippedCount - 5} more)` : ''}`);
             }
         } catch {
-            showError('Error routing imported users to folders.');
+            showError('Error importing users.');
         }
     };
 
     const selectFolder = (folder) => {
-        if (unsaved) {
-            setUnsavedAction({ type: 'select', folder });
-            setShowUnsavedPrompt(true);
-            setShowFolderDropdown(false);
-            return;
-        }
         setActiveFolder(folder);
-        setMode('folder');
-        setUnsaved(false);
         persistSession('folder', folder);
         setShowFolderDropdown(false);
     };
 
     const startNewFolder = () => {
-        if (mode === 'folder' && activeFolder && !activeFolder.id) {
-            setShowNewFolderInfo(true);
-            return;
-        }
-        if (unsaved) {
-            setUnsavedAction({ type: 'new' });
-            setShowUnsavedPrompt(true);
-            setShowFolderDropdown(false);
-            return;
-        }
-        if (displayData.length > 0) {
-            setShowNewFolderConfirm(true);
-            return;
-        }
         openTypePicker();
     };
 
@@ -419,6 +347,8 @@ function Users({ isLoggedIn }) {
         setShowFolderDropdown(false);
         setPickerCount(0);
         setPickerDays([]);
+        setPickerCustom(false);
+        setPickerName('');
         setShowTypePicker(true);
     };
 
@@ -426,16 +356,31 @@ function Users({ isLoggedIn }) {
         setShowTypePicker(false);
         setPickerCount(0);
         setPickerDays([]);
+        setPickerCustom(false);
+        setPickerName('');
     };
 
     const selectPickerType = (n) => {
+        setPickerCustom(false);
+        setPickerName(typeLabel(n));
         setPickerCount(n);
         setPickerDays(n === 4 ? [...eventDates] : []);
+    };
+
+    const selectPickerCustom = () => {
+        setPickerCustom(true);
+        setPickerCount(0);
+        setPickerName('');
+        setPickerDays([]);
     };
 
     const togglePickerDay = (d) => {
         setPickerDays(prev => {
             if (prev.includes(d)) return prev.filter(x => x !== d);
+            if (pickerCustom) {
+                if (prev.length >= 4) return prev;
+                return [...prev, d];
+            }
             if (prev.length >= pickerCount) {
                 showError(`Select exactly ${pickerCount} date${pickerCount > 1 ? 's' : ''}.`);
                 return prev;
@@ -444,26 +389,32 @@ function Users({ isLoggedIn }) {
         });
     };
 
-    const doStartNewFolder = (preset = null) => {
-        setActiveFolder(preset ? { name: preset.name, days: preset.days, entries: [] } : null);
-        setMode('folder');
-        setUnsaved(false);
-        persistSession('folder', null);
-        setShowFolderDropdown(false);
-        closeTypePicker();
-    };
+    const pickerInvalid = pickerCustom
+        ? (!pickerName.trim() || pickerDays.length < 1 || usedTypes.has(pickerDays.length))
+        : (!pickerCount || pickerDays.length !== pickerCount);
 
-    const handlePickerCreate = () => {
-        if (!pickerCount || pickerDays.length !== pickerCount) return;
-        doStartNewFolder({
-            name: typeLabel(pickerCount),
-            days: orderedDays(pickerDays)
-        });
-    };
-
-    const handleNewFolderConfirm = () => {
-        setShowNewFolderConfirm(false);
-        openTypePicker();
+    const handlePickerCreate = async () => {
+        if (pickerInvalid || creatingFolder) return;
+        const days = orderedDays(pickerDays);
+        const count = days.length;
+        const dup = folders.find(f => folderTypeCount(f) === count);
+        if (dup) {
+            showError(`A "${typeLabel(count)}" folder already exists ("${dup.name}"). Delete it first.`);
+            return;
+        }
+        const name = pickerCustom ? pickerName.trim() : typeLabel(pickerCount);
+        setCreatingFolder(true);
+        try {
+            const res = await axios.post('/committeesessions', { name, days });
+            await loadFolders();
+            closeTypePicker();
+            selectFolder(res.data);
+            showSuccess(`Folder "${name}" created.`);
+        } catch {
+            showError('Error creating folder');
+        } finally {
+            setCreatingFolder(false);
+        }
     };
 
     const handleDatesSave = () => {
@@ -476,180 +427,89 @@ function Users({ isLoggedIn }) {
         showSuccess('Event dates updated.');
     };
 
-    const handleNewFolderCancel = () => {
-        setShowNewFolderConfirm(false);
-    };
-
-    const handleNewFolderDismissAll = () => {
-        setShowNewFolderConfirm(false);
-        setShowFolderDropdown(false);
-    };
-
-    const handleNewFolderInfoDismiss = () => {
-        setShowNewFolderInfo(false);
-    };
-
     const switchToApiMode = () => {
-        if (unsaved) {
-            setUnsavedAction({ type: 'api' });
-            setShowUnsavedPrompt(true);
-            setShowFolderDropdown(false);
-            return;
-        }
-        setMode('api');
         setActiveFolder(null);
-        setUnsaved(false);
         persistSession('api', null);
         setShowFolderDropdown(false);
     };
 
-    const handleUnsavedSave = async () => {
-        setShowUnsavedPrompt(false);
-        const action = unsavedAction;
-        setUnsavedAction(null);
-        if (!activeFolder?.id) {
-            setPendingNavigation(action);
-            setSaveFolderName('');
-            setShowSaveDialog(true);
+    const ensureFolder = (days) => {
+        const count = days.length;
+        if (count >= 1 && folders.some(f => folderTypeCount(f) === count)) return Promise.resolve(true);
+        return new Promise(resolve => {
+            folderMissingResolve.current = resolve;
+            setFolderMissing(orderedDays(days));
+        });
+    };
+
+    const confirmFolderMissing = async () => {
+        if (!folderMissing) return;
+        const count = folderMissing.length;
+        setCreatingFolder(true);
+        try {
+            const res = await axios.post('/committeesessions', { name: typeLabel(count), days: folderMissing });
+            await loadFolders();
+            showSuccess(`Folder "${res.data.name}" created.`);
+            setFolderMissing(null);
+            folderMissingResolve.current?.(true);
+            folderMissingResolve.current = null;
+        } catch {
+            showError('Error creating folder');
+            folderMissingResolve.current?.(false);
+            folderMissingResolve.current = null;
+        } finally {
+            setCreatingFolder(false);
+        }
+    };
+
+    const cancelFolderMissing = () => {
+        setFolderMissing(null);
+        folderMissingResolve.current?.(false);
+        folderMissingResolve.current = null;
+    };
+
+    const openChangeDays = () => {
+        setChangeDaysDraft([]);
+        setShowChangeDays(true);
+    };
+
+    const applyChangeDays = async () => {
+        if (changeDaysDraft.length === 0) {
+            showError('Select at least 1 day.');
             return;
         }
-        await saveCurrentFolderAction(activeFolder.name);
-        navigateAfter(action);
-    };
-
-    const handleUnsavedDiscard = () => {
-        setShowUnsavedPrompt(false);
-        setUnsaved(false);
-        const action = unsavedAction;
-        setUnsavedAction(null);
-        navigateAfter(action);
-    };
-
-    const handleUnsavedCancel = () => {
-        setShowUnsavedPrompt(false);
-        setUnsavedAction(null);
-    };
-
-    const navigateAfter = (action) => {
-        if (!action) return;
-        if (action.type === 'select') {
-            setActiveFolder(action.folder);
-            setMode('folder');
-            setUnsaved(false);
-            persistSession('folder', action.folder);
-            setShowFolderDropdown(false);
-        } else if (action.type === 'new') {
-            setActiveFolder(null);
-            setMode('folder');
-            setUnsaved(false);
-            persistSession('folder', null);
-            openTypePicker();
-        } else if (action.type === 'api') {
-            setMode('api');
-            setActiveFolder(null);
-            setUnsaved(false);
-            persistSession('api', null);
-        }
-    };
-
-    const handleSaveClick = (source = 'folder') => {
-        setSaveSource(source);
-        setShowSaveConfirm(true);
-    };
-
-    const handleSaveConfirmYes = () => {
-        setShowSaveConfirm(false);
-        setSaveFolderName(saveSource === 'folder' ? (activeFolder?.name || '') : '');
-        setShowSaveDialog(true);
-    };
-
-    const handleSaveConfirmNo = () => {
-        setShowSaveConfirm(false);
-    };
-
-    const saveCurrentFolderAction = async (overrideName) => {
-        const name = (overrideName ?? saveFolderName).trim() || activeFolder?.name;
-        const entries = activeFolder?.entries || [];
-        const days = Array.isArray(activeFolder?.days) ? activeFolder.days : [];
-        if (!name) return;
-        const typeN = days.length;
-        if (typeN >= 1) {
-            const dup = folders.find(f => f.id !== activeFolder?.id && folderTypeCount(f) === typeN);
-            if (dup) {
-                showError(`A "${typeLabel(typeN)}" folder already exists ("${dup.name}"). Delete it first, then save this one.`);
-                return;
-            }
-        }
-        setSaving(true);
+        const ok = await ensureFolder(changeDaysDraft);
+        if (!ok) return;
+        const newDaysKey = orderedDays(changeDaysDraft).join(',');
+        const affected = selectedUsers.filter(u => orderedDays(Array.isArray(u.days) ? u.days : []).join(',') !== newDaysKey);
         try {
-            if (activeFolder?.id) {
-                const updated = { ...activeFolder, name, days, entries };
-                await axios.put(`/committeesessions/${activeFolder.id}`, updated);
-                showSuccess('Folder "' + name + '" updated successfully');
-            } else {
-                const payload = { name, days, entries };
-                const res = await axios.post('/committeesessions', payload);
-                setActiveFolder(res.data);
-                persistSession('folder', res.data);
-                showSuccess('Folder "' + name + '" saved successfully');
-            }
-            setUnsaved(false);
-            setActiveFolder(null);
-            persistSession('folder', null);
-            await loadFolders();
-            if (pendingNavigation) {
-                const action = pendingNavigation;
-                setPendingNavigation(null);
-                navigateAfter(action);
+            for (const u of affected) {
+                await axios.put(`/users/${u.id}`, { ...u, days: [...changeDaysDraft] });
             }
         } catch {
-            showError('Error saving folder');
-        } finally {
-            setSaving(false);
-            setShowSaveDialog(false);
+            showError('Error updating days for selected users.');
+            return;
         }
-    };
-
-    const confirmSaveFolder = () => {
-        if (!saveFolderName.trim()) return;
-        if (saveSource === 'db') {
-            saveDatabaseFolder();
+        setShowChangeDays(false);
+        setShowSelection(false);
+        setSelectedUsers([]);
+        await fetchUsers();
+        if (affected.length > 0) {
+            showSuccess(`Updated days for ${affected.length} user${affected.length === 1 ? '' : 's'}.`);
+            setReprintItems(affected.map(u => ({ ...u, days: [...changeDaysDraft] })));
         } else {
-            saveCurrentFolderAction();
+            showSuccess('Selected users already have these days.');
         }
-    };
-
-    const saveDatabaseFolder = async () => {
-        const name = saveFolderName.trim();
-        if (!name) return;
-        setSaving(true);
-        try {
-            await axios.post('/committeesessions', { name, entries: users });
-            showSuccess('Folder "' + name + '" saved successfully');
-            setShowSaveDialog(false);
-            await loadFolders();
-        } catch {
-            showError('Error saving folder');
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const handleSaveDialogCancel = () => {
-        setPendingNavigation(null);
-        setShowSaveDialog(false);
     };
 
     const handleFolderDelete = async (e, folder) => {
         e.stopPropagation();
-        if (!window.confirm(`Delete folder "${folder.name}" and all its entries?`)) return;
+        if (!window.confirm(`Delete folder "${folder.name}"? People in it stay in the Global database.`)) return;
         try {
             await axios.delete(`/committeesessions/${folder.id}`);
             showSuccess('Folder "' + folder.name + '" deleted');
             if (activeFolder?.id === folder.id) {
-                setMode('api');
                 setActiveFolder(null);
-                setUnsaved(false);
                 persistSession('api', null);
             }
             await loadFolders();
@@ -668,9 +528,9 @@ function Users({ isLoggedIn }) {
     const actionBodyTemplate = (rowData) => {
         return (
             <div className="action-buttons">
-                <EditUser rowData={rowData} onUserUpdated={handleUserUpdated} showError={showError} showSuccess={showSuccess} localMode={mode === 'folder'} eventDates={eventDates} dayCount={mode === 'folder' ? (activeFolder?.days?.length || 0) : 0} />
+                <EditUser rowData={rowData} onUserUpdated={handleUserUpdated} showError={showError} showSuccess={showSuccess} eventDates={eventDates} dayCount={isFolderView ? (activeFolder?.days?.length || 0) : 0} ensureFolder={ensureFolder} />
                 <GenerateQR rowData={rowData} eventDates={eventDates} onPrintClick={(item) => { setPrintCurrentItem(item); setPrintDialogVisible(true); }} />
-                <DeleteUser rowData={rowData} onUserDeleted={handleUserDeleted} showError={showError} showSuccess={showSuccess} localMode={mode === 'folder'} />
+                <DeleteUser rowData={rowData} onUserDeleted={handleUserDeleted} showError={showError} showSuccess={showSuccess} />
                 <Button icon="pi pi-print" className="p-button-rounded p-button-text p-button-sm print-icon-btn" onClick={() => { setPrintCurrentItem(rowData); setPrintDialogVisible(true); }} title="Print QR" />
             </div>
         );
@@ -702,17 +562,13 @@ function Users({ isLoggedIn }) {
                         <i className="pi pi-times me-1"></i> Done Selection
                     </button>
                 )}
+                {showSelection && selectedUsers.length > 0 && !isFolderView && (
+                    <button type="button" className="change-days-btn" onClick={openChangeDays}>
+                        <i className="pi pi-calendar me-1"></i> Change Days ({selectedUsers.length})
+                    </button>
+                )}
             </div>
             <div className="header-actions">
-                <button
-                    type="button"
-                    className="db-save-btn"
-                    onClick={() => handleSaveClick(mode === 'folder' ? 'folder' : 'db')}
-                    title={mode === 'folder' ? "Save current folder" : "Save database as folder"}
-                    disabled={mode === 'folder' ? (displayData.length === 0 && !unsaved) : (users.length === 0)}
-                >
-                    <i className="pi pi-save"></i><span className="db-save-label">Save</span>
-                </button>
                 <div className="folder-trigger-wrapper" ref={folderTriggerRef} onClick={() => setShowFolderDropdown(prev => !prev)}>
                     <Folder color="#6366f1" size={0.72} open={showFolderDropdown} hidePapers items={[]} />
                     {folders.length > 0 && (
@@ -729,7 +585,6 @@ function Users({ isLoggedIn }) {
                 />
                 <ImportExcel
                     onImported={handleImported}
-                    onImport={mode === 'folder' ? handleFolderImport : undefined}
                     onRouteImport={handleRouteImport}
                     eventDates={eventDates}
                     showError={showError}
@@ -778,16 +633,16 @@ function Users({ isLoggedIn }) {
 
                 {activeTab === 'users' ? (
                     <>
-                        <AddUser inline={true} onUserAdded={handleUserAdded} showError={showError} showSuccess={showSuccess} localMode={mode === 'folder'} eventDates={eventDates} defaultDays={activeFolder?.days} />
+                        <AddUser inline={true} onUserAdded={handleUserAdded} showError={showError} showSuccess={showSuccess} eventDates={eventDates} defaultDays={activeFolder?.days} ensureFolder={ensureFolder} />
 
                         <div className="mode-banner" style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
-                            {mode === 'folder' ? (
+                            {isFolderView ? (
                                 <>
                                     <div className="mode-banner-left">
                                         <i className="pi pi-folder-open" style={{ color: '#10b981' }}></i>
-                                        <span>Local Folder Session — Editing: <b style={{ color: '#ffffff' }}>{activeFolder?.name || 'New Folder'}</b></span>
+                                        <span>Folder View — <b style={{ color: '#ffffff' }}>{activeFolder?.name}</b></span>
                                         <span style={{ color: '#94a3b8', fontWeight: 400 }}>
-                                            — {displayData.length} entr{displayData.length === 1 ? 'y' : 'ies'}
+                                            — {displayData.length} member{displayData.length === 1 ? '' : 's'} with {typeLabel(folderTypeCount(activeFolder))}
                                         </span>
                                         {Array.isArray(activeFolder?.days) && activeFolder.days.length > 0 && (
                                             <span className="banner-days">
@@ -797,12 +652,11 @@ function Users({ isLoggedIn }) {
                                                 })}
                                             </span>
                                         )}
-                                        {unsaved && <span className="mode-banner-unsaved">⚠ Unsaved Changes</span>}
                                     </div>
                                     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                                        <button 
-                                            className="back-to-db-btn" 
-                                            onClick={switchToApiMode} 
+                                        <button
+                                            className="back-to-db-btn"
+                                            onClick={switchToApiMode}
                                             title="Switch to Global Database"
                                             style={{
                                                 color: '#ffffff',
@@ -818,7 +672,7 @@ function Users({ isLoggedIn }) {
                                                 gap: '8px'
                                             }}
                                         >
-                                            <i className="pi pi-globe" style={{ color: '#a5b4fc' }}></i> Go to Global Database
+                                            <i className="pi pi-globe" style={{ color: '#a5b4fc' }}></i> Back to Global Database
                                         </button>
                                     </div>
                                 </>
@@ -912,15 +766,15 @@ function Users({ isLoggedIn }) {
                                     }
                                 }}
                                 dataKey="id">
-                                {showSelection && (
-                                    <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
-                                )}
-                                <Column header="ID" body={(rowData, options) => options.rowIndex + 1} align="center" style={{ width: '5%' }}></Column>
-                                <Column field="name" header="Name" align="left" style={{ width: '20%' }} className="pl-6"></Column>
-                                <Column field="phone" header="Mobile Number" align="left" style={{ width: '15%' }} className="pl-6"></Column>
-                                <Column field="city" header="City" align="left" style={{ width: '13%' }} className="pl-6" body={(rowData) => rowData.city || rowData.address?.city || 'N/A'}></Column>
-                                <Column header="Days" body={daysBodyTemplate} align="center" style={{ width: '15%' }}></Column>
-                                <Column body={actionBodyTemplate} exportable={false} align="right" alignHeader="center" style={{ width: '32%' }} header="Actions"></Column>
+                                {showSelection ? (
+                                    <Column key="col-select" columnKey="col-select" selectionMode="multiple" headerStyle={{ width: '3.5rem' }} style={{ width: '3.5rem' }} />
+                                ) : null}
+                                <Column key="col-id" columnKey="col-id" header="ID" body={(rowData, options) => options.rowIndex + 1} align="center" style={{ width: showSelection ? '4%' : '5%' }}></Column>
+                                <Column key="col-name" columnKey="col-name" field="name" header="Name" align="left" style={{ width: showSelection ? '18%' : '20%' }} className="pl-6"></Column>
+                                <Column key="col-phone" columnKey="col-phone" field="phone" header="Mobile Number" align="left" style={{ width: showSelection ? '14%' : '15%' }} className="pl-6"></Column>
+                                <Column key="col-city" columnKey="col-city" field="city" header="City" align="left" style={{ width: showSelection ? '12%' : '13%' }} className="pl-6" body={(rowData) => rowData.city || rowData.address?.city || 'N/A'}></Column>
+                                <Column key="col-days" columnKey="col-days" field="days" header="Days" body={daysBodyTemplate} align="center" style={{ width: showSelection ? '14%' : '15%' }}></Column>
+                                <Column key="col-actions" columnKey="col-actions" header="Actions" body={actionBodyTemplate} exportable={false} align="right" alignHeader="center" style={{ width: showSelection ? '32%' : '32%' }}></Column>
                             </DataTable>
                         </div>
                     </>
@@ -934,94 +788,85 @@ function Users({ isLoggedIn }) {
             <PrintQROptions
                 visible={printDialogVisible}
                 onHide={(action) => {
-                    const wasFolderPrint = !!printFolder;
                     setPrintFolder(null);
                     setPrintDialogVisible(false);
-                    if (action === 'all' && mode === 'folder' && !wasFolderPrint) {
-                        setActiveFolder(null);
-                        setUnsaved(false);
-                        persistSession('folder', null);
-                    }
+                    setReprintItems([]);
                     if (action === true || action === 'selected' || action === 'all' || action === 'committee') {
                         setShowSelection(false);
                         setSelectedUsers([]);
                     }
                 }}
                 currentItem={printCurrentItem}
-                selectedItems={showSelection ? selectedUsers : []}
+                selectedItems={reprintItems.length > 0 ? reprintItems : (showSelection ? selectedUsers : [])}
                 type="U"
                 fetchAllUrl="/users"
-                allItems={printFolder ? printFolder.entries : (mode === 'folder' ? displayData : undefined)}
-                committeeItems={mode === 'folder' && activeFolder ? activeFolder.entries : []}
-                committeeDisabled={mode !== 'folder' || !activeFolder}
+                allItems={printFolder ? folderMembers(printFolder) : (isFolderView ? displayData : undefined)}
+                committeeItems={isFolderView && activeFolder ? displayData : []}
+                committeeDisabled={!isFolderView}
                 eventDates={eventDates}
             />
 
-            {showSaveConfirm && (
-                <div className="save-confirm-overlay" onClick={handleSaveConfirmNo}>
-                    <div className="save-confirm-dialog" onClick={e => e.stopPropagation()}>
-                        <div className="save-confirm-icon">
-                            <i className="pi pi-save"></i>
+            {folderMissing && (
+                <div className="type-picker-overlay" onClick={cancelFolderMissing}>
+                    <div className="type-picker-dialog" onClick={e => e.stopPropagation()}>
+                        <div className="type-picker-icon">
+                            <i className="pi pi-folder-plus"></i>
                         </div>
-                        <h4>Save as a Folder?</h4>
-                        <p>{saveSource === 'db' ? 'Save all database users as a new folder?' : 'Save the current entries as a committee folder?'}</p>
-                        <div className="save-confirm-actions">
-                            <button className="save-confirm-no" onClick={handleSaveConfirmNo}>No</button>
-                            <button className="save-confirm-yes" onClick={handleSaveConfirmYes}>Yes</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {showSaveDialog && (
-                <div className="folder-save-dialog-overlay" onClick={handleSaveDialogCancel}>
-                    <div className="folder-save-dialog" onClick={e => e.stopPropagation()}>
-                        <h4>{saveSource === 'db' ? 'Save Database as New Folder' : (activeFolder?.id ? 'Update Folder' : 'Save as New Folder')}</h4>
-                        <input
-                            type="text"
-                            placeholder="Enter folder name..."
-                            value={saveFolderName}
-                            onChange={e => setSaveFolderName(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Enter') confirmSaveFolder(); }}
-                            autoFocus
-                        />
-                        <div className="folder-save-dialog-actions">
-                            <button className="folder-save-cancel" onClick={handleSaveDialogCancel}>Cancel</button>
-                            <button className="folder-save-confirm" onClick={confirmSaveFolder} disabled={saving || !saveFolderName.trim()}>
-                                {saving ? 'Saving...' : activeFolder?.id ? 'Update' : 'Save'}
+                        <h4>Create "{typeLabel(folderMissing.length)}" Folder?</h4>
+                        <p className="type-picker-sub">No folder exists for {typeLabel(folderMissing.length)} yet. Create it now so this person appears in it?</p>
+                        <div className="type-picker-actions">
+                            <button className="type-picker-cancel" onClick={cancelFolderMissing}>No, Cancel</button>
+                            <button className="type-picker-create" disabled={creatingFolder} onClick={confirmFolderMissing}>
+                                {creatingFolder ? 'Creating...' : 'Yes, Create Folder'}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {showUnsavedPrompt && (
-                <div className="unsaved-overlay">
-                    <div className="unsaved-dialog">
-                        <h4>Unsaved Changes</h4>
-                        <p>You have unsaved changes in the current folder. What would you like to do?</p>
-                        <div className="unsaved-dialog-actions">
-                            <button className="unsaved-cancel" onClick={handleUnsavedCancel}>Cancel</button>
-                            <button className="unsaved-discard" onClick={handleUnsavedDiscard}>Discard</button>
-                            <button className="unsaved-save" onClick={handleUnsavedSave}>Save First</button>
+            {showChangeDays && (
+                <div className="type-picker-overlay" onClick={() => setShowChangeDays(false)}>
+                    <div className="type-picker-dialog" onClick={e => e.stopPropagation()}>
+                        <div className="type-picker-icon">
+                            <i className="pi pi-calendar"></i>
+                        </div>
+                        <h4>Change Days</h4>
+                        <p className="type-picker-sub">Apply new days to {selectedUsers.length} selected user{selectedUsers.length === 1 ? '' : 's'}. They will move to the matching folder automatically.</p>
+                        <div className="type-picker-chip-row">
+                            {eventDates.map((d, i) => (
+                                <button
+                                    key={`${d}-${i}`}
+                                    type="button"
+                                    className={`user-day-chip${changeDaysDraft.includes(d) ? ' user-day-chip-active' : ''}`}
+                                    onClick={() => setChangeDaysDraft(prev => prev.includes(d) ? prev.filter(x => x !== d) : (prev.length >= 4 ? prev : [...prev, d]))}
+                                >
+                                    <b>D{i + 1}</b>{d}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="type-picker-actions">
+                            <button className="type-picker-cancel" onClick={() => setShowChangeDays(false)}>Cancel</button>
+                            <button className="type-picker-create" disabled={changeDaysDraft.length === 0} onClick={applyChangeDays}>
+                                Apply to {selectedUsers.length} User{selectedUsers.length === 1 ? '' : 's'}
+                            </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {showNewFolderConfirm && (
-                <div className="new-folder-toast-wrap" ref={newFolderToastRef} onClick={handleNewFolderDismissAll}>
-                    <div className="new-folder-toast" role="alertdialog" aria-label="Confirm new folder" onClick={e => e.stopPropagation()}>
-                        <div className="new-folder-toast-icon">
-                            <i className="pi pi-exclamation-triangle"></i>
+            {reprintItems.length > 0 && !printDialogVisible && (
+                <div className="type-picker-overlay" onClick={() => setReprintItems([])}>
+                    <div className="type-picker-dialog" onClick={e => e.stopPropagation()}>
+                        <div className="type-picker-icon">
+                            <i className="pi pi-print"></i>
                         </div>
-                        <div className="new-folder-toast-body">
-                            <strong>Start a new folder?</strong>
-                            <p>There is still data in the table. Starting a new folder will clear the current list from view. Are you sure you want to continue?</p>
-                            <div className="new-folder-toast-actions">
-                                <button className="new-folder-toast-cancel" onClick={handleNewFolderCancel}>Cancel</button>
-                                <button className="new-folder-toast-confirm" onClick={handleNewFolderConfirm}>Yes, New Folder</button>
-                            </div>
+                        <h4>QR Codes Changed</h4>
+                        <p className="type-picker-sub">Day changes updated {reprintItems.length} user{reprintItems.length === 1 ? '' : 's'}. Their old QR codes no longer match — print new ones?</p>
+                        <div className="type-picker-actions">
+                            <button className="type-picker-cancel" onClick={() => setReprintItems([])}>Later</button>
+                            <button className="type-picker-create" onClick={() => { setPrintCurrentItem(null); setPrintFolder(null); setPrintDialogVisible(true); }}>
+                                Print New QR{reprintItems.length === 1 ? '' : 's'}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1034,7 +879,7 @@ function Users({ isLoggedIn }) {
                             <i className="pi pi-folder-plus"></i>
                         </div>
                         <h4>New Folder</h4>
-                        <p className="type-picker-sub">Pick how many days this folder covers, then tick its dates.</p>
+                        <p className="type-picker-sub">Pick a day-count preset, or choose Custom to set your own dates and name.</p>
                         <div className="type-picker-grid">
                             {[4, 3, 2, 1].map(n => {
                                 const used = usedTypes.has(n);
@@ -1042,7 +887,7 @@ function Users({ isLoggedIn }) {
                                     <button
                                         key={n}
                                         type="button"
-                                        className={`type-card${pickerCount === n ? ' type-card-active' : ''}${used ? ' type-card-used' : ''}`}
+                                        className={`type-card${!pickerCustom && pickerCount === n ? ' type-card-active' : ''}${used ? ' type-card-used' : ''}`}
                                         disabled={used}
                                         onClick={() => selectPickerType(n)}
                                     >
@@ -1053,17 +898,37 @@ function Users({ isLoggedIn }) {
                                 );
                             })}
                         </div>
-                        {pickerCount > 0 ? (
+                        <button
+                            type="button"
+                            className={`type-card type-card-custom${pickerCustom ? ' type-card-active' : ''}`}
+                            disabled={usedTypes.size >= 4}
+                            onClick={selectPickerCustom}
+                        >
+                            <span className="type-card-label">Custom</span>
+                            <span className="type-card-custom-hint">Your own dates + name</span>
+                        </button>
+                        {(pickerCustom || pickerCount > 0) && (
                             <div className="type-picker-chips">
+                                {pickerCustom && (
+                                    <input
+                                        type="text"
+                                        className="type-picker-name"
+                                        placeholder="Folder name..."
+                                        value={pickerName}
+                                        onChange={e => setPickerName(e.target.value)}
+                                    />
+                                )}
                                 <div className="type-picker-chips-label">
-                                    {pickerCount === 4
-                                        ? 'All dates selected'
-                                        : `Select exactly ${pickerCount} date${pickerCount > 1 ? 's' : ''} — ${pickerDays.length}/${pickerCount}`}
+                                    {pickerCustom
+                                        ? `Tick the dates for this folder — ${pickerDays.length} selected${usedTypes.has(pickerDays.length) ? ' (that day-count already has a folder)' : ''}`
+                                        : (pickerCount === 4
+                                            ? 'All dates selected'
+                                            : `Select exactly ${pickerCount} date${pickerCount > 1 ? 's' : ''} — ${pickerDays.length}/${pickerCount}`)}
                                 </div>
                                 <div className="type-picker-chip-row">
                                     {eventDates.map((d, i) => {
                                         const selected = pickerDays.includes(d);
-                                        const locked = pickerCount === 4;
+                                        const locked = !pickerCustom && pickerCount === 4;
                                         return (
                                             <button
                                                 key={`${d}-${i}`}
@@ -1078,21 +943,15 @@ function Users({ isLoggedIn }) {
                                     })}
                                 </div>
                             </div>
-                        ) : (
-                            usedTypes.size >= 4 && (
-                                <p className="type-picker-all-used">
-                                    All 4 day-counts are in use. Delete a folder first to recreate one.
-                                </p>
-                            )
                         )}
                         <div className="type-picker-actions">
                             <button className="type-picker-cancel" onClick={closeTypePicker}>Cancel</button>
                             <button
                                 className="type-picker-create"
-                                disabled={!pickerCount || pickerDays.length !== pickerCount}
+                                disabled={pickerInvalid || creatingFolder}
                                 onClick={handlePickerCreate}
                             >
-                                Create Folder
+                                {creatingFolder ? 'Creating...' : 'Create Folder'}
                             </button>
                         </div>
                     </div>
@@ -1124,23 +983,6 @@ function Users({ isLoggedIn }) {
                         <div className="type-picker-actions">
                             <button className="type-picker-cancel" onClick={() => setShowDatesDialog(false)}>Cancel</button>
                             <button className="type-picker-create" onClick={handleDatesSave}>Save Dates</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {showNewFolderInfo && (
-                <div className="new-folder-toast-wrap" ref={newFolderInfoRef} onClick={handleNewFolderInfoDismiss}>
-                    <div className="new-folder-toast" role="status" aria-label="Already on new folder" onClick={e => e.stopPropagation()}>
-                        <div className="new-folder-toast-icon new-folder-toast-icon-info">
-                            <i className="pi pi-info-circle"></i>
-                        </div>
-                        <div className="new-folder-toast-body">
-                            <strong>Already on a new folder</strong>
-                            <p>You are already on a new folder. There's nothing new to create — just add your data and save it when you're ready.</p>
-                            <div className="new-folder-toast-actions">
-                                <button className="new-folder-toast-confirm" onClick={handleNewFolderInfoDismiss}>OK</button>
-                            </div>
                         </div>
                     </div>
                 </div>

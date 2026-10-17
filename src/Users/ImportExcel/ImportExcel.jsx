@@ -24,7 +24,7 @@ const downloadTemplate = (eventDates = [17, 18, 19, 20]) => {
   XLSX.writeFile(wb, 'user_import_template.xlsx');
 };
 
-function ImportExcel({ onImported, showError, showSuccess, onImport, onRouteImport, eventDates = [17, 18, 19, 20] }) {
+function ImportExcel({ onImported, showError, showSuccess, onRouteImport, eventDates = [17, 18, 19, 20] }) {
   const [showModal, setShowModal] = useState(false);
   const [file, setFile] = useState(null);
   const [parsedData, setParsedData] = useState([]);
@@ -151,25 +151,6 @@ function ImportExcel({ onImported, showError, showSuccess, onImport, onRouteImpo
       return;
     }
 
-    if (onImport) {
-      setImporting(false);
-      const imported = [];
-      let failed = 0;
-      for (const row of parsedData) {
-        const name = String(row[nameCol] || '').trim();
-        const phone = String(row[phoneCol] || '').trim();
-        const city = String(row[cityCol] || '').trim();
-        if (!name) { failed++; continue; }
-        const payload = { name };
-        if (phone) payload.phone = phone;
-        if (city) payload.city = city;
-        imported.push(payload);
-      }
-      onImport(imported, failed);
-      closeModal();
-      return;
-    }
-
     setImporting(true);
     let imported = 0;
     let failed = 0;
@@ -236,7 +217,7 @@ function ImportExcel({ onImported, showError, showSuccess, onImport, onRouteImpo
         if (!name) return false;
         return         (columnMap.days || []).some((col) => col && isYes(row[col]));
       }).length;
-      return `Route ${dayRows} Record${dayRows !== 1 ? 's' : ''} to Folders`;
+      return `Import ${dayRows} Record${dayRows !== 1 ? 's' : ''} (Global + Folders)`;
     }
     return `Import ${parsedData.length} Record${parsedData.length !== 1 ? 's' : ''}`;
   };
@@ -343,8 +324,8 @@ function ImportExcel({ onImported, showError, showSuccess, onImport, onRouteImpo
                     ))}
                     <p className="import-mapping-hint" style={{ margin: '4px 0 0' }}>
                       {routingMode
-                        ? `Yes/no day columns found — import will route rows into matching day-count folders.`
-                        : 'Map the 4 yes/no day columns to enable automatic folder routing.'}
+                        ? `Yes/no day columns found — rows are saved to Global with their days and matching folders are created automatically.`
+                        : 'Map the 4 yes/no day columns to save each row with its days and auto-create folders.'}
                     </p>
                   </div>
                 </div>

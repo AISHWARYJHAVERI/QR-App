@@ -5,7 +5,7 @@ import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import axios from 'axios';
 
-const EditUser = ({ rowData, onUserUpdated, showError, showSuccess, localMode = false, eventDates = [], dayCount = 0 }) => {
+const EditUser = ({ rowData, onUserUpdated, showError, showSuccess, eventDates = [], dayCount = 0, ensureFolder }) => {
     const [userDialog, setUserDialog] = useState(false);
     const [user, setUser] = useState({ name: '', phone: '', city: '', ...rowData });
     const [submitted, setSubmitted] = useState(false);
@@ -19,15 +19,19 @@ const EditUser = ({ rowData, onUserUpdated, showError, showSuccess, localMode = 
     const toggleEditDay = (d) => {
         setEditDays(prev => {
             if (prev.includes(d)) return prev.filter(x => x !== d);
-            if (dayCount > 0 && prev.length >= dayCount) {
-                showError(`This folder allows exactly ${dayCount} day${dayCount > 1 ? 's' : ''}.`);
-                return prev;
+            if (dayCount > 0) {
+                if (prev.length >= dayCount) {
+                    showError(`This folder allows exactly ${dayCount} day${dayCount > 1 ? 's' : ''}.`);
+                    return prev;
+                }
+                return [...prev, d];
             }
+            if (prev.length >= 4) return prev;
             return [...prev, d];
         });
     };
 
-    const daysValid = dayCount === 0 || editDays.length === dayCount;
+    const daysValid = dayCount > 0 ? editDays.length === dayCount : editDays.length >= 1;
 
     const openEdit = () => {
         setUser({ name: '', phone: '', city: '', ...rowData });
@@ -46,17 +50,16 @@ const EditUser = ({ rowData, onUserUpdated, showError, showSuccess, localMode = 
 
         if (user.name.trim() && user.phone.trim() && (user.city || '').trim()) {
             if (!daysValid) {
-                showError(`Select exactly ${dayCount} day${dayCount > 1 ? 's' : ''} (${editDays.length}/${dayCount}).`);
+                showError(dayCount > 0
+                    ? `Select exactly ${dayCount} day${dayCount > 1 ? 's' : ''} (${editDays.length}/${dayCount}).`
+                    : 'Select at least 1 day.');
                 return;
+            }
+            if (ensureFolder) {
+                const ok = await ensureFolder([...editDays]);
+                if (!ok) return;
             }
             let _user = { ...user, days: [...editDays] };
-            if (localMode) {
-                showSuccess("User Updated Successfully");
-                onUserUpdated(_user);
-                setUserDialog(false);
-                setSubmitted(false);
-                return;
-            }
             try {
                 await axios.put(`/users/${user.id}`, _user);
                 showSuccess("User Updated Successfully");
@@ -121,8 +124,12 @@ const EditUser = ({ rowData, onUserUpdated, showError, showSuccess, localMode = 
                                     </button>
                                 ))}
                             </div>
-                            {!daysValid && editDays.length > 0 && (
-                                <small className="p-error">Select exactly {dayCount} day{dayCount > 1 ? 's' : ''} ({editDays.length}/{dayCount}).</small>
+                            {!daysValid && (submitted || editDays.length > 0) && (
+                                <small className="p-error">
+                                    {dayCount > 0
+                                        ? `Select exactly ${dayCount} day${dayCount > 1 ? 's' : ''} (${editDays.length}/${dayCount}).`
+                                        : 'Select at least 1 day.'}
+                                </small>
                             )}
                         </div>
                     </div>

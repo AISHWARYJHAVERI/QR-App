@@ -1,14 +1,9 @@
 import { Button } from 'primereact/button';
 import axios from 'axios';
 
-const DeleteUser = ({ rowData, onUserDeleted, showError, showSuccess, localMode = false }) => {
+const DeleteUser = ({ rowData, onUserDeleted, showError, showSuccess }) => {
     const confirmDeleteUser = async () => {
         if (window.confirm(`Are you sure you want to delete ${rowData.name}?`)) {
-            if (localMode) {
-                showSuccess("User Deleted Successfully");
-                onUserDeleted(rowData.id);
-                return;
-            }
             try {
                 await axios.delete(`/users/${rowData.id}`);
                 showSuccess("User Deleted Successfully");

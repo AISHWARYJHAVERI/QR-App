@@ -851,6 +851,29 @@
     transform: scale(1.04);
 }
 
+.change-days-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #f8fafc;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.change-days-btn:hover {
+    background: rgba(16, 185, 129, 0.28);
+    border-color: rgba(16, 185, 129, 0.55);
+    transform: scale(1.04);
+}
+
 /* Header Print QR button */
 .print-btn {
   display: inline-flex;
@@ -2118,6 +2141,53 @@
   flex-wrap: wrap;
   gap: 8px;
   justify-content: center;
+}
+
+.type-card-custom {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 14px;
+}
+
+.type-card-custom .type-card-label {
+  font-size: 0.9rem;
+  color: #c7d2fe;
+}
+
+.type-card-custom-hint {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.type-card-custom.type-card-active .type-card-label {
+  color: #ffffff;
+}
+
+.type-picker-name {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  background: rgba(15, 23, 42, 0.6);
+  color: #f8fafc;
+  font-size: 0.85rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.type-picker-name:focus {
+  border-color: rgba(99, 102, 241, 0.7);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.type-picker-name::placeholder {
+  color: #64748b;
 }
 
 .date-chip {
