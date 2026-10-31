@@ -1,3 +1,5 @@
+import { HEADER_BANNER_BASE64 } from './qrHeaderBanner';
+
 export const printQRCards = ({ items, type, eventDates = [] }) => {
   return new Promise((resolve) => {
     const printWindow = window.open('', '_blank');
@@ -70,8 +72,8 @@ export const printQRCards = ({ items, type, eventDates = [] }) => {
     .card {
       width: 58mm;
       height: 87mm;
-      background: #ffffff;
-      border: 1.5px solid #1e293b;
+      background: #FFFDF9; /* Light elegant cream background */
+      border: 1.5px solid #800020; /* Dark maroon border */
       border-radius: 6px;
       display: flex;
       flex-direction: column;
@@ -80,25 +82,21 @@ export const printQRCards = ({ items, type, eventDates = [] }) => {
       position: relative;
       overflow: hidden;
       box-sizing: border-box;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
       page-break-inside: avoid;
       break-inside: avoid;
     }
-    .card-header {
+    .card-header-banner {
       width: 100%;
-      background: #0f172a;
-      color: #f8fafc;
-      padding: 3.2mm 2mm 2.8mm 2mm;
-      text-align: center;
-      border-bottom: 1.5px solid #e2e8f0;
+      background: #ffffff;
+      border-bottom: 1.2px solid #800020;
+      line-height: 0;
     }
-    .header-title {
-      font-size: 8.5px;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-      line-height: 1.25;
-      text-transform: uppercase;
-      color: #ffffff;
+    .card-header-banner img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: contain;
     }
     .card-body {
       flex: 1;
@@ -107,90 +105,91 @@ export const printQRCards = ({ items, type, eventDates = [] }) => {
       align-items: center;
       justify-content: center;
       width: 100%;
-      padding: 2mm 2mm;
+      padding: 1.5mm 2mm;
     }
     .qr-wrap {
       display: flex;
       align-items: center;
       justify-content: center;
       background: #ffffff;
-      padding: 1.5mm;
-      border-radius: 6px;
-      border: 1px solid #e2e8f0;
-      margin-bottom: 2mm;
+      padding: 1mm;
+      border-radius: 5px;
+      border: 1px solid #e7dfd5;
+      margin-bottom: 1.5mm;
+      box-shadow: 0 1px 2px rgba(128, 0, 32, 0.08);
     }
     .qr-wrap img {
-      width: 38mm;
-      height: 38mm;
+      width: 32mm;
+      height: 32mm;
       display: block;
     }
     .person-name {
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 800;
-      color: #0f172a;
+      color: #800020; /* Dark maroon tone */
       text-align: center;
       text-transform: uppercase;
       letter-spacing: 0.02em;
       line-height: 1.2;
-      margin-bottom: 1mm;
+      margin-bottom: 0.8mm;
       max-width: 95%;
       word-break: break-word;
     }
     .person-city {
-      font-size: 9.5px;
-      font-weight: 600;
-      color: #475569;
+      font-size: 10px;
+      font-weight: 700;
+      color: #1e3a8a; /* Rich deep royal navy blue complementing cream and maroon */
       text-align: center;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
     }
     .person-days {
       width: 100%;
       text-align: center;
-      margin-top: 1.5mm;
+      margin-top: 1.2mm;
     }
     .days-label {
       display: block;
-      font-size: 7px;
+      font-size: 6.5px;
       font-weight: 700;
-      color: #64748b;
+      color: #78350f;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      margin-bottom: 0.8mm;
+      margin-bottom: 0.6mm;
     }
     .days-chips {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 1mm;
+      gap: 0.8mm;
     }
     .day-chip {
       display: inline-block;
-      background: #0f172a;
+      background: #800020;
       color: #ffffff;
-      font-size: 8px;
+      font-size: 7.5px;
       font-weight: 700;
-      padding: 0.6mm 1.6mm;
+      padding: 0.5mm 1.4mm;
       border-radius: 3px;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.02em;
     }
     .day-chip b {
-      font-size: 6.5px;
-      color: #93c5fd;
-      margin-right: 0.8mm;
+      font-size: 6px;
+      color: #fef08a;
+      margin-right: 0.6mm;
     }
     .card-footer {
       width: 100%;
-      background: #f1f5f9;
-      border-top: 1px solid #cbd5e1;
-      padding: 2mm 2mm;
+      background: #FAF3E0; /* Warm matching cream tone */
+      border-top: 1px solid #d97706;
+      padding: 1.6mm 2mm;
       text-align: center;
     }
     .footer-author {
-      font-size: 8px;
+      font-size: 7.5px;
       font-weight: 600;
-      color: #334155;
-      letter-spacing: 0.04em;
+      color: #78350f; /* Refined contrasting warm tone */
+      letter-spacing: 0.03em;
     }
   </style>
 </head>
@@ -232,8 +231,8 @@ const buildDaysHtml = (days, eventDates) => {
 const buildCardHtml = ({ qrImageUrl, name, city, days, eventDates = [] }) => {
   return `
   <div class="card">
-    <div class="card-header">
-      <div class="header-title">Shri Patan Visha Shrimali Soni Vishnuyag Yagn</div>
+    <div class="card-header-banner">
+      <img src="${HEADER_BANNER_BASE64}" alt="Header Banner" />
     </div>
     <div class="card-body">
       <div class="qr-wrap">
@@ -244,7 +243,7 @@ const buildCardHtml = ({ qrImageUrl, name, city, days, eventDates = [] }) => {
       ${buildDaysHtml(days, eventDates)}
     </div>
     <div class="card-footer">
-      <div class="footer-author">Aishwary Jhaveri</div>
+      <div class="footer-author">Developed by Aishwary Jhaveri</div>
     </div>
   </div>`;
 };
