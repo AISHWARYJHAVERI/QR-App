@@ -152,7 +152,7 @@ export const printQRCards = ({ items, type, eventDates = [] }) => {
       display: block;
       font-size: 6.5px;
       font-weight: 700;
-      color: #78350f;
+      color: #065f46; /* Deep forest green */
       letter-spacing: 0.08em;
       text-transform: uppercase;
       margin-bottom: 0.6mm;
@@ -165,17 +165,19 @@ export const printQRCards = ({ items, type, eventDates = [] }) => {
     }
     .day-chip {
       display: inline-block;
-      background: #800020;
+      background: #047857; /* Rich emerald green */
+      border: 0.6px solid #065f46;
       color: #ffffff;
       font-size: 7.5px;
       font-weight: 700;
-      padding: 0.5mm 1.4mm;
+      padding: 0.5mm 1.5mm;
       border-radius: 3px;
       letter-spacing: 0.02em;
+      box-shadow: 0 0.5px 1.5px rgba(4, 120, 87, 0.2);
     }
     .day-chip b {
       font-size: 6px;
-      color: #fef08a;
+      color: #a7f3d0; /* Soft mint highlight */
       margin-right: 0.6mm;
     }
     .card-footer {
