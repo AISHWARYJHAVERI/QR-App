@@ -1,5 +1,3 @@
-import { HEADER_BANNER_BASE64 } from './qrHeaderBanner';
-
 export const printQRCards = ({ items, type, eventDates = [] }) => {
   return new Promise((resolve) => {
     const printWindow = window.open('', '_blank');
@@ -27,6 +25,9 @@ export const printQRCards = ({ items, type, eventDates = [] }) => {
 <html>
 <head>
   <title>Print QR - A4</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shruti&family=Rasa:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     @page {
       size: A4 portrait;
@@ -39,7 +40,7 @@ export const printQRCards = ({ items, type, eventDates = [] }) => {
     }
     body {
       background: #ffffff;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      font-family: 'Shruti', 'Gujarati Sangam MN', 'Noto Sans Gujarati', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
       margin: 0;
@@ -86,17 +87,48 @@ export const printQRCards = ({ items, type, eventDates = [] }) => {
       page-break-inside: avoid;
       break-inside: avoid;
     }
-    .card-header-banner {
+    .card-header-clean {
       width: 100%;
-      background: #ffffff;
-      border-bottom: 1.2px solid #800020;
-      line-height: 0;
+      background: #FAF3E0;
+      border-bottom: 1.5px solid #800020;
+      padding: 2.2mm 1.5mm 2mm 1.5mm;
+      text-align: center;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
-    .card-header-banner img {
+    .header-motto {
+      font-size: 7px;
+      font-weight: 700;
+      color: #800020;
+      margin-bottom: 0.5mm;
+      line-height: 1.1;
+      letter-spacing: 0.02em;
+    }
+    .header-org {
+      font-size: 8.5px;
+      font-weight: 800;
+      color: #800020;
+      line-height: 1.25;
+      margin-bottom: 0.8mm;
+      letter-spacing: 0.01em;
+      text-align: center;
       width: 100%;
-      height: auto;
-      display: block;
-      object-fit: contain;
+    }
+    .header-event {
+      display: inline-block;
+      background: #800020;
+      color: #ffffff;
+      font-size: 7.8px;
+      font-weight: 700;
+      padding: 0.6mm 2.2mm;
+      border-radius: 3px;
+      line-height: 1.15;
+      letter-spacing: 0.02em;
+      text-align: center;
+      box-shadow: 0 0.5px 1.5px rgba(128, 0, 32, 0.25);
     }
     .card-body {
       flex: 1;
@@ -233,8 +265,10 @@ const buildDaysHtml = (days, eventDates) => {
 const buildCardHtml = ({ qrImageUrl, name, city, days, eventDates = [] }) => {
   return `
   <div class="card">
-    <div class="card-header-banner">
-      <img src="${HEADER_BANNER_BASE64}" alt="Header Banner" />
+    <div class="card-header-clean">
+      <div class="header-motto">॥ શ્રી વાઘેશ્વરી માતા પ્રસન્નોસ્તુ: ॥</div>
+      <div class="header-org">શ્રી પાટણ વિશા શ્રીમાળી સોની જ્ઞાતિ - પાટણ</div>
+      <div class="header-event">શ્રી દશાવતાર મહાવિષ્ણુ યજ્ઞ - ૨૦૨૬</div>
     </div>
     <div class="card-body">
       <div class="qr-wrap">
