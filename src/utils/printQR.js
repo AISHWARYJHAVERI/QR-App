@@ -15,6 +15,7 @@ export const printQRCards = ({ items, type, eventDates = [] }) => {
         name: item.name,
         city: item.city,
         days: item.days,
+        group: item.group,
         eventDates
       })).join('');
 
@@ -175,6 +176,17 @@ export const printQRCards = ({ items, type, eventDates = [] }) => {
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
+    .person-group {
+      display: inline-block;
+      background: #b91c1c;
+      color: #ffffff;
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      padding: 0.5mm 2.5mm;
+      border-radius: 3px;
+      margin-top: 1mm;
+    }
     .person-days {
       width: 100%;
       text-align: center;
@@ -262,7 +274,7 @@ const buildDaysHtml = (days, eventDates) => {
   return `<div class="person-days"><span class="days-label">Allowed Days</span><div class="days-chips">${chips}</div></div>`;
 };
 
-const buildCardHtml = ({ qrImageUrl, name, city, days, eventDates = [] }) => {
+const buildCardHtml = ({ qrImageUrl, name, city, days, group, eventDates = [] }) => {
   return `
   <div class="card">
     <div class="card-header-clean">
@@ -274,6 +286,7 @@ const buildCardHtml = ({ qrImageUrl, name, city, days, eventDates = [] }) => {
       <div class="qr-wrap">
         <img src="${qrImageUrl}" alt="QR Code"/>
       </div>
+      ${group ? `<div class="person-group">${String(group).toUpperCase()}</div>` : ''}
       <div class="person-name">${name || ''}</div>
       ${city ? `<div class="person-city">${city}</div>` : ''}
       ${buildDaysHtml(days, eventDates)}
@@ -290,7 +303,8 @@ export const buildQRData = (item, type) => {
     const days = Array.isArray(item.days) && item.days.length > 0
       ? `,"days":[${[...new Set(item.days.map(Number))].filter(n => !Number.isNaN(n)).join(',')}]`
       : '';
-    return `{"app":"QRAPP","type":"U","name":"${item.name}","phone":"${item.phone}"${city}${days}}`;
+    const group = item.group ? `,"group":"${item.group}"` : '';
+    return `{"app":"QRAPP","type":"U","name":"${item.name}","phone":"${item.phone}"${city}${days}${group}}`;
   }
   return `{"app":"QRAPP","type":"A","name":"${item.name}","role":"${item.role}","phone":"${item.phone}"}`;
 };

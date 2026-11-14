@@ -79,7 +79,7 @@ const EditUser = ({ rowData, users = [], onUserUpdated, showError, showSuccess, 
                 return;
             }
             if (!(await confirmPhone())) return;
-            if (ensureFolder) {
+            if (ensureFolder && !String(user.group || '').trim()) {
                 const ok = await ensureFolder([...editDays]);
                 if (!ok) return;
             }

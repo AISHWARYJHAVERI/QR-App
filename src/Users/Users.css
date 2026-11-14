@@ -2537,6 +2537,27 @@
   border-color: rgba(255, 255, 255, 0.2);
 }
 
+.group-chip {
+  display: inline-block;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  color: #fca5a5;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.paper-card-group-tag {
+  font-size: 8px;
+  font-weight: 700;
+  color: #fca5a5;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 .family-continue-hint {
   display: block;
   margin-top: 4px;

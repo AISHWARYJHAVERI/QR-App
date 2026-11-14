@@ -15,7 +15,7 @@ const GenerateQR = ({ rowData, onPrintClick, eventDates = [] }) => {
 
     const rowDays = Array.isArray(rowData.days) ? rowData.days : [];
     const orderedDays = [...rowDays].sort((a, b) => eventDates.indexOf(a) - eventDates.indexOf(b));
-    const qrData = `{"app":"QRAPP","type":"U","name":"${rowData.name}","phone":"${rowData.phone}"${orderedDays.length > 0 ? `,"days":[${orderedDays.join(',')}]` : ''}}`;
+    const qrData = `{"app":"QRAPP","type":"U","name":"${rowData.name}","phone":"${rowData.phone}"${orderedDays.length > 0 ? `,"days":[${orderedDays.join(',')}]` : ''}${rowData.group ? `,"group":"${rowData.group}"` : ''}}`;
     const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}&color=050816&bgcolor=ffffff`;
 
     const qrDialogFooter = (
@@ -38,6 +38,7 @@ const GenerateQR = ({ rowData, onPrintClick, eventDates = [] }) => {
                     </div>
                     
                     <div style={{ marginTop: '0.5rem' }}>
+                        {rowData.group && <span className="group-chip">{String(rowData.group).toUpperCase()}</span>}
                         <h4 style={{ color: '#f8fafc', fontWeight: '700', fontSize: '1.25rem', marginBottom: '0.25rem' }}>{rowData.name}</h4>
                         <p style={{ color: '#94a3b8', fontSize: '1rem', fontWeight: '500', margin: 0 }}>{rowData.phone}</p>
                         {orderedDays.length > 0 && (

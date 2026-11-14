@@ -5,6 +5,7 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, default: '' },
   city: { type: String, default: '' },
   days: { type: [Number], default: [] },
+  group: { type: String, default: '' },
 }, { timestamps: true, toJSON: { virtuals: true } });
 
 userSchema.virtual('id').get(function () {

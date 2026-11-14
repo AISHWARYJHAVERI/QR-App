@@ -7,7 +7,7 @@ import axios from 'axios';
 import PrintQROptions from '../../components/PrintQROptions';
 import { nameKey, parseName, sameName, isDuplicateName, findDuplicateName, nextFamilyNumber, findPhoneOwner, phoneKey, DUP_NAME_MSG } from '../../utils/nameKey';
 
-const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = false, eventDates = [], defaultDays = [], ensureFolder }) => {
+const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = false, eventDates = [], defaultDays = [], group = '', ensureFolder }) => {
     let emptyUser = {
         name: '',
         phone: '',
@@ -21,7 +21,7 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
     const [submitted, setSubmitted] = useState(false);
     const [userDays, setUserDays] = useState(defaultDays || []);
 
-    const dayCountRequired = Array.isArray(defaultDays) ? defaultDays.length : 0;
+    const dayCountRequired = !group && Array.isArray(defaultDays) ? defaultDays.length : 0;
 
     const [lastDefault, setLastDefault] = useState(defaultDays);
     const sameDays = Array.isArray(defaultDays) && Array.isArray(lastDefault)
@@ -42,7 +42,9 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    if (!sameDays) {
+    const [lastGroup, setLastGroup] = useState(group);
+    if (!sameDays || lastGroup !== group) {
+        setLastGroup(group);
         setLastDefault(defaultDays);
         setUserDays(defaultDays || []);
         setExtras([]);
@@ -66,16 +68,24 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
     const isDaysValid = (days) => dayCountRequired > 0 ? days.length === dayCountRequired : days.length >= 1;
     const daysValid = isDaysValid(userDays);
 
-    const baseName = user.name.trim();
-    const familyStart = familyCount > 1 && baseName && parseName(baseName).num === null
+    const groupStart = group ? Math.max(nextFamilyNumber(group, users), 1) : 0;
+    const baseName = group || user.name.trim();
+    const familyStart = !group && familyCount > 1 && baseName && parseName(baseName).num === null
         ? nextFamilyNumber(baseName, users)
         : 0;
-    const firstName = familyStart ? `${baseName} ${familyStart}` : user.name;
+    const firstName = group
+        ? (user.name.trim() || `${group} ${groupStart}`)
+        : (familyStart ? `${baseName} ${familyStart}` : user.name);
+
+    const autoName = (i) => {
+        if (group) return `${group} ${groupStart + i}`;
+        return baseName ? `${baseName} ${familyStart ? familyStart + i : i}` : '';
+    };
 
     const memberAt = (i) => {
         const o = extras[i - 1] || {};
         return {
-            name: o.name ?? (baseName ? `${baseName} ${familyStart ? familyStart + i : i}` : ''),
+            name: o.name ?? autoName(i),
             phone: o.phone ?? user.phone,
             city: o.city ?? user.city,
             days: o.days ?? userDays
@@ -223,7 +233,7 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
             return;
         }
         if (!(await confirmPhones(members))) return;
-        if (ensureFolder) {
+        if (ensureFolder && !group) {
             const seen = new Set();
             for (const m of members) {
                 if (seen.has(m.days.length)) continue;
@@ -236,7 +246,7 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
         for (const m of members) {
             try {
                 const response = await axios.post('/users', {
-                    name: m.name.trim(), phone: m.phone.trim(), city: m.city.trim(), days: [...m.days]
+                    name: m.name.trim(), phone: m.phone.trim(), city: m.city.trim(), days: [...m.days], group
                 });
                 onUserAdded(response.data);
                 saved++;
@@ -280,11 +290,11 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
         </div>
     );
 
-    const isFormValid = user.name.trim() && user.phone.trim() && user.city.trim();
+    const isFormValid = firstName.trim() && user.phone.trim() && user.city.trim();
     const orderedUserDays = [...userDays].sort((a, b) => eventDates.indexOf(a) - eventDates.indexOf(b));
-    const qrData = `{"app":"QRAPP","type":"U","name":"${user.name}","phone":"${user.phone}","city":"${user.city}"${orderedUserDays.length > 0 ? `,"days":[${orderedUserDays.join(',')}]` : ''}}`;
+    const qrData = `{"app":"QRAPP","type":"U","name":"${firstName}","phone":"${user.phone}","city":"${user.city}"${orderedUserDays.length > 0 ? `,"days":[${orderedUserDays.join(',')}]` : ''}${group ? `,"group":"${group}"` : ''}}`;
     const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}&color=050816&bgcolor=ffffff`;
-    const itemForPrint = { ...user, days: orderedUserDays };
+    const itemForPrint = { ...user, name: firstName, days: orderedUserDays, group };
 
     const daysBadges = orderedUserDays.length > 0 && (
         <div className="qr-days-row">
@@ -325,7 +335,7 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
                 <div className="family-header mb-5">
                     <h3 className="text-xl font-bold gradient-text text-left m-0">Add New User Entry</h3>
                     <div className="family-count-field" ref={familyDropdownRef}>
-                        <span className="family-count-label">Family Members</span>
+                        <span className="family-count-label">{group ? `How many ${group}s?` : 'Family Members'}</span>
                         <div className="custom-count-select">
                             <button
                                 type="button"
@@ -362,8 +372,8 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
                 <div className="row">
                     <div className="col-md-4 col-12 field">
                         <label htmlFor="name-inline" className="font-bold">Full Name</label>
-                        <InputText id="name-inline" value={user.name} onChange={(e) => onInputChange(e, 'name')} placeholder="Enter full name" required className={classNames({ 'p-invalid': (submitted && !user.name) || nameDupAt(0, familyMembers) })} />
-                        {submitted && !user.name && <small className="p-error">Name is required.</small>}
+                        <InputText id="name-inline" value={group ? firstName : user.name} onChange={(e) => onInputChange(e, 'name')} placeholder="Enter full name" required className={classNames({ 'p-invalid': (submitted && !firstName.trim()) || nameDupAt(0, familyMembers) })} />
+                        {submitted && !firstName.trim() && <small className="p-error">Name is required.</small>}
                         {nameDupAt(0, familyMembers) && <small className="p-error">{DUP_NAME_MSG}</small>}
                         {familyStart > 0 && !nameDupAt(0, familyMembers) && (
                             <small className="family-continue-hint">"{baseName}" family exists — continuing from "{firstName}".</small>
@@ -459,9 +469,9 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
                     />
                     <Button
                         type="button"
-                        label={familyCount > 1 ? `Save ${familyCount} Members` : 'Save User Details'}
+                        label={familyCount > 1 ? `Save ${familyCount} ${group ? `${group}s` : 'Members'}` : 'Save User Details'}
                         icon="pi pi-check"
-                        onClick={familyCount > 1 ? saveFamily : saveUser}
+                        onClick={familyCount > 1 || group ? saveFamily : saveUser}
                         style={{ backgroundColor: '#10b981', color: '#ffffff', border: '1px solid transparent', width: '240px', borderRadius: '12px', padding: '0.6rem 1.5rem' }}
                     />
                 </div>

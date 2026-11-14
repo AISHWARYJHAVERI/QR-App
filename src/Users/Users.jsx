@@ -101,24 +101,32 @@ function Users({ isLoggedIn }) {
         return parseInt(f?.name, 10) || 0;
     };
     const typeLabel = (n) => (n === 1 ? '1 day' : `${n} days`);
-    const usedTypes = useMemo(() => new Set(folders.map(folderTypeCount).filter(n => n >= 1 && n <= 4)), [folders]);
-    const sortedFolders = useMemo(() => [...folders].sort((a, b) => folderTypeCount(b) - folderTypeCount(a)), [folders]);
+    const isCustomFolder = (f) => f?.kind === 'custom';
+    const groupKey = (g) => String(g || '').trim().toLowerCase();
+    const usedTypes = useMemo(() => new Set(folders.filter(f => !isCustomFolder(f)).map(folderTypeCount).filter(n => n >= 1 && n <= 4)), [folders]);
+    const sortedFolders = useMemo(() => [...folders].sort((a, b) => {
+        const ca = isCustomFolder(a), cb = isCustomFolder(b);
+        if (ca !== cb) return ca ? 1 : -1;
+        if (ca) return a.name.localeCompare(b.name);
+        return folderTypeCount(b) - folderTypeCount(a);
+    }), [folders]);
     const dayIndexOf = (d) => eventDates.indexOf(d);
     const orderedDays = (days) => [...days].sort((a, b) => dayIndexOf(a) - dayIndexOf(b));
 
     const isFolderView = !!activeFolder;
+    const activeGroup = isCustomFolder(activeFolder) ? activeFolder.name : '';
 
-    const folderMembers = (f) => {
-        if (!f) return users;
+    const membersOf = (f, list) => {
+        if (!f) return list;
+        if (isCustomFolder(f)) return list.filter(u => groupKey(u.group) === groupKey(f.name));
         const n = folderTypeCount(f);
-        return users.filter(u => (Array.isArray(u.days) ? u.days.length : 0) === n);
+        return list.filter(u => !groupKey(u.group) && (Array.isArray(u.days) ? u.days.length : 0) === n);
     };
 
-    const displayData = useMemo(() => {
-        if (!activeFolder) return users;
-        const n = folderTypeCount(activeFolder);
-        return users.filter(u => (Array.isArray(u.days) ? u.days.length : 0) === n);
-    }, [users, activeFolder]);
+    const folderMembers = (f) => membersOf(f, users);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const displayData = useMemo(() => membersOf(activeFolder, users), [users, activeFolder]);
 
     useEffect(() => {
         fetchUsers();
@@ -301,11 +309,19 @@ function Users({ isLoggedIn }) {
         let imported = 0;
         let createdFolders = 0;
         try {
+            const knownGroups = new Set(folders.filter(isCustomFolder).map(f => groupKey(f.name)));
             for (const g of groups) {
-                let folder = folders.find(f => folderTypeCount(f) === g.count);
-                if (!folder) {
+                for (const e of g.entries) {
+                    if (!e.group || knownGroups.has(groupKey(e.group))) continue;
+                    await axios.post('/committeesessions', { name: e.group, days: orderedDays(e.days || []), kind: 'custom' });
+                    knownGroups.add(groupKey(e.group));
+                    createdFolders++;
+                }
+                const familyEntries = g.entries.filter(e => !e.group);
+                let folder = folders.find(f => !isCustomFolder(f) && folderTypeCount(f) === g.count);
+                if (!folder && familyEntries.length > 0) {
                     const comboCounts = {};
-                    g.entries.forEach(e => {
+                    familyEntries.forEach(e => {
                         const key = (e.days || []).join(',');
                         comboCounts[key] = (comboCounts[key] || 0) + 1;
                     });
@@ -316,7 +332,7 @@ function Users({ isLoggedIn }) {
                     createdFolders++;
                 }
                 for (const e of g.entries) {
-                    await axios.post('/users', { name: e.name, phone: e.phone || '', city: e.city || '', days: e.days });
+                    await axios.post('/users', { name: e.name, phone: e.phone || '', city: e.city || '', days: e.days, group: e.group || '' });
                     imported++;
                 }
             }
@@ -389,23 +405,28 @@ function Users({ isLoggedIn }) {
         });
     };
 
+    const pickerNameTaken = pickerCustom && !!pickerName.trim()
+        && folders.some(f => groupKey(f.name) === groupKey(pickerName));
+
     const pickerInvalid = pickerCustom
-        ? (!pickerName.trim() || pickerDays.length < 1 || usedTypes.has(pickerDays.length))
+        ? (!pickerName.trim() || pickerDays.length < 1 || pickerNameTaken)
         : (!pickerCount || pickerDays.length !== pickerCount);
 
     const handlePickerCreate = async () => {
         if (pickerInvalid || creatingFolder) return;
         const days = orderedDays(pickerDays);
         const count = days.length;
-        const dup = folders.find(f => folderTypeCount(f) === count);
-        if (dup) {
-            showError(`A "${typeLabel(count)}" folder already exists ("${dup.name}"). Delete it first.`);
-            return;
+        if (!pickerCustom) {
+            const dup = folders.find(f => !isCustomFolder(f) && folderTypeCount(f) === count);
+            if (dup) {
+                showError(`A "${typeLabel(count)}" folder already exists ("${dup.name}"). Delete it first.`);
+                return;
+            }
         }
         const name = pickerCustom ? pickerName.trim() : typeLabel(pickerCount);
         setCreatingFolder(true);
         try {
-            const res = await axios.post('/committeesessions', { name, days });
+            const res = await axios.post('/committeesessions', { name, days, kind: pickerCustom ? 'custom' : 'days' });
             await loadFolders();
             closeTypePicker();
             selectFolder(res.data);
@@ -435,7 +456,7 @@ function Users({ isLoggedIn }) {
 
     const ensureFolder = (days) => {
         const count = days.length;
-        if (count >= 1 && folders.some(f => folderTypeCount(f) === count)) return Promise.resolve(true);
+        if (count >= 1 && folders.some(f => !isCustomFolder(f) && folderTypeCount(f) === count)) return Promise.resolve(true);
         return new Promise(resolve => {
             folderMissingResolve.current = resolve;
             setFolderMissing(orderedDays(days));
@@ -478,8 +499,10 @@ function Users({ isLoggedIn }) {
             showError('Select at least 1 day.');
             return;
         }
-        const ok = await ensureFolder(changeDaysDraft);
-        if (!ok) return;
+        if (selectedUsers.some(u => !groupKey(u.group))) {
+            const ok = await ensureFolder(changeDaysDraft);
+            if (!ok) return;
+        }
         const newDaysKey = orderedDays(changeDaysDraft).join(',');
         const affected = selectedUsers.filter(u => orderedDays(Array.isArray(u.days) ? u.days : []).join(',') !== newDaysKey);
         try {
@@ -528,7 +551,7 @@ function Users({ isLoggedIn }) {
     const actionBodyTemplate = (rowData) => {
         return (
             <div className="action-buttons">
-                <EditUser rowData={rowData} users={users} onUserUpdated={handleUserUpdated} showError={showError} showSuccess={showSuccess} eventDates={eventDates} dayCount={isFolderView ? (activeFolder?.days?.length || 0) : 0} ensureFolder={ensureFolder} />
+                <EditUser rowData={rowData} users={users} onUserUpdated={handleUserUpdated} showError={showError} showSuccess={showSuccess} eventDates={eventDates} dayCount={isFolderView && !activeGroup ? (activeFolder?.days?.length || 0) : 0} ensureFolder={ensureFolder} />
                 <GenerateQR rowData={rowData} eventDates={eventDates} onPrintClick={(item) => { setPrintCurrentItem(item); setPrintDialogVisible(true); }} />
                 <DeleteUser rowData={rowData} onUserDeleted={handleUserDeleted} showError={showError} showSuccess={showSuccess} />
                 <Button icon="pi pi-print" className="p-button-rounded p-button-text p-button-sm print-icon-btn" onClick={() => { setPrintCurrentItem(rowData); setPrintDialogVisible(true); }} title="Print QR" />
@@ -552,6 +575,12 @@ function Users({ isLoggedIn }) {
             </span>
         );
     };
+
+    const groupBodyTemplate = (rowData) => (
+        rowData.group
+            ? <span className="group-chip">{rowData.group}</span>
+            : <span className="days-none">Family</span>
+    );
 
     const header = (
         <div className="table-header">
@@ -634,7 +663,7 @@ function Users({ isLoggedIn }) {
 
                 {activeTab === 'users' ? (
                     <>
-                        <AddUser inline={true} users={users} onUserAdded={handleUserAdded} showError={showError} showSuccess={showSuccess} eventDates={eventDates} defaultDays={activeFolder?.days} ensureFolder={ensureFolder} />
+                        <AddUser inline={true} users={users} onUserAdded={handleUserAdded} showError={showError} showSuccess={showSuccess} eventDates={eventDates} defaultDays={activeFolder?.days} group={activeGroup} ensureFolder={ensureFolder} />
 
                         <div className="mode-banner" style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
                             {isFolderView ? (
@@ -643,7 +672,7 @@ function Users({ isLoggedIn }) {
                                         <i className="pi pi-folder-open" style={{ color: '#10b981' }}></i>
                                         <span>Folder View — <b style={{ color: '#ffffff' }}>{activeFolder?.name}</b></span>
                                         <span style={{ color: '#94a3b8', fontWeight: 400 }}>
-                                            — {displayData.length} member{displayData.length === 1 ? '' : 's'} with {typeLabel(folderTypeCount(activeFolder))}
+                                            — {displayData.length} member{displayData.length === 1 ? '' : 's'} {activeGroup ? `in the ${activeGroup} group (default days)` : `with ${typeLabel(folderTypeCount(activeFolder))}`}
                                         </span>
                                         {Array.isArray(activeFolder?.days) && activeFolder.days.length > 0 && (
                                             <span className="banner-days">
@@ -722,6 +751,7 @@ function Users({ isLoggedIn }) {
                                                     <div className="paper-card-inner" style={{ animationDelay: `${0.16 + index * 0.08}s` }}>
                                                         <span className="paper-card-num">{index + 1}</span>
                                                         <span className="paper-card-name">{f.name}</span>
+                                                        {isCustomFolder(f) && <span className="paper-card-group-tag">Group</span>}
                                                         {Array.isArray(f.days) && f.days.length > 0 && (
                                                             <span className="paper-card-days">
                                                                 {orderedDays(f.days).join(' · ')}
@@ -775,7 +805,8 @@ function Users({ isLoggedIn }) {
                                 <Column key="col-phone" columnKey="col-phone" field="phone" header="Mobile Number" align="left" style={{ width: showSelection ? '14%' : '15%' }} className="pl-6"></Column>
                                 <Column key="col-city" columnKey="col-city" field="city" header="City" align="left" style={{ width: showSelection ? '12%' : '13%' }} className="pl-6" body={(rowData) => rowData.city || rowData.address?.city || 'N/A'}></Column>
                                 <Column key="col-days" columnKey="col-days" field="days" header="Days" body={daysBodyTemplate} align="center" style={{ width: showSelection ? '14%' : '15%' }}></Column>
-                                <Column key="col-actions" columnKey="col-actions" header="Actions" body={actionBodyTemplate} exportable={false} align="right" alignHeader="center" style={{ width: showSelection ? '32%' : '32%' }}></Column>
+                                <Column key="col-group" columnKey="col-group" field="group" header="Group" body={groupBodyTemplate} align="center" style={{ width: '8%' }}></Column>
+                                <Column key="col-actions" columnKey="col-actions" header="Actions" body={actionBodyTemplate} exportable={false} align="right" alignHeader="center" style={{ width: showSelection ? '24%' : '24%' }}></Column>
                             </DataTable>
                         </div>
                     </>
@@ -902,11 +933,10 @@ function Users({ isLoggedIn }) {
                         <button
                             type="button"
                             className={`type-card type-card-custom${pickerCustom ? ' type-card-active' : ''}`}
-                            disabled={usedTypes.size >= 4}
                             onClick={selectPickerCustom}
                         >
-                            <span className="type-card-label">Custom</span>
-                            <span className="type-card-custom-hint">Your own dates + name</span>
+                            <span className="type-card-label">Custom Group</span>
+                            <span className="type-card-custom-hint">Driver, Servant, Guest… with default days</span>
                         </button>
                         {(pickerCustom || pickerCount > 0) && (
                             <div className="type-picker-chips">
@@ -914,14 +944,16 @@ function Users({ isLoggedIn }) {
                                     <input
                                         type="text"
                                         className="type-picker-name"
-                                        placeholder="Folder name..."
+                                        placeholder="Group name (e.g. Driver)..."
                                         value={pickerName}
                                         onChange={e => setPickerName(e.target.value)}
                                     />
                                 )}
                                 <div className="type-picker-chips-label">
                                     {pickerCustom
-                                        ? `Tick the dates for this folder — ${pickerDays.length} selected${usedTypes.has(pickerDays.length) ? ' (that day-count already has a folder)' : ''}`
+                                        ? (pickerNameTaken
+                                            ? 'A folder with this name already exists — choose another name.'
+                                            : `Tick the default days for this group — ${pickerDays.length} selected (editable per person)`)
                                         : (pickerCount === 4
                                             ? 'All dates selected'
                                             : `Select exactly ${pickerCount} date${pickerCount > 1 ? 's' : ''} — ${pickerDays.length}/${pickerCount}`)}

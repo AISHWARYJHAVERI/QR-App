@@ -17,10 +17,14 @@ const isYes = (v) => {
 const downloadTemplate = (eventDates = [17, 18, 19, 20]) => {
   const wb = XLSX.utils.book_new();
   const row = { Name: 'John Doe', Phone: '9876543210', City: 'Mumbai' };
+  const driver = { Name: 'Driver 1', Phone: '9876500000', City: 'Mumbai' };
   eventDates.forEach((d, i) => {
     row[`Day ${i + 1} (${d})`] = i < 2 ? 'yes' : 'no';
+    driver[`Day ${i + 1} (${d})`] = 'yes';
   });
-  const ws = XLSX.utils.json_to_sheet([row]);
+  row.Group = '';
+  driver.Group = 'Driver';
+  const ws = XLSX.utils.json_to_sheet([row, driver]);
   XLSX.utils.book_append_sheet(wb, ws, 'Template');
   XLSX.writeFile(wb, 'user_import_template.xlsx');
 };
@@ -36,9 +40,10 @@ function ImportExcel({ onImported, showError, showSuccess, onRouteImport, users 
   const fileInputRef = useRef(null);
 
   const detectColumn = (headers) => {
-    const map = { name: '', phone: '', city: '', days: ['', '', '', ''] };
+    const map = { name: '', phone: '', city: '', group: '', days: ['', '', '', ''] };
     headers.forEach((h) => {
       const lower = h.toLowerCase().trim();
+      if (['group', 'category', 'type'].includes(lower)) map.group = h;
       if (EXPECTED_COLUMNS.includes(lower)) {
         if (['name', 'full name'].includes(lower)) map.name = h;
         else if (['phone', 'mobile', 'contact'].includes(lower)) map.phone = h;
@@ -155,6 +160,8 @@ function ImportExcel({ onImported, showError, showSuccess, onRouteImport, users 
         const payload = { name, days };
         if (phone) payload.phone = phone;
         if (city) payload.city = city;
+        const group = columnMap.group ? String(row[columnMap.group] || '').trim() : '';
+        if (group && !['family', 'member'].includes(group.toLowerCase())) payload.group = group;
         const key = days.length;
         if (!groups[key]) groups[key] = [];
         groups[key].push(payload);
@@ -324,6 +331,15 @@ function ImportExcel({ onImported, showError, showSuccess, onRouteImport, users 
                       <label>City</label>
                       <select value={columnMap.city} onChange={(e) => handleColumnChange('city', e.target.value)}>
                         <option value="">-- Skip --</option>
+                        {availableColumns.map((col) => (
+                          <option key={col} value={col}>{col}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="import-mapping-field">
+                      <label>Group <span style={{ color: '#94a3b8', fontWeight: 400 }}>(Driver, Servant…)</span></label>
+                      <select value={columnMap.group || ''} onChange={(e) => handleColumnChange('group', e.target.value)}>
+                        <option value="">-- Skip (family) --</option>
                         {availableColumns.map((col) => (
                           <option key={col} value={col}>{col}</option>
                         ))}
