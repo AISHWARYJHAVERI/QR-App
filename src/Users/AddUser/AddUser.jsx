@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
@@ -28,6 +28,18 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, eventDat
         && defaultDays.every((v, i) => v === lastDefault[i]);
     const [familyCount, setFamilyCount] = useState(1);
     const [extras, setExtras] = useState([]);
+    const [familyDropdownOpen, setFamilyDropdownOpen] = useState(false);
+    const familyDropdownRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (familyDropdownRef.current && !familyDropdownRef.current.contains(e.target)) {
+                setFamilyDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     if (!sameDays) {
         setLastDefault(defaultDays);
@@ -236,14 +248,39 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, eventDat
             <div className="add-user-card mb-8 p-6 rounded-3xl" style={{ background: 'rgba(30, 41, 59, 0.25)', border: '1px solid rgba(255, 255, 255, 0.06)', boxShadow: 'inset 0 4px 30px rgba(0, 0, 0, 0.1)', backdropFilter: 'blur(10px)' }}>
                 <div className="family-header mb-5">
                     <h3 className="text-xl font-bold gradient-text text-left m-0">Add New User Entry</h3>
-                    <label className="family-count-field">
-                        <span>Family Members</span>
-                        <select value={familyCount} onChange={(e) => changeFamilyCount(Number(e.target.value))}>
-                            {Array.from({ length: 15 }, (_, i) => i + 1).map(n => (
-                                <option key={n} value={n}>{n}</option>
-                            ))}
-                        </select>
-                    </label>
+                    <div className="family-count-field" ref={familyDropdownRef}>
+                        <span className="family-count-label">Family Members</span>
+                        <div className="custom-count-select">
+                            <button
+                                type="button"
+                                className={`custom-count-trigger ${familyDropdownOpen ? 'active' : ''}`}
+                                onClick={() => setFamilyDropdownOpen(prev => !prev)}
+                                aria-label="Select family members count"
+                            >
+                                <span className="custom-count-val">{familyCount}</span>
+                                <i className={`pi pi-chevron-${familyDropdownOpen ? 'up' : 'down'} custom-count-arrow`}></i>
+                            </button>
+                            {familyDropdownOpen && (
+                                <div className="custom-count-dropdown">
+                                    <div className="custom-count-grid">
+                                        {Array.from({ length: 15 }, (_, i) => i + 1).map(n => (
+                                            <button
+                                                key={n}
+                                                type="button"
+                                                className={`custom-count-option ${n === familyCount ? 'selected' : ''}`}
+                                                onClick={() => {
+                                                    changeFamilyCount(n);
+                                                    setFamilyDropdownOpen(false);
+                                                }}
+                                            >
+                                                {n}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
                 {familyCount > 1 && <div className="family-member-title">Member 1</div>}
                 <div className="row">
