@@ -3,16 +3,36 @@ import User from '../models/User.js';
 
 const router = Router();
 
-const nameKey = (name) => String(name || '').trim().replace(/\s+/g, ' ').toLowerCase();
-
-const nameTaken = async (name, excludeId) => {
-  const key = nameKey(name);
-  if (!key) return false;
-  const users = await User.find({}, { name: 1 }).lean();
-  return users.some(u => nameKey(u.name) === key && String(u._id) !== String(excludeId));
+// Same rules as src/utils/nameKey.js: ignore case/spaces/symbols, allow swapped words,
+// exact letters, trailing number = family member number.
+const parseName = (name) => {
+  const words = String(name || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim().split(' ').filter(Boolean);
+  let num = null;
+  if (words.length) {
+    const last = words[words.length - 1];
+    const m = last.match(/^(\D*)(\d+)$/);
+    if (m && (m[1] || words.length > 1)) {
+      num = parseInt(m[2], 10);
+      if (m[1]) words[words.length - 1] = m[1];
+      else words.pop();
+    }
+  }
+  return { compact: words.join(''), sorted: [...words].sort().join(' '), num };
 };
 
-const DUP_ERROR = (name) => ({ error: `"${String(name).trim()}": Name already used — try a different name.`, code: 'DUPLICATE_NAME' });
+const sameName = (a, b) => {
+  const pa = parseName(a);
+  const pb = parseName(b);
+  return !!pa.compact && pa.num === pb.num && (pa.compact === pb.compact || pa.sorted === pb.sorted);
+};
+
+const nameTaken = async (name, excludeId) => {
+  if (!parseName(name).compact) return false;
+  const users = await User.find({}, { name: 1 }).lean();
+  return users.some(u => String(u._id) !== String(excludeId) && sameName(u.name, name));
+};
+
+const DUP_ERROR = (name) => ({ error: `"${String(name).trim()}": Name already used — add a middle name or something different.`, code: 'DUPLICATE_NAME' });
 
 router.get('/', async (req, res) => {
   try {
@@ -38,7 +58,7 @@ router.put('/:id', async (req, res) => {
     const { _id, id, ...updateData } = req.body;
     if (updateData.name !== undefined) {
       const current = await User.findById(req.params.id, { name: 1 }).lean();
-      if (current && nameKey(current.name) !== nameKey(updateData.name) && await nameTaken(updateData.name, req.params.id)) {
+      if (current && !sameName(current.name, updateData.name) && await nameTaken(updateData.name, req.params.id)) {
         return res.status(409).json(DUP_ERROR(updateData.name));
       }
     }

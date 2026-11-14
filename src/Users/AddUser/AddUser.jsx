@@ -5,7 +5,7 @@ import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import axios from 'axios';
 import PrintQROptions from '../../components/PrintQROptions';
-import { nameKey, isDuplicateName, DUP_NAME_MSG } from '../../utils/nameKey';
+import { nameKey, parseName, sameName, isDuplicateName, findDuplicateName, nextFamilyNumber, findPhoneOwner, phoneKey, DUP_NAME_MSG } from '../../utils/nameKey';
 
 const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = false, eventDates = [], defaultDays = [], ensureFolder }) => {
     let emptyUser = {
@@ -66,11 +66,16 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
     const isDaysValid = (days) => dayCountRequired > 0 ? days.length === dayCountRequired : days.length >= 1;
     const daysValid = isDaysValid(userDays);
 
+    const baseName = user.name.trim();
+    const familyStart = familyCount > 1 && baseName && parseName(baseName).num === null
+        ? nextFamilyNumber(baseName, users)
+        : 0;
+    const firstName = familyStart ? `${baseName} ${familyStart}` : user.name;
+
     const memberAt = (i) => {
         const o = extras[i - 1] || {};
-        const base = user.name.trim();
         return {
-            name: o.name ?? (base ? `${base} ${i}` : ''),
+            name: o.name ?? (baseName ? `${baseName} ${familyStart ? familyStart + i : i}` : ''),
             phone: o.phone ?? user.phone,
             city: o.city ?? user.city,
             days: o.days ?? userDays
@@ -93,16 +98,37 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
     };
 
     const allMembers = () => {
-        const list = [{ ...user, days: userDays }];
+        const list = [{ ...user, name: firstName, days: userDays }];
         for (let i = 1; i < familyCount; i++) list.push(memberAt(i));
         return list;
     };
 
     const nameDupAt = (i, members) => {
-        const key = nameKey(members[i].name);
-        if (!key) return false;
+        if (!nameKey(members[i].name)) return false;
         if (isDuplicateName(members[i].name, users)) return true;
-        return members.some((o, j) => j !== i && nameKey(o.name) === key);
+        return members.some((o, j) => j !== i && sameName(o.name, members[i].name));
+    };
+
+    const [phoneWarn, setPhoneWarn] = useState(null);
+
+    const confirmPhones = (members) => {
+        const lines = [];
+        const seen = new Set();
+        members.forEach(m => {
+            const owner = findPhoneOwner(m.phone, users);
+            const key = phoneKey(m.phone);
+            if (owner && !seen.has(key)) {
+                seen.add(key);
+                lines.push(`Mobile ${m.phone.trim()} is already used by "${owner.name}".`);
+            }
+        });
+        if (!lines.length) return Promise.resolve(true);
+        return new Promise(resolve => setPhoneWarn({ lines, resolve }));
+    };
+
+    const closePhoneWarn = (ok) => {
+        if (phoneWarn) phoneWarn.resolve(ok);
+        setPhoneWarn(null);
     };
 
     const memberValid = (m) => m.name.trim() && m.phone.trim() && m.city.trim() && isDaysValid(m.days);
@@ -158,10 +184,12 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
                     : 'Select at least 1 day.');
                 return;
             }
-            if (isDuplicateName(user.name, users)) {
-                showError(`"${user.name.trim()}": ${DUP_NAME_MSG}`);
+            const dupUser = findDuplicateName(user.name, users);
+            if (dupUser) {
+                showError(`"${user.name.trim()}" matches "${dupUser.name}". ${DUP_NAME_MSG}`);
                 return;
             }
+            if (!(await confirmPhones([user]))) return;
             if (ensureFolder) {
                 const ok = await ensureFolder([...userDays]);
                 if (!ok) return;
@@ -190,9 +218,11 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
         }
         const dup = members.findIndex((_, i) => nameDupAt(i, members));
         if (dup >= 0) {
-            showError(`Member ${dup + 1} "${members[dup].name.trim()}": ${DUP_NAME_MSG}`);
+            const match = findDuplicateName(members[dup].name, users);
+            showError(`Member ${dup + 1} "${members[dup].name.trim()}"${match ? ` matches "${match.name}".` : ' is repeated.'} ${DUP_NAME_MSG}`);
             return;
         }
+        if (!(await confirmPhones(members))) return;
         if (ensureFolder) {
             const seen = new Set();
             for (const m of members) {
@@ -267,6 +297,28 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
 
     const familyMembers = allMembers();
 
+    const phoneWarnDialog = (
+        <Dialog
+            visible={!!phoneWarn}
+            style={{ width: '440px' }}
+            header={<div className="p-dialog-title gradient-text">Mobile Already Used</div>}
+            modal
+            onHide={() => closePhoneWarn(false)}
+            closeIcon={<span className="pi pi-times"></span>}
+            draggable={false}
+            resizable={false}
+            footer={
+                <div className="dialog-footer mt-4">
+                    <Button label="Cancel" icon="pi pi-times" onClick={() => closePhoneWarn(false)} style={{ backgroundColor: '#ef4444', color: '#ffffff', border: 'none' }} />
+                    <Button label="Save Anyway" icon="pi pi-check" onClick={() => closePhoneWarn(true)} style={{ backgroundColor: '#10b981', color: '#ffffff', border: 'none' }} />
+                </div>
+            }
+        >
+            {(phoneWarn?.lines || []).map((l, i) => <p key={i} style={{ color: '#e2e8f0', margin: '0 0 6px' }}>{l}</p>)}
+            <p style={{ color: '#94a3b8', margin: '10px 0 0' }}>Save anyway if this is the same family sharing a number.</p>
+        </Dialog>
+    );
+
     if (inline) {
         return (
             <div className="add-user-card mb-8 p-6 rounded-3xl" style={{ background: 'rgba(30, 41, 59, 0.25)', border: '1px solid rgba(255, 255, 255, 0.06)', boxShadow: 'inset 0 4px 30px rgba(0, 0, 0, 0.1)', backdropFilter: 'blur(10px)' }}>
@@ -313,6 +365,9 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
                         <InputText id="name-inline" value={user.name} onChange={(e) => onInputChange(e, 'name')} placeholder="Enter full name" required className={classNames({ 'p-invalid': (submitted && !user.name) || nameDupAt(0, familyMembers) })} />
                         {submitted && !user.name && <small className="p-error">Name is required.</small>}
                         {nameDupAt(0, familyMembers) && <small className="p-error">{DUP_NAME_MSG}</small>}
+                        {familyStart > 0 && !nameDupAt(0, familyMembers) && (
+                            <small className="family-continue-hint">"{baseName}" family exists — continuing from "{firstName}".</small>
+                        )}
                     </div>
                     <div className="col-md-4 col-12 field">
                         <label htmlFor="phone-inline" className="font-bold">Mobile Number</label>
@@ -435,6 +490,7 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
                     fetchAllUrl="/users"
                  eventDates={eventDates}
                 />
+                {phoneWarnDialog}
             </div>
         );
     }
@@ -513,6 +569,7 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
                 fetchAllUrl="/users"
              eventDates={eventDates}
             />
+            {phoneWarnDialog}
         </>
     );
 };

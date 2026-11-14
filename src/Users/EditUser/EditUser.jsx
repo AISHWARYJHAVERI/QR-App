@@ -4,7 +4,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import axios from 'axios';
-import { nameKey, isDuplicateName, DUP_NAME_MSG } from '../../utils/nameKey';
+import { nameKey, findDuplicateName, findPhoneOwner, phoneKey, DUP_NAME_MSG } from '../../utils/nameKey';
 
 const EditUser = ({ rowData, users = [], onUserUpdated, showError, showSuccess, eventDates = [], dayCount = 0, ensureFolder }) => {
     const [userDialog, setUserDialog] = useState(false);
@@ -33,8 +33,24 @@ const EditUser = ({ rowData, users = [], onUserUpdated, showError, showSuccess, 
     };
 
     const daysValid = dayCount > 0 ? editDays.length === dayCount : editDays.length >= 1;
-    const nameDup = nameKey(user.name) !== nameKey(rowData.name)
-        && isDuplicateName(user.name, users, user.id || user._id);
+    const selfId = user.id || user._id;
+    const dupUser = nameKey(user.name) !== nameKey(rowData.name)
+        ? findDuplicateName(user.name, users, selfId)
+        : null;
+    const nameDup = !!dupUser;
+    const [phoneWarn, setPhoneWarn] = useState(null);
+
+    const confirmPhone = () => {
+        if (phoneKey(user.phone) === phoneKey(rowData.phone)) return Promise.resolve(true);
+        const owner = findPhoneOwner(user.phone, users, selfId);
+        if (!owner) return Promise.resolve(true);
+        return new Promise(resolve => setPhoneWarn({ text: `Mobile ${user.phone.trim()} is already used by "${owner.name}".`, resolve }));
+    };
+
+    const closePhoneWarn = (ok) => {
+        if (phoneWarn) phoneWarn.resolve(ok);
+        setPhoneWarn(null);
+    };
 
     const openEdit = () => {
         setUser({ name: '', phone: '', city: '', ...rowData });
@@ -59,9 +75,10 @@ const EditUser = ({ rowData, users = [], onUserUpdated, showError, showSuccess, 
                 return;
             }
             if (nameDup) {
-                showError(`"${user.name.trim()}": ${DUP_NAME_MSG}`);
+                showError(`"${user.name.trim()}" matches "${dupUser.name}". ${DUP_NAME_MSG}`);
                 return;
             }
+            if (!(await confirmPhone())) return;
             if (ensureFolder) {
                 const ok = await ensureFolder([...editDays]);
                 if (!ok) return;
@@ -143,6 +160,25 @@ const EditUser = ({ rowData, users = [], onUserUpdated, showError, showSuccess, 
                         </div>
                     </div>
                 </div>
+            </Dialog>
+            <Dialog
+                visible={!!phoneWarn}
+                style={{ width: '440px' }}
+                header={<div className="p-dialog-title gradient-text">Mobile Already Used</div>}
+                modal
+                onHide={() => closePhoneWarn(false)}
+                closeIcon={<span className="pi pi-times"></span>}
+                draggable={false}
+                resizable={false}
+                footer={
+                    <div className="dialog-footer mt-4">
+                        <Button label="Cancel" icon="pi pi-times" onClick={() => closePhoneWarn(false)} style={{ backgroundColor: '#ef4444', color: '#ffffff', border: 'none' }} />
+                        <Button label="Save Anyway" icon="pi pi-check" onClick={() => closePhoneWarn(true)} style={{ backgroundColor: '#10b981', color: '#ffffff', border: 'none' }} />
+                    </div>
+                }
+            >
+                <p style={{ color: '#e2e8f0', margin: 0 }}>{phoneWarn?.text}</p>
+                <p style={{ color: '#94a3b8', margin: '10px 0 0' }}>Save anyway if this is the same family sharing a number.</p>
             </Dialog>
         </>
     );
