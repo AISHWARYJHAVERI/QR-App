@@ -26,27 +26,66 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, eventDat
     const sameDays = Array.isArray(defaultDays) && Array.isArray(lastDefault)
         && defaultDays.length === lastDefault.length
         && defaultDays.every((v, i) => v === lastDefault[i]);
+    const [familyCount, setFamilyCount] = useState(1);
+    const [extras, setExtras] = useState([]);
+
     if (!sameDays) {
         setLastDefault(defaultDays);
         setUserDays(defaultDays || []);
+        setExtras([]);
     }
 
-    const toggleUserDay = (d) => {
-        setUserDays(prev => {
-            if (prev.includes(d)) return prev.filter(x => x !== d);
-            if (dayCountRequired > 0) {
-                if (prev.length >= dayCountRequired) {
-                    showError(`This folder allows exactly ${dayCountRequired} day${dayCountRequired > 1 ? 's' : ''}.`);
-                    return prev;
-                }
-                return [...prev, d];
+    const nextDays = (prev, d) => {
+        if (prev.includes(d)) return prev.filter(x => x !== d);
+        if (dayCountRequired > 0) {
+            if (prev.length >= dayCountRequired) {
+                showError(`This folder allows exactly ${dayCountRequired} day${dayCountRequired > 1 ? 's' : ''}.`);
+                return prev;
             }
-            if (prev.length >= 4) return prev;
             return [...prev, d];
+        }
+        if (prev.length >= 4) return prev;
+        return [...prev, d];
+    };
+
+    const toggleUserDay = (d) => setUserDays(prev => nextDays(prev, d));
+
+    const isDaysValid = (days) => dayCountRequired > 0 ? days.length === dayCountRequired : days.length >= 1;
+    const daysValid = isDaysValid(userDays);
+
+    const memberAt = (i) => {
+        const o = extras[i - 1] || {};
+        const base = user.name.trim();
+        return {
+            name: o.name ?? (base ? `${base} ${i}` : ''),
+            phone: o.phone ?? user.phone,
+            city: o.city ?? user.city,
+            days: o.days ?? userDays
+        };
+    };
+
+    const setExtra = (i, field, val) => {
+        setExtras(prev => {
+            const next = [...prev];
+            next[i - 1] = { ...(next[i - 1] || {}), [field]: val };
+            return next;
         });
     };
 
-    const daysValid = dayCountRequired > 0 ? userDays.length === dayCountRequired : userDays.length >= 1;
+    const toggleExtraDay = (i, d) => setExtra(i, 'days', nextDays(memberAt(i).days, d));
+
+    const changeFamilyCount = (n) => {
+        setFamilyCount(n);
+        setExtras(prev => prev.slice(0, n - 1));
+    };
+
+    const allMembers = () => {
+        const list = [{ ...user, days: userDays }];
+        for (let i = 1; i < familyCount; i++) list.push(memberAt(i));
+        return list;
+    };
+
+    const memberValid = (m) => m.name.trim() && m.phone.trim() && m.city.trim() && isDaysValid(m.days);
 
     const daysField = (
         <div className="user-days-field">
@@ -112,6 +151,45 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, eventDat
         }
     };
 
+    const saveFamily = async () => {
+        setSubmitted(true);
+        const members = allMembers();
+        const bad = members.findIndex(m => !memberValid(m));
+        if (bad >= 0) {
+            showError(`Please complete member ${bad + 1} (name, mobile, city and days).`);
+            return;
+        }
+        if (ensureFolder) {
+            const seen = new Set();
+            for (const m of members) {
+                if (seen.has(m.days.length)) continue;
+                seen.add(m.days.length);
+                const ok = await ensureFolder([...m.days]);
+                if (!ok) return;
+            }
+        }
+        let saved = 0;
+        for (const m of members) {
+            try {
+                const response = await axios.post('/users', {
+                    name: m.name.trim(), phone: m.phone.trim(), city: m.city.trim(), days: [...m.days]
+                });
+                onUserAdded(response.data);
+                saved++;
+            } catch {
+                showError(`Error creating ${m.name}`);
+            }
+        }
+        if (saved > 0) showSuccess(`${saved} member${saved > 1 ? 's' : ''} saved`);
+        if (saved === members.length) {
+            setUser(emptyUser);
+            setUserDays(defaultDays || []);
+            setExtras([]);
+            setFamilyCount(1);
+            setSubmitted(false);
+        }
+    };
+
     const onInputChange = (e, name) => {
         const val = (e.target && e.target.value) || '';
         let _user = { ...user };
@@ -156,7 +234,18 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, eventDat
     if (inline) {
         return (
             <div className="add-user-card mb-8 p-6 rounded-3xl" style={{ background: 'rgba(30, 41, 59, 0.25)', border: '1px solid rgba(255, 255, 255, 0.06)', boxShadow: 'inset 0 4px 30px rgba(0, 0, 0, 0.1)', backdropFilter: 'blur(10px)' }}>
-                <h3 className="text-xl font-bold mb-5 gradient-text text-left">Add New User Entry</h3>
+                <div className="family-header mb-5">
+                    <h3 className="text-xl font-bold gradient-text text-left m-0">Add New User Entry</h3>
+                    <label className="family-count-field">
+                        <span>Family Members</span>
+                        <select value={familyCount} onChange={(e) => changeFamilyCount(Number(e.target.value))}>
+                            {Array.from({ length: 15 }, (_, i) => i + 1).map(n => (
+                                <option key={n} value={n}>{n}</option>
+                            ))}
+                        </select>
+                    </label>
+                </div>
+                {familyCount > 1 && <div className="family-member-title">Member 1</div>}
                 <div className="row">
                     <div className="col-md-4 col-12 field">
                         <label htmlFor="name-inline" className="font-bold">Full Name</label>
@@ -177,6 +266,59 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, eventDat
                 <div className="row">
                     <div className="col-12 field">{daysField}</div>
                 </div>
+
+                {Array.from({ length: familyCount - 1 }, (_, k) => k + 1).map(i => {
+                    const m = memberAt(i);
+                    const mDaysValid = isDaysValid(m.days);
+                    return (
+                        <div key={i} className="family-member-block">
+                            <div className="family-member-title">Member {i + 1}</div>
+                            <div className="row">
+                                <div className="col-md-4 col-12 field">
+                                    <label className="font-bold">Full Name</label>
+                                    <InputText value={m.name} onChange={(e) => setExtra(i, 'name', e.target.value)} placeholder="Enter full name" className={classNames({ 'p-invalid': submitted && !m.name.trim() })} />
+                                    {submitted && !m.name.trim() && <small className="p-error">Name is required.</small>}
+                                </div>
+                                <div className="col-md-4 col-12 field">
+                                    <label className="font-bold">Mobile Number</label>
+                                    <InputText value={m.phone} onChange={(e) => setExtra(i, 'phone', e.target.value)} placeholder="Enter mobile number" className={classNames({ 'p-invalid': submitted && !m.phone.trim() })} />
+                                    {submitted && !m.phone.trim() && <small className="p-error">Mobile number is required.</small>}
+                                </div>
+                                <div className="col-md-4 col-12 field">
+                                    <label className="font-bold">City</label>
+                                    <InputText value={m.city} onChange={(e) => setExtra(i, 'city', e.target.value)} placeholder="Enter city" className={classNames({ 'p-invalid': submitted && !m.city.trim() })} />
+                                    {submitted && !m.city.trim() && <small className="p-error">City is required.</small>}
+                                </div>
+                            </div>
+                            <div className="row">
+                                <div className="col-12 field">
+                                    <div className="user-days-field">
+                                        <label className="font-bold">Allowed Days</label>
+                                        <div className="user-days-chips">
+                                            {eventDates.map((d, di) => (
+                                                <button
+                                                    key={`${d}-${di}`}
+                                                    type="button"
+                                                    className={`user-day-chip${m.days.includes(d) ? ' user-day-chip-active' : ''}`}
+                                                    onClick={() => toggleExtraDay(i, d)}
+                                                >
+                                                    <b>D{di + 1}</b>{d}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        {!mDaysValid && submitted && (
+                                            <small className="p-error">
+                                                {dayCountRequired > 0
+                                                    ? `Select exactly ${dayCountRequired} day${dayCountRequired > 1 ? 's' : ''} (${m.days.length}/${dayCountRequired}).`
+                                                    : 'Select at least 1 day.'}
+                                            </small>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
 
                 <div className="d-flex flex-wrap gap-3 mt-4 justify-content-end">
                     <Button
@@ -199,9 +341,9 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, eventDat
                     />
                     <Button
                         type="button"
-                        label="Save User Details"
+                        label={familyCount > 1 ? `Save ${familyCount} Members` : 'Save User Details'}
                         icon="pi pi-check"
-                        onClick={saveUser}
+                        onClick={familyCount > 1 ? saveFamily : saveUser}
                         style={{ backgroundColor: '#10b981', color: '#ffffff', border: '1px solid transparent', width: '240px', borderRadius: '12px', padding: '0.6rem 1.5rem' }}
                     />
                 </div>
