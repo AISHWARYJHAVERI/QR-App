@@ -7,9 +7,9 @@
 export const parseName = (name) => {
     const words = String(name || '')
         .toLowerCase()
-        .replace(/[^\p{L}\p{N}]+/gu, ' ')
+        .replace(/[^\p{L}\p{N}\s]+/gu, '')
         .trim()
-        .split(' ')
+        .split(/\s+/)
         .filter(Boolean);
     let num = null;
     if (words.length) {

@@ -6,7 +6,7 @@ const router = Router();
 // Same rules as src/utils/nameKey.js: ignore case/spaces/symbols, allow swapped words,
 // exact letters, trailing number = family member number.
 const parseName = (name) => {
-  const words = String(name || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim().split(' ').filter(Boolean);
+  const words = String(name || '').toLowerCase().replace(/[^\p{L}\p{N}\s]+/gu, '').trim().split(/\s+/).filter(Boolean);
   let num = null;
   if (words.length) {
     const last = words[words.length - 1];
