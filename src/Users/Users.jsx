@@ -528,7 +528,7 @@ function Users({ isLoggedIn }) {
     const actionBodyTemplate = (rowData) => {
         return (
             <div className="action-buttons">
-                <EditUser rowData={rowData} onUserUpdated={handleUserUpdated} showError={showError} showSuccess={showSuccess} eventDates={eventDates} dayCount={isFolderView ? (activeFolder?.days?.length || 0) : 0} ensureFolder={ensureFolder} />
+                <EditUser rowData={rowData} users={users} onUserUpdated={handleUserUpdated} showError={showError} showSuccess={showSuccess} eventDates={eventDates} dayCount={isFolderView ? (activeFolder?.days?.length || 0) : 0} ensureFolder={ensureFolder} />
                 <GenerateQR rowData={rowData} eventDates={eventDates} onPrintClick={(item) => { setPrintCurrentItem(item); setPrintDialogVisible(true); }} />
                 <DeleteUser rowData={rowData} onUserDeleted={handleUserDeleted} showError={showError} showSuccess={showSuccess} />
                 <Button icon="pi pi-print" className="p-button-rounded p-button-text p-button-sm print-icon-btn" onClick={() => { setPrintCurrentItem(rowData); setPrintDialogVisible(true); }} title="Print QR" />
@@ -586,6 +586,7 @@ function Users({ isLoggedIn }) {
                 <ImportExcel
                     onImported={handleImported}
                     onRouteImport={handleRouteImport}
+                    users={users}
                     eventDates={eventDates}
                     showError={showError}
                     showSuccess={showSuccess}
@@ -633,7 +634,7 @@ function Users({ isLoggedIn }) {
 
                 {activeTab === 'users' ? (
                     <>
-                        <AddUser inline={true} onUserAdded={handleUserAdded} showError={showError} showSuccess={showSuccess} eventDates={eventDates} defaultDays={activeFolder?.days} ensureFolder={ensureFolder} />
+                        <AddUser inline={true} users={users} onUserAdded={handleUserAdded} showError={showError} showSuccess={showSuccess} eventDates={eventDates} defaultDays={activeFolder?.days} ensureFolder={ensureFolder} />
 
                         <div className="mode-banner" style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
                             {isFolderView ? (

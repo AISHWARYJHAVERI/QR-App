@@ -4,8 +4,9 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import axios from 'axios';
+import { nameKey, isDuplicateName, DUP_NAME_MSG } from '../../utils/nameKey';
 
-const EditUser = ({ rowData, onUserUpdated, showError, showSuccess, eventDates = [], dayCount = 0, ensureFolder }) => {
+const EditUser = ({ rowData, users = [], onUserUpdated, showError, showSuccess, eventDates = [], dayCount = 0, ensureFolder }) => {
     const [userDialog, setUserDialog] = useState(false);
     const [user, setUser] = useState({ name: '', phone: '', city: '', ...rowData });
     const [submitted, setSubmitted] = useState(false);
@@ -32,6 +33,8 @@ const EditUser = ({ rowData, onUserUpdated, showError, showSuccess, eventDates =
     };
 
     const daysValid = dayCount > 0 ? editDays.length === dayCount : editDays.length >= 1;
+    const nameDup = nameKey(user.name) !== nameKey(rowData.name)
+        && isDuplicateName(user.name, users, user.id || user._id);
 
     const openEdit = () => {
         setUser({ name: '', phone: '', city: '', ...rowData });
@@ -55,6 +58,10 @@ const EditUser = ({ rowData, onUserUpdated, showError, showSuccess, eventDates =
                     : 'Select at least 1 day.');
                 return;
             }
+            if (nameDup) {
+                showError(`"${user.name.trim()}": ${DUP_NAME_MSG}`);
+                return;
+            }
             if (ensureFolder) {
                 const ok = await ensureFolder([...editDays]);
                 if (!ok) return;
@@ -66,7 +73,8 @@ const EditUser = ({ rowData, onUserUpdated, showError, showSuccess, eventDates =
                 onUserUpdated(_user);
                 setUserDialog(false);
             } catch (error) {
-                showError("Error updating user");
+                const msg = error?.response?.data?.error;
+                showError(error?.response?.status === 409 && msg ? msg : "Error updating user");
             }
         }
     };
@@ -97,8 +105,9 @@ const EditUser = ({ rowData, onUserUpdated, showError, showSuccess, eventDates =
                     <div className="form-section">
                         <div className="field">
                             <label htmlFor={`name-${user.id}`} className="font-bold">Full Name</label>
-                            <InputText id={`name-${user.id}`} value={user.name} onChange={(e) => onInputChange(e, 'name')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.name })} />
+                            <InputText id={`name-${user.id}`} value={user.name} onChange={(e) => onInputChange(e, 'name')} required autoFocus className={classNames({ 'p-invalid': (submitted && !user.name) || nameDup })} />
                             {submitted && !user.name && <small className="p-error">Name is required.</small>}
+                            {nameDup && <small className="p-error">{DUP_NAME_MSG}</small>}
                         </div>
                         <div className="field">
                             <label htmlFor={`phone-${user.id}`} className="font-bold">Mobile Number</label>

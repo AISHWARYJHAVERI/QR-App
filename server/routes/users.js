@@ -3,6 +3,17 @@ import User from '../models/User.js';
 
 const router = Router();
 
+const nameKey = (name) => String(name || '').trim().replace(/\s+/g, ' ').toLowerCase();
+
+const nameTaken = async (name, excludeId) => {
+  const key = nameKey(name);
+  if (!key) return false;
+  const users = await User.find({}, { name: 1 }).lean();
+  return users.some(u => nameKey(u.name) === key && String(u._id) !== String(excludeId));
+};
+
+const DUP_ERROR = (name) => ({ error: `"${String(name).trim()}": Name already used — try a different name.`, code: 'DUPLICATE_NAME' });
+
 router.get('/', async (req, res) => {
   try {
     const users = await User.find().sort({ createdAt: -1 });
@@ -14,6 +25,7 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
+    if (await nameTaken(req.body?.name)) return res.status(409).json(DUP_ERROR(req.body.name));
     const user = await User.create(req.body);
     res.status(201).json(user);
   } catch (err) {
@@ -24,6 +36,12 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { _id, id, ...updateData } = req.body;
+    if (updateData.name !== undefined) {
+      const current = await User.findById(req.params.id, { name: 1 }).lean();
+      if (current && nameKey(current.name) !== nameKey(updateData.name) && await nameTaken(updateData.name, req.params.id)) {
+        return res.status(409).json(DUP_ERROR(updateData.name));
+      }
+    }
     const user = await User.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json(user);

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import * as XLSX from 'xlsx';
 import axios from 'axios';
 import './ImportExcel.css';
+import { nameKey } from '../../utils/nameKey';
 
 const EXPECTED_COLUMNS = ['name', 'full name', 'phone', 'mobile', 'contact', 'city', 'location', 'address'];
 
@@ -24,7 +25,7 @@ const downloadTemplate = (eventDates = [17, 18, 19, 20]) => {
   XLSX.writeFile(wb, 'user_import_template.xlsx');
 };
 
-function ImportExcel({ onImported, showError, showSuccess, onRouteImport, eventDates = [17, 18, 19, 20] }) {
+function ImportExcel({ onImported, showError, showSuccess, onRouteImport, users = [], eventDates = [17, 18, 19, 20] }) {
   const [showModal, setShowModal] = useState(false);
   const [file, setFile] = useState(null);
   const [parsedData, setParsedData] = useState([]);
@@ -123,6 +124,7 @@ function ImportExcel({ onImported, showError, showSuccess, onRouteImport, eventD
 
     const dayCols = Array.isArray(columnMap.days) ? columnMap.days : ['', '', '', ''];
     const mappedDayCols = dayCols.filter(Boolean).length;
+    const takenNames = new Set(users.map(u => nameKey(u.name)).filter(Boolean));
 
     if (onRouteImport && mappedDayCols > 0) {
       const groups = {};
@@ -132,11 +134,13 @@ function ImportExcel({ onImported, showError, showSuccess, onRouteImport, eventD
         const phone = String(row[phoneCol] || '').trim();
         const city = String(row[cityCol] || '').trim();
         if (!name) { skipped.push({ name: '', reason: 'missing name' }); continue; }
+        if (takenNames.has(nameKey(name))) { skipped.push({ name, reason: 'duplicate name' }); continue; }
         const days = [];
         dayCols.forEach((col, i) => {
           if (col && isYes(row[col])) days.push(eventDates[i]);
         });
         if (days.length === 0) { skipped.push({ name, reason: 'no day marked yes' }); continue; }
+        takenNames.add(nameKey(name));
         const payload = { name, days };
         if (phone) payload.phone = phone;
         if (city) payload.city = city;
@@ -161,6 +165,8 @@ function ImportExcel({ onImported, showError, showSuccess, onRouteImport, eventD
       const city = String(row[cityCol] || '').trim();
 
       if (!name) { failed++; continue; }
+      if (takenNames.has(nameKey(name))) { failed++; continue; }
+      takenNames.add(nameKey(name));
 
       try {
         const payload = { name };

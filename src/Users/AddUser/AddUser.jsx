@@ -5,8 +5,9 @@ import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import axios from 'axios';
 import PrintQROptions from '../../components/PrintQROptions';
+import { nameKey, isDuplicateName, DUP_NAME_MSG } from '../../utils/nameKey';
 
-const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, eventDates = [], defaultDays = [], ensureFolder }) => {
+const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = false, eventDates = [], defaultDays = [], ensureFolder }) => {
     let emptyUser = {
         name: '',
         phone: '',
@@ -97,7 +98,19 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, eventDat
         return list;
     };
 
+    const nameDupAt = (i, members) => {
+        const key = nameKey(members[i].name);
+        if (!key) return false;
+        if (isDuplicateName(members[i].name, users)) return true;
+        return members.some((o, j) => j !== i && nameKey(o.name) === key);
+    };
+
     const memberValid = (m) => m.name.trim() && m.phone.trim() && m.city.trim() && isDaysValid(m.days);
+
+    const serverError = (error, fallback) => {
+        const msg = error?.response?.data?.error;
+        return error?.response?.status === 409 && msg ? msg : fallback;
+    };
 
     const daysField = (
         <div className="user-days-field">
@@ -145,6 +158,10 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, eventDat
                     : 'Select at least 1 day.');
                 return;
             }
+            if (isDuplicateName(user.name, users)) {
+                showError(`"${user.name.trim()}": ${DUP_NAME_MSG}`);
+                return;
+            }
             if (ensureFolder) {
                 const ok = await ensureFolder([...userDays]);
                 if (!ok) return;
@@ -158,7 +175,7 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, eventDat
                 setUser(emptyUser);
                 setSubmitted(false);
             } catch (error) {
-                showError("Error creating user");
+                showError(serverError(error, "Error creating user"));
             }
         }
     };
@@ -169,6 +186,11 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, eventDat
         const bad = members.findIndex(m => !memberValid(m));
         if (bad >= 0) {
             showError(`Please complete member ${bad + 1} (name, mobile, city and days).`);
+            return;
+        }
+        const dup = members.findIndex((_, i) => nameDupAt(i, members));
+        if (dup >= 0) {
+            showError(`Member ${dup + 1} "${members[dup].name.trim()}": ${DUP_NAME_MSG}`);
             return;
         }
         if (ensureFolder) {
@@ -188,8 +210,8 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, eventDat
                 });
                 onUserAdded(response.data);
                 saved++;
-            } catch {
-                showError(`Error creating ${m.name}`);
+            } catch (error) {
+                showError(serverError(error, `Error creating ${m.name}`));
             }
         }
         if (saved > 0) showSuccess(`${saved} member${saved > 1 ? 's' : ''} saved`);
@@ -243,6 +265,8 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, eventDat
         </div>
     );
 
+    const familyMembers = allMembers();
+
     if (inline) {
         return (
             <div className="add-user-card mb-8 p-6 rounded-3xl" style={{ background: 'rgba(30, 41, 59, 0.25)', border: '1px solid rgba(255, 255, 255, 0.06)', boxShadow: 'inset 0 4px 30px rgba(0, 0, 0, 0.1)', backdropFilter: 'blur(10px)' }}>
@@ -286,8 +310,9 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, eventDat
                 <div className="row">
                     <div className="col-md-4 col-12 field">
                         <label htmlFor="name-inline" className="font-bold">Full Name</label>
-                        <InputText id="name-inline" value={user.name} onChange={(e) => onInputChange(e, 'name')} placeholder="Enter full name" required className={classNames({ 'p-invalid': submitted && !user.name })} />
+                        <InputText id="name-inline" value={user.name} onChange={(e) => onInputChange(e, 'name')} placeholder="Enter full name" required className={classNames({ 'p-invalid': (submitted && !user.name) || nameDupAt(0, familyMembers) })} />
                         {submitted && !user.name && <small className="p-error">Name is required.</small>}
+                        {nameDupAt(0, familyMembers) && <small className="p-error">{DUP_NAME_MSG}</small>}
                     </div>
                     <div className="col-md-4 col-12 field">
                         <label htmlFor="phone-inline" className="font-bold">Mobile Number</label>
@@ -313,8 +338,9 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, eventDat
                             <div className="row">
                                 <div className="col-md-4 col-12 field">
                                     <label className="font-bold">Full Name</label>
-                                    <InputText value={m.name} onChange={(e) => setExtra(i, 'name', e.target.value)} placeholder="Enter full name" className={classNames({ 'p-invalid': submitted && !m.name.trim() })} />
+                                    <InputText value={m.name} onChange={(e) => setExtra(i, 'name', e.target.value)} placeholder="Enter full name" className={classNames({ 'p-invalid': (submitted && !m.name.trim()) || nameDupAt(i, familyMembers) })} />
                                     {submitted && !m.name.trim() && <small className="p-error">Name is required.</small>}
+                                    {nameDupAt(i, familyMembers) && <small className="p-error">{DUP_NAME_MSG}</small>}
                                 </div>
                                 <div className="col-md-4 col-12 field">
                                     <label className="font-bold">Mobile Number</label>
@@ -425,6 +451,7 @@ const AddUser = ({ onUserAdded, showError, showSuccess, inline = false, eventDat
                             <label htmlFor="name" className="font-bold">Full Name</label>
                             <InputText id="name" value={user.name} onChange={(e) => onInputChange(e, 'name')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.name })} />
                             {submitted && !user.name && <small className="p-error">Name is required.</small>}
+                            {isDuplicateName(user.name, users) && <small className="p-error">{DUP_NAME_MSG}</small>}
                         </div>
                         <div className="field">
                             <label htmlFor="phone" className="font-bold">Mobile Number</label>
