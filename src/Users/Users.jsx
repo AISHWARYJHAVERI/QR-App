@@ -603,12 +603,6 @@ function Users({ isLoggedIn }) {
         );
     };
 
-    const groupBodyTemplate = (rowData) => (
-        rowData.group
-            ? <span className="group-chip">{rowData.group}</span>
-            : <span className="days-none">Family</span>
-    );
-
     const header = (
         <div className="table-header">
             <div className="d-flex align-items-center gap-3">
@@ -839,8 +833,7 @@ function Users({ isLoggedIn }) {
                                 <Column key="col-phone" columnKey="col-phone" field="phone" header="Mobile Number" align="left" style={{ width: showSelection ? '14%' : '15%' }} className="pl-6"></Column>
                                 <Column key="col-city" columnKey="col-city" field="city" header="City" align="left" style={{ width: showSelection ? '12%' : '13%' }} className="pl-6" body={(rowData) => rowData.city || rowData.address?.city || 'N/A'}></Column>
                                 <Column key="col-days" columnKey="col-days" field="days" header="Days" body={daysBodyTemplate} align="center" style={{ width: showSelection ? '14%' : '15%' }}></Column>
-                                <Column key="col-group" columnKey="col-group" field="group" header="Group" body={groupBodyTemplate} align="center" style={{ width: '8%' }}></Column>
-                                <Column key="col-actions" columnKey="col-actions" header="Actions" body={actionBodyTemplate} exportable={false} align="right" alignHeader="center" style={{ width: showSelection ? '24%' : '24%' }}></Column>
+                                <Column key="col-actions" columnKey="col-actions" header="Actions" body={actionBodyTemplate} exportable={false} align="right" alignHeader="center" style={{ width: showSelection ? '32%' : '32%' }}></Column>
                             </DataTable>
                         </div>
                     </>
