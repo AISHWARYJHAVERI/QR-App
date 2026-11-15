@@ -88,6 +88,9 @@ function Users({ isLoggedIn }) {
     const [pickerDays, setPickerDays] = useState([]);
     const [pickerCustom, setPickerCustom] = useState(false);
     const [pickerName, setPickerName] = useState('');
+    const [pickerPlanned, setPickerPlanned] = useState('');
+    const [showEditCount, setShowEditCount] = useState(false);
+    const [editCountDraft, setEditCountDraft] = useState('');
     const [creatingFolder, setCreatingFolder] = useState(false);
 
     const [showChangeDays, setShowChangeDays] = useState(false);
@@ -387,6 +390,7 @@ function Users({ isLoggedIn }) {
         setPickerCustom(true);
         setPickerCount(0);
         setPickerName('');
+        setPickerPlanned('');
         setPickerDays([]);
     };
 
@@ -408,8 +412,10 @@ function Users({ isLoggedIn }) {
     const pickerNameTaken = pickerCustom && !!pickerName.trim()
         && folders.some(f => groupKey(f.name) === groupKey(pickerName));
 
+    const pickerPlannedNum = parseInt(pickerPlanned, 10) || 0;
+
     const pickerInvalid = pickerCustom
-        ? (!pickerName.trim() || pickerDays.length < 1 || pickerNameTaken)
+        ? (!pickerName.trim() || pickerDays.length < 1 || pickerNameTaken || pickerPlannedNum < 1 || pickerPlannedNum > 100)
         : (!pickerCount || pickerDays.length !== pickerCount);
 
     const handlePickerCreate = async () => {
@@ -426,7 +432,7 @@ function Users({ isLoggedIn }) {
         const name = pickerCustom ? pickerName.trim() : typeLabel(pickerCount);
         setCreatingFolder(true);
         try {
-            const res = await axios.post('/committeesessions', { name, days, kind: pickerCustom ? 'custom' : 'days' });
+            const res = await axios.post('/committeesessions', { name, days, kind: pickerCustom ? 'custom' : 'days', ...(pickerCustom ? { plannedCount: pickerPlannedNum } : {}) });
             await loadFolders();
             closeTypePicker();
             selectFolder(res.data);
@@ -435,6 +441,27 @@ function Users({ isLoggedIn }) {
             showError('Error creating folder');
         } finally {
             setCreatingFolder(false);
+        }
+    };
+
+    const openEditCount = () => {
+        setEditCountDraft(String(activeFolder?.plannedCount || displayData.length || ''));
+        setShowEditCount(true);
+    };
+
+    const applyEditCount = async () => {
+        const n = parseInt(editCountDraft, 10) || 0;
+        if (n < 1 || n > 100) { showError('Enter a number between 1 and 100.'); return; }
+        try {
+            await axios.put(`/committeesessions/${activeFolder.id}`, { plannedCount: n });
+            const updated = { ...activeFolder, plannedCount: n };
+            setActiveFolder(updated);
+            persistSession('folder', updated);
+            await loadFolders();
+            setShowEditCount(false);
+            showSuccess(`"${activeFolder.name}" planned count is now ${n}.`);
+        } catch {
+            showError('Error updating count');
         }
     };
 
@@ -663,7 +690,7 @@ function Users({ isLoggedIn }) {
 
                 {activeTab === 'users' ? (
                     <>
-                        <AddUser inline={true} users={users} onUserAdded={handleUserAdded} showError={showError} showSuccess={showSuccess} eventDates={eventDates} defaultDays={activeFolder?.days} group={activeGroup} ensureFolder={ensureFolder} />
+                        <AddUser inline={true} users={users} onUserAdded={handleUserAdded} showError={showError} showSuccess={showSuccess} eventDates={eventDates} defaultDays={activeFolder?.days} group={activeGroup} groupPlanned={activeGroup ? (activeFolder?.plannedCount || 0) : 0} groupSaved={activeGroup ? displayData.length : 0} ensureFolder={ensureFolder} />
 
                         <div className="mode-banner" style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
                             {isFolderView ? (
@@ -672,8 +699,15 @@ function Users({ isLoggedIn }) {
                                         <i className="pi pi-folder-open" style={{ color: '#10b981' }}></i>
                                         <span>Folder View — <b style={{ color: '#ffffff' }}>{activeFolder?.name}</b></span>
                                         <span style={{ color: '#94a3b8', fontWeight: 400 }}>
-                                            — {displayData.length} member{displayData.length === 1 ? '' : 's'} {activeGroup ? `in the ${activeGroup} group (default days)` : `with ${typeLabel(folderTypeCount(activeFolder))}`}
+                                            — {activeGroup && activeFolder?.plannedCount > 0
+                                                ? `${displayData.length} of ${activeFolder.plannedCount} added`
+                                                : `${displayData.length} member${displayData.length === 1 ? '' : 's'}`} {activeGroup ? `in the ${activeGroup} group (default days)` : `with ${typeLabel(folderTypeCount(activeFolder))}`}
                                         </span>
+                                        {activeGroup && (
+                                            <button type="button" className="edit-count-btn" onClick={openEditCount}>
+                                                <i className="pi pi-pencil"></i> Edit count
+                                            </button>
+                                        )}
                                         {Array.isArray(activeFolder?.days) && activeFolder.days.length > 0 && (
                                             <span className="banner-days">
                                                 {orderedDays(activeFolder.days).map(d => {
@@ -886,6 +920,32 @@ function Users({ isLoggedIn }) {
                 </div>
             )}
 
+            {showEditCount && (
+                <div className="type-picker-overlay" onClick={() => setShowEditCount(false)}>
+                    <div className="type-picker-dialog" onClick={e => e.stopPropagation()}>
+                        <div className="type-picker-icon">
+                            <i className="pi pi-users"></i>
+                        </div>
+                        <h4>Planned members — {activeFolder?.name}</h4>
+                        <p className="type-picker-sub">{displayData.length} already added. How many members in total should this group have?</p>
+                        <input
+                            type="number"
+                            min="1"
+                            max="100"
+                            className="type-picker-name"
+                            value={editCountDraft}
+                            onChange={e => setEditCountDraft(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') applyEditCount(); }}
+                            autoFocus
+                        />
+                        <div className="type-picker-actions">
+                            <button className="type-picker-cancel" onClick={() => setShowEditCount(false)}>Cancel</button>
+                            <button className="type-picker-create" onClick={applyEditCount}>Save</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {reprintItems.length > 0 && !printDialogVisible && (
                 <div className="type-picker-overlay" onClick={() => setReprintItems([])}>
                     <div className="type-picker-dialog" onClick={e => e.stopPropagation()}>
@@ -947,6 +1007,17 @@ function Users({ isLoggedIn }) {
                                         placeholder="Group name (e.g. Driver)..."
                                         value={pickerName}
                                         onChange={e => setPickerName(e.target.value)}
+                                    />
+                                )}
+                                {pickerCustom && (
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max="100"
+                                        className="type-picker-name"
+                                        placeholder="How many members? (1–100)"
+                                        value={pickerPlanned}
+                                        onChange={e => setPickerPlanned(e.target.value)}
                                     />
                                 )}
                                 <div className="type-picker-chips-label">

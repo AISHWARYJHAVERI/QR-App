@@ -11,6 +11,7 @@ const entrySchema = new mongoose.Schema({
 const committeeSessionSchema = new mongoose.Schema({
   name: { type: String, required: true },
   days: { type: [Number], default: [] },
+  plannedCount: { type: Number, default: 0 },
   kind: { type: String, enum: ['days', 'custom'], default: 'days' },
   entries: { type: [entrySchema], default: [] },
 }, { timestamps: true, toJSON: { virtuals: true } });

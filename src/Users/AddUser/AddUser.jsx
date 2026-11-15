@@ -7,7 +7,7 @@ import axios from 'axios';
 import PrintQROptions from '../../components/PrintQROptions';
 import { nameKey, parseName, sameName, isDuplicateName, findDuplicateName, nextFamilyNumber, findPhoneOwner, phoneKey, DUP_NAME_MSG } from '../../utils/nameKey';
 
-const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = false, eventDates = [], defaultDays = [], group = '', ensureFolder }) => {
+const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = false, eventDates = [], defaultDays = [], group = '', groupPlanned = 0, groupSaved = 0, ensureFolder }) => {
     let emptyUser = {
         name: '',
         phone: '',
@@ -42,12 +42,21 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const [lastGroup, setLastGroup] = useState(group);
-    if (!sameDays || lastGroup !== group) {
-        setLastGroup(group);
+    const maxCount = group ? 100 : 15;
+    const remainingSlots = group && groupPlanned > 0
+        ? Math.min(100, Math.max(groupPlanned - groupSaved, 1))
+        : 1;
+    const syncKey = `${group}|${groupPlanned}|${users.length > 0}`;
+    const [lastKey, setLastKey] = useState(syncKey);
+    const [collapsedAll, setCollapsedAll] = useState(false);
+    const [openOne, setOpenOne] = useState([]);
+    if (!sameDays || lastKey !== syncKey) {
+        setLastKey(syncKey);
         setLastDefault(defaultDays);
         setUserDays(defaultDays || []);
         setExtras([]);
+        setFamilyCount(remainingSlots);
+        setOpenOne([]);
     }
 
     const nextDays = (prev, d) => {
@@ -102,16 +111,22 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
 
     const toggleExtraDay = (i, d) => setExtra(i, 'days', nextDays(memberAt(i).days, d));
 
-    const changeFamilyCount = (n) => {
+    const changeFamilyCount = (value) => {
+        const n = Math.min(maxCount, Math.max(1, parseInt(value, 10) || 1));
         setFamilyCount(n);
         setExtras(prev => prev.slice(0, n - 1));
     };
 
     const allMembers = () => {
-        const list = [{ ...user, name: firstName, days: userDays }];
-        for (let i = 1; i < familyCount; i++) list.push(memberAt(i));
+        const list = [{ ...user, name: firstName, days: userDays, _i: 0 }];
+        for (let i = 1; i < familyCount; i++) list.push({ ...memberAt(i), _i: i });
         return list;
     };
+
+    const activeMembers = (list) => (group ? list.filter(m => m._i === 0 || m.name.trim()) : list);
+
+    const isCardCollapsed = (i) => collapsedAll && !openOne.includes(i);
+    const toggleCard = (i) => setOpenOne(prev => (prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]));
 
     const nameDupAt = (i, members) => {
         if (!nameKey(members[i].name)) return false;
@@ -220,16 +235,16 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
 
     const saveFamily = async () => {
         setSubmitted(true);
-        const members = allMembers();
+        const members = activeMembers(allMembers());
         const bad = members.findIndex(m => !memberValid(m));
         if (bad >= 0) {
-            showError(`Please complete member ${bad + 1} (name, mobile, city and days).`);
+            showError(`Please complete member ${members[bad]._i + 1} (name, mobile, city and days).`);
             return;
         }
         const dup = members.findIndex((_, i) => nameDupAt(i, members));
         if (dup >= 0) {
             const match = findDuplicateName(members[dup].name, users);
-            showError(`Member ${dup + 1} "${members[dup].name.trim()}"${match ? ` matches "${match.name}".` : ' is repeated.'} ${DUP_NAME_MSG}`);
+            showError(`Member ${members[dup]._i + 1} "${members[dup].name.trim()}"${match ? ` matches "${match.name}".` : ' is repeated.'} ${DUP_NAME_MSG}`);
             return;
         }
         if (!(await confirmPhones(members))) return;
@@ -259,7 +274,8 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
             setUser(emptyUser);
             setUserDays(defaultDays || []);
             setExtras([]);
-            setFamilyCount(1);
+            setOpenOne([]);
+            setFamilyCount(group && groupPlanned > 0 ? Math.min(100, Math.max(groupPlanned - groupSaved - saved, 1)) : 1);
             setSubmitted(false);
         }
     };
@@ -336,7 +352,27 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
                     <h3 className="text-xl font-bold gradient-text text-left m-0">Add New User Entry</h3>
                     <div className="family-count-field" ref={familyDropdownRef}>
                         <span className="family-count-label">{group ? `How many ${group}s?` : 'Family Members'}</span>
-                        <div className="custom-count-select">
+                        {group && (
+                            <div className="group-count-control">
+                                <button type="button" className="group-count-step" onClick={() => changeFamilyCount(familyCount - 1)} aria-label="Fewer">−</button>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max="100"
+                                    className="group-count-input"
+                                    value={familyCount}
+                                    onFocus={(e) => e.target.select()}
+                                    onChange={(e) => changeFamilyCount(e.target.value)}
+                                />
+                                <button type="button" className="group-count-step" onClick={() => changeFamilyCount(familyCount + 1)} aria-label="More">+</button>
+                                {groupPlanned > 0 && (
+                                    <button type="button" className="group-count-remaining" onClick={() => changeFamilyCount(remainingSlots)} title="Reset to remaining slots">
+                                        {groupSaved} of {groupPlanned} added
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                        <div className="custom-count-select" hidden={!!group}>
                             <button
                                 type="button"
                                 className={`custom-count-trigger ${familyDropdownOpen ? 'active' : ''}`}
@@ -368,6 +404,23 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
                         </div>
                     </div>
                 </div>
+                {(familyCount > 1 || group) && (
+                    <div className="family-notes">
+                        <div>
+                            <i className="pi pi-info-circle"></i> Mobile and City are copied from <b>Member 1</b> into every card — fill Member 1 carefully (you can still edit any card).
+                        </div>
+                        {group && (
+                            <div>
+                                <i className="pi pi-info-circle"></i> Clear a card's name to <b>skip</b> it — empty cards are not saved, so you can finish the rest later.
+                            </div>
+                        )}
+                        {familyCount > 1 && (
+                            <button type="button" className="family-collapse-btn" onClick={() => { setCollapsedAll(prev => !prev); setOpenOne([]); }}>
+                                <i className={`pi ${collapsedAll ? 'pi-angle-double-down' : 'pi-angle-double-up'}`}></i> {collapsedAll ? 'Expand cards' : 'Collapse cards'}
+                            </button>
+                        )}
+                    </div>
+                )}
                 {familyCount > 1 && <div className="family-member-title">Member 1</div>}
                 <div className="row">
                     <div className="col-md-4 col-12 field">
@@ -397,25 +450,41 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
                 {Array.from({ length: familyCount - 1 }, (_, k) => k + 1).map(i => {
                     const m = memberAt(i);
                     const mDaysValid = isDaysValid(m.days);
+                    const skipped = !!group && !m.name.trim();
+                    if (isCardCollapsed(i)) {
+                        return (
+                            <div key={i} className={`family-member-block family-member-collapsed${skipped ? ' family-member-skipped' : ''}`} onClick={() => toggleCard(i)}>
+                                <span className="family-member-title" style={{ margin: 0 }}>Member {i + 1}</span>
+                                <span className="family-collapsed-summary">
+                                    {skipped ? 'Skipped (no name)' : `${m.name} · ${m.phone || 'no mobile'} · ${m.city || 'no city'} · ${m.days.length} day${m.days.length === 1 ? '' : 's'}`}
+                                </span>
+                                <i className="pi pi-chevron-down"></i>
+                            </div>
+                        );
+                    }
                     return (
-                        <div key={i} className="family-member-block">
-                            <div className="family-member-title">Member {i + 1}</div>
+                        <div key={i} className={`family-member-block${skipped ? ' family-member-skipped' : ''}`}>
+                            <div className="family-member-title">
+                                Member {i + 1}
+                                {skipped && <span className="family-skip-badge">Skipped — will not be saved</span>}
+                                {collapsedAll && <button type="button" className="family-card-fold" onClick={() => toggleCard(i)}>Fold</button>}
+                            </div>
                             <div className="row">
                                 <div className="col-md-4 col-12 field">
                                     <label className="font-bold">Full Name</label>
-                                    <InputText value={m.name} onChange={(e) => setExtra(i, 'name', e.target.value)} placeholder="Enter full name" className={classNames({ 'p-invalid': (submitted && !m.name.trim()) || nameDupAt(i, familyMembers) })} />
-                                    {submitted && !m.name.trim() && <small className="p-error">Name is required.</small>}
+                                    <InputText value={m.name} onChange={(e) => setExtra(i, 'name', e.target.value)} placeholder="Enter full name" className={classNames({ 'p-invalid': (submitted && !m.name.trim() && !group) || nameDupAt(i, familyMembers) })} />
+                                    {submitted && !m.name.trim() && !group && <small className="p-error">Name is required.</small>}
                                     {nameDupAt(i, familyMembers) && <small className="p-error">{DUP_NAME_MSG}</small>}
                                 </div>
                                 <div className="col-md-4 col-12 field">
                                     <label className="font-bold">Mobile Number</label>
                                     <InputText value={m.phone} onChange={(e) => setExtra(i, 'phone', e.target.value)} placeholder="Enter mobile number" className={classNames({ 'p-invalid': submitted && !m.phone.trim() })} />
-                                    {submitted && !m.phone.trim() && <small className="p-error">Mobile number is required.</small>}
+                                    {submitted && !skipped && !m.phone.trim() && <small className="p-error">Mobile number is required.</small>}
                                 </div>
                                 <div className="col-md-4 col-12 field">
                                     <label className="font-bold">City</label>
                                     <InputText value={m.city} onChange={(e) => setExtra(i, 'city', e.target.value)} placeholder="Enter city" className={classNames({ 'p-invalid': submitted && !m.city.trim() })} />
-                                    {submitted && !m.city.trim() && <small className="p-error">City is required.</small>}
+                                    {submitted && !skipped && !m.city.trim() && <small className="p-error">City is required.</small>}
                                 </div>
                             </div>
                             <div className="row">
@@ -434,7 +503,7 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
                                                 </button>
                                             ))}
                                         </div>
-                                        {!mDaysValid && submitted && (
+                                        {!mDaysValid && submitted && !skipped && (
                                             <small className="p-error">
                                                 {dayCountRequired > 0
                                                     ? `Select exactly ${dayCountRequired} day${dayCountRequired > 1 ? 's' : ''} (${m.days.length}/${dayCountRequired}).`
@@ -469,7 +538,7 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
                     />
                     <Button
                         type="button"
-                        label={familyCount > 1 ? `Save ${familyCount} ${group ? `${group}s` : 'Members'}` : 'Save User Details'}
+                        label={familyCount > 1 ? `Save ${activeMembers(familyMembers).length} ${group ? `${group}${activeMembers(familyMembers).length === 1 ? '' : 's'}` : 'Members'}` : 'Save User Details'}
                         icon="pi pi-check"
                         onClick={familyCount > 1 || group ? saveFamily : saveUser}
                         style={{ backgroundColor: '#10b981', color: '#ffffff', border: '1px solid transparent', width: '240px', borderRadius: '12px', padding: '0.6rem 1.5rem' }}
