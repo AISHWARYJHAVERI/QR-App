@@ -206,14 +206,16 @@ export const printQRCards = ({ items, type, eventDates = [] }) => {
       width: 100%;
       background: #FAF3E0; /* Warm matching cream tone */
       border-top: 1px solid #d97706;
-      padding: 1.6mm 2mm;
+      padding: 1.4mm 1.5mm;
       text-align: center;
+      line-height: 1.2;
     }
     .footer-author {
-      font-size: 7.5px;
+      font-size: 7.2px;
       font-weight: 600;
       color: #78350f; /* Refined contrasting warm tone */
-      letter-spacing: 0.03em;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
     }
   </style>
 </head>
@@ -268,7 +270,7 @@ const buildCardHtml = ({ qrImageUrl, name, city, days, group, eventDates = [] })
       ${buildDaysHtml(days, eventDates)}
     </div>
     <div class="card-footer">
-      <div class="footer-author">Developed by Aishwary Jhaveri</div>
+      <div class="footer-author">Developed by Aishwary Jhaveri : 8160682897</div>
     </div>
   </div>`;
 };
