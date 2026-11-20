@@ -270,7 +270,7 @@ const buildCardHtml = ({ qrImageUrl, name, city, days, group, eventDates = [] })
       ${buildDaysHtml(days, eventDates)}
     </div>
     <div class="card-footer">
-      <div class="footer-author">Developed by Aishwary Jhaveri : 8160682897</div>
+      <div class="footer-author">Developed by Aishwary Jhaveri : +91 8160682897</div>
     </div>
   </div>`;
 };
