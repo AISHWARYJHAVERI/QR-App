@@ -1,3 +1,5 @@
+import { HEADER_BANNER_BASE64 } from './qrHeaderBanner';
+
 export const printQRCards = ({ items, type, eventDates = [] }) => {
   return new Promise((resolve) => {
     const printWindow = window.open('', '_blank');
@@ -88,48 +90,24 @@ export const printQRCards = ({ items, type, eventDates = [] }) => {
       page-break-inside: avoid;
       break-inside: avoid;
     }
-    .card-header-clean {
+    .card-header-banner {
       width: 100%;
-      background: #FAF3E0;
+      background: #ffffff;
       border-bottom: 1.5px solid #800020;
-      padding: 2.2mm 1.5mm 2mm 1.5mm;
+      padding: 1mm 1.5mm;
       text-align: center;
       box-sizing: border-box;
+      line-height: 0;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
     }
-    .header-motto {
-      font-size: 7px;
-      font-weight: 700;
-      color: #800020;
-      margin-bottom: 0.5mm;
-      line-height: 1.1;
-      letter-spacing: 0.02em;
-    }
-    .header-org {
-      font-size: 8.5px;
-      font-weight: 800;
-      color: #800020;
-      line-height: 1.25;
-      margin-bottom: 0.8mm;
-      letter-spacing: 0.01em;
-      text-align: center;
+    .card-header-banner img {
       width: 100%;
-    }
-    .header-event {
-      display: inline-block;
-      background: #800020;
-      color: #ffffff;
-      font-size: 7.8px;
-      font-weight: 700;
-      padding: 0.6mm 2.2mm;
-      border-radius: 3px;
-      line-height: 1.15;
-      letter-spacing: 0.02em;
-      text-align: center;
-      box-shadow: 0 0.5px 1.5px rgba(128, 0, 32, 0.25);
+      height: auto;
+      max-height: 13.5mm;
+      display: block;
+      object-fit: contain;
     }
     .card-body {
       flex: 1;
@@ -277,10 +255,8 @@ const buildDaysHtml = (days, eventDates) => {
 const buildCardHtml = ({ qrImageUrl, name, city, days, group, eventDates = [] }) => {
   return `
   <div class="card">
-    <div class="card-header-clean">
-      <div class="header-motto">॥ શ્રી વાઘેશ્વરી માતા પ્રસન્નોસ્તુ: ॥</div>
-      <div class="header-org">શ્રી પાટણ વિશા શ્રીમાળી સોની જ્ઞાતિ - પાટણ</div>
-      <div class="header-event">શ્રી દશાવતાર મહાવિષ્ણુ યજ્ઞ - ૨૦૨૬</div>
+    <div class="card-header-banner">
+      <img src="${HEADER_BANNER_BASE64}" alt="શ્રી પાટણ વિશા શ્રીમાળી સોની જ્ઞાતિ - પાટણ" />
     </div>
     <div class="card-body">
       <div class="qr-wrap">
