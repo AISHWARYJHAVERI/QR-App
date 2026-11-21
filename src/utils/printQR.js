@@ -1,4 +1,7 @@
 import { HEADER_BANNER_BASE64 } from './qrHeaderBanner';
+import { buildQRData } from './qrDates';
+
+export { buildQRData };
 
 export const printQRCards = ({ items, type, eventDates = [] }) => {
   return new Promise((resolve) => {
@@ -273,18 +276,6 @@ const buildCardHtml = ({ qrImageUrl, name, city, days, group, eventDates = [] })
       <div class="footer-author">Developed by Aishwary Jhaveri : +91 8160682897</div>
     </div>
   </div>`;
-};
-
-export const buildQRData = (item, type) => {
-  if (type === 'U') {
-    const city = item.city ? `,"city":"${item.city}"` : '';
-    const days = Array.isArray(item.days) && item.days.length > 0
-      ? `,"days":[${[...new Set(item.days.map(Number))].filter(n => !Number.isNaN(n)).join(',')}]`
-      : '';
-    const group = item.group ? `,"group":"${item.group}"` : '';
-    return `{"app":"QRAPP","type":"U","name":"${item.name}","phone":"${item.phone}"${city}${days}${group}}`;
-  }
-  return `{"app":"QRAPP","type":"A","name":"${item.name}","role":"${item.role}","phone":"${item.phone}"}`;
 };
 
 export const buildQRImageUrl = (qrData) => {

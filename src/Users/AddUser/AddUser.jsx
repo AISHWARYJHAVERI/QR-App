@@ -6,6 +6,7 @@ import { classNames } from 'primereact/utils';
 import axios from 'axios';
 import PrintQROptions from '../../components/PrintQROptions';
 import { nameKey, parseName, sameName, isDuplicateName, findDuplicateName, nextFamilyNumber, findPhoneOwner, phoneKey, DUP_NAME_MSG } from '../../utils/nameKey';
+import { buildQRData } from '../../utils/qrDates';
 
 const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = false, eventDates = [], defaultDays = [], group = '', groupPlanned = 0, groupSaved = 0, ensureFolder }) => {
     let emptyUser = {
@@ -308,7 +309,7 @@ const AddUser = ({ users = [], onUserAdded, showError, showSuccess, inline = fal
 
     const isFormValid = firstName.trim() && user.phone.trim() && user.city.trim();
     const orderedUserDays = [...userDays].sort((a, b) => eventDates.indexOf(a) - eventDates.indexOf(b));
-    const qrData = `{"app":"QRAPP","type":"U","name":"${firstName}","phone":"${user.phone}","city":"${user.city}"${orderedUserDays.length > 0 ? `,"days":[${orderedUserDays.join(',')}]` : ''}${group ? `,"group":"${group}"` : ''}}`;
+    const qrData = buildQRData({ name: firstName, phone: user.phone, city: user.city, days: orderedUserDays, group }, 'U');
     const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}&color=050816&bgcolor=ffffff`;
     const itemForPrint = { ...user, name: firstName, days: orderedUserDays, group };
 

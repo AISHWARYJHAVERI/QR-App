@@ -3,13 +3,31 @@ import Scan from '../models/Scan.js';
 
 const router = Router();
 
+const qrToday = (when) => {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  const parts = {};
+  for (const part of formatter.formatToParts(new Date(when))) {
+    if (part.type !== 'literal') parts[part.type] = part.value;
+  }
+  return `${parts.day} ${parts.month} ${parts.year}`;
+};
+
 const computeDayStatus = (qrValue, when) => {
   try {
     const data = JSON.parse(qrValue);
+    if (data.type === 'A') return 'none'; // admin QRs are exempt from date rules
+    const dates = Array.isArray(data.dates) ? data.dates.map(String) : [];
+    const today = qrToday(when);
+    if (dates.length > 0) return dates.includes(today) ? 'allowed' : 'wrong';
+    // Legacy QRs that still carry day numbers only.
     const days = Array.isArray(data.days) ? data.days.map(Number).filter(n => !Number.isNaN(n)) : [];
     if (days.length === 0) return 'none';
-    const scanDay = new Date(when).getDate();
-    return days.includes(scanDay) ? 'allowed' : 'wrong';
+    return days.includes(Number(today.slice(0, 2))) ? 'allowed' : 'wrong';
   } catch {
     return 'none';
   }

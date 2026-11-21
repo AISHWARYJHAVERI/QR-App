@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
+import { buildQRData } from '../../utils/qrDates';
 
 const GenerateQR = ({ rowData, onPrintClick }) => {
     const [qrDialog, setQrDialog] = useState(false);
@@ -13,7 +14,7 @@ const GenerateQR = ({ rowData, onPrintClick }) => {
         setQrDialog(false);
     };
 
-    const qrData = `{"app":"QRAPP","type":"A","name":"${rowData.name}","role":"${rowData.role}","phone":"${rowData.phone}"}`;
+    const qrData = buildQRData({ name: rowData.name, role: rowData.role, phone: rowData.phone }, 'A');
     const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}&color=050816&bgcolor=ffffff`;
 
     const qrDialogFooter = (

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
+import { buildQRData } from '../../utils/qrDates';
 
 const GenerateQR = ({ rowData, onPrintClick, eventDates = [] }) => {
     const [qrDialog, setQrDialog] = useState(false);
@@ -15,7 +16,7 @@ const GenerateQR = ({ rowData, onPrintClick, eventDates = [] }) => {
 
     const rowDays = Array.isArray(rowData.days) ? rowData.days : [];
     const orderedDays = [...rowDays].sort((a, b) => eventDates.indexOf(a) - eventDates.indexOf(b));
-    const qrData = `{"app":"QRAPP","type":"U","name":"${rowData.name}","phone":"${rowData.phone}"${orderedDays.length > 0 ? `,"days":[${orderedDays.join(',')}]` : ''}${rowData.group ? `,"group":"${rowData.group}"` : ''}}`;
+    const qrData = buildQRData({ name: rowData.name, phone: rowData.phone, days: orderedDays, group: rowData.group }, 'U');
     const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}&color=050816&bgcolor=ffffff`;
 
     const qrDialogFooter = (
