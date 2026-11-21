@@ -33,6 +33,50 @@ const computeDayStatus = (qrValue, when) => {
   }
 };
 
+const toMinutes = (value) => {
+  const match = /^(\d{1,2}):(\d{2})$/.exec(String(value || ''));
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours > 23 || minutes > 59) return null;
+  return hours * 60 + minutes;
+};
+
+const qrMinutes = (when) => {
+  const formatter = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Kolkata',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  });
+  const parts = {};
+  for (const part of formatter.formatToParts(new Date(when))) {
+    if (part.type !== 'literal') parts[part.type] = part.value;
+  }
+  return Number(parts.hour) * 60 + Number(parts.minute);
+};
+
+// Validates the time ranges embedded in the QR. Admin QRs (type A) are exempt.
+const timeStatus = (qrValue, when) => {
+  try {
+    const data = JSON.parse(qrValue);
+    if (data.type === 'A') return 'bypass';
+    const ranges = (Array.isArray(data.times) ? data.times : [])
+      .map(value => /^(\d{1,2}:\d{2})-(\d{1,2}:\d{2})$/.exec(String(value || '').replace(/\s+/g, '')))
+      .filter(Boolean)
+      .map(match => ({ start: toMinutes(match[1]), end: toMinutes(match[2]) }))
+      .filter(range => range.start !== null && range.end !== null && range.start !== range.end);
+    if (!ranges.length) return 'missing';
+    const minutes = qrMinutes(when);
+    const allowed = ranges.some(({ start, end }) => (
+      end > start ? minutes >= start && minutes <= end : minutes >= start || minutes <= end
+    ));
+    return allowed ? 'allowed' : 'wrong';
+  } catch {
+    return 'missing';
+  }
+};
+
 router.post('/', async (req, res) => {
   try {
     const { qrValue, scannedBy, timeSlot, scannedAt } = req.body;
@@ -40,6 +84,15 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'qrValue and timeSlot required' });
     }
     const at = scannedAt ? new Date(scannedAt) : new Date();
+    const status = timeStatus(qrValue, at);
+    if (status === 'missing' || status === 'wrong') {
+      return res.status(403).json({
+        error: status === 'missing'
+          ? 'This QR has no valid time slots.'
+          : 'This QR is not valid at this time.',
+        code: status === 'missing' ? 'QR_TIMES_MISSING' : 'QR_TIME_MISMATCH',
+      });
+    }
     const scan = await Scan.create({
       qrValue,
       scannedBy: scannedBy || '',

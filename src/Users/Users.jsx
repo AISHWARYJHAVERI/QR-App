@@ -7,6 +7,7 @@ import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import axios from 'axios';
 import './Users.css';
+import { normalizeQRTimes, saveQRTimes, loadQRTimes } from '../utils/qrDates';
 
 import Folder from '../components/Folder';
 import AddUser from './AddUser/AddUser';
@@ -81,9 +82,11 @@ function Users({ isLoggedIn }) {
         } catch { /* bad saved value — use default */ }
         return [17, 18, 19, 20];
     });
+    const [eventTimes, setEventTimes] = useState(loadQRTimes);
     const [showDatesDialog, setShowDatesDialog] = useState(false);
     const [syncingDates, setSyncingDates] = useState(false);
     const [datesDraft, setDatesDraft] = useState(['17', '18', '19', '20']);
+    const [timesDraft, setTimesDraft] = useState(loadQRTimes);
     const [showTypePicker, setShowTypePicker] = useState(false);
     const [pickerCount, setPickerCount] = useState(0);
     const [pickerDays, setPickerDays] = useState([]);
@@ -470,16 +473,20 @@ function Users({ isLoggedIn }) {
         const nums = datesDraft.map(n => parseInt(n, 10));
         if (nums.some(n => !n || n < 1 || n > 31)) { showError('Dates must be numbers between 1 and 31.'); return; }
         if (new Set(nums).size !== 4) { showError('The 4 event dates must be different.'); return; }
+        const times = normalizeQRTimes(timesDraft);
+        if (times.length !== 4) { showError('Enter 4 time ranges like 09:00-12:00.'); return; }
         setEventDates(nums);
+        setEventTimes(times);
+        saveQRTimes(times);
         localStorage.setItem('qr_event_dates', JSON.stringify(nums));
         setShowDatesDialog(false);
         setSyncingDates(true);
         try {
-            await axios.post('/api/event-dates/sync', { days: nums });
-            showSuccess('Event dates updated and scanner window synced.');
+            await axios.post('/api/event-dates/sync', { days: nums, times });
+            showSuccess('Event dates and time slots saved; scanner schedule synced.');
         } catch (err) {
             const msg = err.response?.data?.error || err.message || 'Unknown error';
-            showError(`Event dates saved, but scanner sync failed: ${msg}`);
+            showError(`Saved locally, but scanner sync failed: ${msg}`);
         } finally {
             setSyncingDates(false);
         }
@@ -767,7 +774,7 @@ function Users({ isLoggedIn }) {
                                             <button
                                                 type="button"
                                                 className="event-dates-btn"
-                                                onClick={(e) => { e.stopPropagation(); setDatesDraft(eventDates.map(String)); setShowDatesDialog(true); }}
+                                                onClick={(e) => { e.stopPropagation(); setDatesDraft(eventDates.map(String)); setTimesDraft(eventTimes); setShowDatesDialog(true); }}
                                                 title="Edit event dates"
                                             >
                                                 <i className="pi pi-calendar"></i> Dates
@@ -1071,8 +1078,8 @@ function Users({ isLoggedIn }) {
                         <div className="type-picker-icon">
                             <i className="pi pi-calendar"></i>
                         </div>
-                        <h4>Event Dates</h4>
-                        <p className="type-picker-sub">Set the 4 event days (day of month). Day 1–4 labels follow this order.</p>
+                        <h4>Event Dates &amp; Time Slots</h4>
+                        <p className="type-picker-sub">Set the 4 event days and their scan times (IST). These times are embedded in every QR.</p>
                         <div className="dates-input-row">
                             {datesDraft.map((v, i) => (
                                 <label key={i} className="dates-input-item">
@@ -1083,6 +1090,20 @@ function Users({ isLoggedIn }) {
                                         max="31"
                                         value={v}
                                         onChange={e => setDatesDraft(prev => prev.map((x, j) => (j === i ? e.target.value : x)))}
+                                    />
+                                </label>
+                            ))}
+                        </div>
+                        <p className="type-picker-sub" style={{ marginTop: '0.9rem' }}>Time slots — format HH:mm-HH:mm</p>
+                        <div className="dates-input-row">
+                            {timesDraft.map((v, i) => (
+                                <label key={`t${i}`} className="dates-input-item">
+                                    <span>{['Morning', 'Afternoon', 'Evening', 'Night'][i]}</span>
+                                    <input
+                                        type="text"
+                                        placeholder="09:00-12:00"
+                                        value={v}
+                                        onChange={e => setTimesDraft(prev => prev.map((x, j) => (j === i ? e.target.value : x)))}
                                     />
                                 </label>
                             ))}

@@ -1,8 +1,34 @@
-// Single source of truth for the date embedded in every QR code.
-// Day numbers come from the Event Dates setting; month/year come from the live clock.
+// Single source of truth for the date/time embedded in every QR code.
+// Day numbers and time ranges come from the Event Dates dialog; month/year come from the live clock.
 const TIMEZONE = 'Asia/Kolkata';
+const TIMES_KEY = 'qr_event_times';
+export const DEFAULT_QR_TIMES = ['09:00-12:00', '13:00-16:00', '17:00-20:00', '21:00-23:00'];
 
 const pad = (n) => String(n).padStart(2, '0');
+
+export const normalizeQRTimes = (times) => {
+  if (!Array.isArray(times)) return [];
+  const result = [];
+  for (const raw of times) {
+    const value = String(raw || '').replace(/\s+/g, '');
+    if (/^\d{1,2}:\d{2}-\d{1,2}:\d{2}$/.test(value) && !result.includes(value)) result.push(value);
+  }
+  return result;
+};
+
+export const loadQRTimes = () => {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const saved = normalizeQRTimes(JSON.parse(localStorage.getItem(TIMES_KEY)));
+      if (saved.length === 4) return saved;
+    }
+  } catch { /* bad saved value — use defaults */ }
+  return [...DEFAULT_QR_TIMES];
+};
+
+export const saveQRTimes = (times) => {
+  if (typeof localStorage !== 'undefined') localStorage.setItem(TIMES_KEY, JSON.stringify(times));
+};
 
 const todayParts = () => {
   const formatter = new Intl.DateTimeFormat('en-CA', {
@@ -63,6 +89,8 @@ export const buildQRData = (item = {}, type = 'U') => {
   }
 
   const dates = buildQRDates(item.days);
+  const times = normalizeQRTimes(item.times);
+  const payloadTimes = times.length ? times : loadQRTimes();
   const payload = {
     app: 'QRAPP',
     type: 'U',
@@ -71,6 +99,7 @@ export const buildQRData = (item = {}, type = 'U') => {
   };
   if (item.city) payload.city = String(item.city);
   if (dates.length > 0) payload.dates = dates;
+  if (payloadTimes.length) payload.times = payloadTimes;
   if (item.group) payload.group = String(item.group);
   return JSON.stringify(payload);
 };
