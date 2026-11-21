@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { buildQRData, buildQRImageUrl, DEFAULT_QR_TIMES } from '../utils/qrDates';
 import { printQRCards } from '../utils/printQR';
@@ -16,16 +17,11 @@ const readLocal = (key, fallback) => {
 };
 
 const SuperAdmin = () => {
+  const navigate = useNavigate();
   const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY) || '');
   const [checking, setChecking] = useState(true);
   const [authed, setAuthed] = useState(false);
   const [username, setUsername] = useState('aishwary');
-
-  const [loginUser, setLoginUser] = useState('aishwary');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
-  const [loginError, setLoginError] = useState('');
-  const [loggingIn, setLoggingIn] = useState(false);
 
   const [days, setDays] = useState(() => readLocal('qr_event_dates', DEFAULT_DAYS));
   const [times, setTimes] = useState(() => readLocal('qr_event_times', DEFAULT_QR_TIMES));
@@ -74,7 +70,10 @@ const SuperAdmin = () => {
 
   useEffect(() => {
     const verify = async () => {
-      if (!token) { setChecking(false); return; }
+      if (!token) {
+        navigate('/?login=1', { replace: true });
+        return;
+      }
       try {
         const me = await axios.get('/api/super-admin/me', { headers: authHeaders() });
         setUsername(me.data.username);
@@ -84,6 +83,7 @@ const SuperAdmin = () => {
         localStorage.removeItem(TOKEN_KEY);
         setToken('');
         setAuthed(false);
+        navigate('/?login=1', { replace: true });
       } finally {
         setChecking(false);
       }
@@ -92,29 +92,6 @@ const SuperAdmin = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoginError('');
-    setLoggingIn(true);
-    try {
-      const response = await axios.post('/api/super-admin/login', {
-        username: loginUser,
-        password: loginPassword,
-      });
-      const nextToken = response.data.token;
-      localStorage.setItem(TOKEN_KEY, nextToken);
-      setToken(nextToken);
-      setUsername(response.data.username);
-      setAuthed(true);
-      setLoginPassword('');
-      await loadSettings(nextToken);
-    } catch (err) {
-      setLoginError(err.response?.data?.error || 'Login failed');
-    } finally {
-      setLoggingIn(false);
-    }
-  };
-
   const handleLogout = async () => {
     try { await axios.post('/api/super-admin/logout', {}, { headers: authHeaders() }); } catch { /* ignore */ }
     localStorage.removeItem(TOKEN_KEY);
@@ -122,6 +99,7 @@ const SuperAdmin = () => {
     setAuthed(false);
     setQrData('');
     setQrUrl('');
+    navigate('/', { replace: true });
   };
 
   const handlePassword = async (e) => {
@@ -201,43 +179,9 @@ const SuperAdmin = () => {
     return <div className="super-admin-loading">Checking access…</div>;
   }
 
-  if (!authed) {
-    return (
-      <div className="super-admin-login-page">
-        <div className="super-admin-login-card">
-          <div className="super-admin-badge"><i className="pi pi-shield"></i></div>
-          <h1>Super Admin</h1>
-          <p>Private access for Aishwary only.</p>
-          {loginError && <div className="sa-error">{loginError}</div>}
-          <form onSubmit={handleLogin}>
-            <label>Username</label>
-            <div className="sa-input-wrap">
-              <i className="pi pi-user"></i>
-              <input type="text" value={loginUser} onChange={e => setLoginUser(e.target.value)} placeholder="aishwary" autoComplete="username" required />
-            </div>
-            <label>Password</label>
-            <div className="sa-input-wrap">
-              <i className="pi pi-lock"></i>
-              <input
-                type={showLoginPassword ? 'text' : 'password'}
-                value={loginPassword}
-                onChange={e => setLoginPassword(e.target.value)}
-                placeholder="••••••••••••"
-                autoComplete="current-password"
-                required
-              />
-              <button type="button" className="sa-eye" onClick={() => setShowLoginPassword(v => !v)} tabIndex={-1}>
-                <i className={`pi ${showLoginPassword ? 'pi-eye-slash' : 'pi-eye'}`}></i>
-              </button>
-            </div>
-            <button type="submit" className="sa-primary" disabled={loggingIn}>
-              {loggingIn ? 'Signing in…' : 'Sign In'}
-            </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
+  // Access is granted only through the app's login modal; unauthenticated
+  // visitors are redirected there by the effect above.
+  if (!authed) return null;
 
   return (
     <div className="super-admin-page">

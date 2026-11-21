@@ -6,52 +6,7 @@
   font-weight: 600;
 }
 
-.super-admin-login-page {
-  min-height: calc(100vh - 80px);
-  display: grid;
-  place-items: center;
-  padding: 2rem 1rem;
-}
-
-.super-admin-login-card {
-  width: min(100%, 430px);
-  padding: 2.4rem;
-  border-radius: 24px;
-  background: rgba(15, 23, 42, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(18px);
-  color: #fff;
-}
-
-.super-admin-badge {
-  width: 54px;
-  height: 54px;
-  border-radius: 16px;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(135deg, #5227ff, #ff9ffc);
-  font-size: 1.5rem;
-  margin-bottom: 1.2rem;
-}
-
-.super-admin-login-card h1 {
-  margin: 0 0 0.35rem;
-  font-size: 2rem;
-  background: linear-gradient(90deg, #a78bfa, #f0abfc);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.super-admin-login-card > p {
-  margin: 0 0 1.6rem;
-  color: #c4b5fd;
-  font-size: 0.95rem;
-}
-
-.sa-form label,
-.super-admin-login-card form > label {
+.sa-form label {
   display: block;
   margin: 1rem 0 0.4rem;
   font-size: 0.85rem;
@@ -128,15 +83,6 @@
 .sa-primary:hover,
 .sa-secondary:hover { transform: translateY(-1px); }
 .sa-primary:disabled { opacity: 0.6; cursor: wait; }
-
-.sa-error {
-  background: rgba(239, 68, 68, 0.16);
-  border: 1px solid rgba(239, 68, 68, 0.45);
-  color: #fecaca;
-  padding: 0.75rem 1rem;
-  border-radius: 10px;
-  margin-bottom: 1rem;
-}
 
 .super-admin-page {
   max-width: 1200px;
@@ -306,7 +252,6 @@
 }
 
 @media (max-width: 480px) {
-  .super-admin-login-card { padding: 1.7rem 1.2rem; }
   .sa-qr-actions { flex-direction: column; }
   .sa-qr-actions .sa-primary,
   .sa-qr-actions .sa-secondary { width: 100%; }

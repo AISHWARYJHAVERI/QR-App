@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Toast } from 'primereact/toast';
 import axios from 'axios';
 import './App.css';
@@ -14,6 +14,9 @@ import MoltenMetal from './components/MoltenMetal';
 import SuperAdmin from './pages/SuperAdmin';
 
 function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     return localStorage.getItem('isAdminLoggedIn') === 'true';
   });
@@ -148,6 +151,16 @@ function App() {
     return () => clearInterval(keepAlive);
   }, []);
 
+  // Private pages send visitors back here with ?login=1 to open the login modal.
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get('login') === '1') {
+      setLoginMode('login');
+      setLoginError('');
+      setShowLogin(true);
+      navigate('/', { replace: true });
+    }
+  }, [location.search, navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!username.trim() || !password.trim()) {
@@ -159,6 +172,25 @@ function App() {
     setLoginError('');
 
     try {
+      // Super admin uses this same login modal, then opens the private panel.
+      if (username.trim().toLowerCase() === 'aishwary') {
+        try {
+          const superRes = await axios.post('/api/super-admin/login', {
+            username: username.trim(),
+            password,
+          });
+          localStorage.setItem('qr_superadmin_token', superRes.data.token);
+          setShowLogin(false);
+          setUsername('');
+          setPassword('');
+          navigate('/super-admin');
+          return;
+        } catch {
+          setLoginError('Incorrect password. Please try again.');
+          return;
+        }
+      }
+
       // Query json-server for matching admin username
       const response = await axios.get(`/admins?username=${encodeURIComponent(username)}`);
       
