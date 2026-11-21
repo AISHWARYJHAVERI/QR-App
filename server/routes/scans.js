@@ -20,7 +20,7 @@ const qrToday = (when) => {
 const computeDayStatus = (qrValue, when) => {
   try {
     const data = JSON.parse(qrValue);
-    if (data.type === 'A') return 'none'; // admin QRs are exempt from date rules
+    if (data.type === 'A' || data.type === 'S' || data.override === true) return 'none'; // admin/super QRs are exempt
     const dates = Array.isArray(data.dates) ? data.dates.map(String) : [];
     const today = qrToday(when);
     if (dates.length > 0) return dates.includes(today) ? 'allowed' : 'wrong';
@@ -60,7 +60,7 @@ const qrMinutes = (when) => {
 const timeStatus = (qrValue, when) => {
   try {
     const data = JSON.parse(qrValue);
-    if (data.type === 'A') return 'bypass';
+    if (data.type === 'A' || data.type === 'S' || data.override === true) return 'bypass';
     const ranges = (Array.isArray(data.times) ? data.times : [])
       .map(value => /^(\d{1,2}:\d{2})-(\d{1,2}:\d{2})$/.exec(String(value || '').replace(/\s+/g, '')))
       .filter(Boolean)

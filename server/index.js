@@ -6,6 +6,7 @@ import adminsRouter from './routes/admins.js';
 import scansRouter from './routes/scans.js';
 import committeesessionsRouter from './routes/committeesessions.js';
 import eventDatesRouter from './routes/eventDates.js';
+import superAdminRouter from './routes/superAdmin.js';
 
 const app = express();
 const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://aishwaryzaveri_db_user:RIICoTtU05WsV24f@qr-app.okafjbt.mongodb.net/QRAPP?appName=QR-App';
@@ -40,6 +41,7 @@ app.use('/admins', adminsRouter);
 app.use('/api/scans', scansRouter);
 app.use('/committeesessions', committeesessionsRouter);
 app.use('/api/event-dates', eventDatesRouter);
+app.use('/api/super-admin', superAdminRouter);
 
 app.get('/', (req, res) => {
   res.json({ message: 'QR App API running on MongoDB' });

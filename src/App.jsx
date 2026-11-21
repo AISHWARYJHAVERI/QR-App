@@ -11,6 +11,7 @@ import Developer from './pages/Developer';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import MoltenMetal from './components/MoltenMetal';
+import SuperAdmin from './pages/SuperAdmin';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -370,6 +371,7 @@ function App() {
         <Route path="/developer" element={<Developer />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/super-admin" element={<SuperAdmin />} />
       </Routes>
 
       <footer className="footer-brand-section">

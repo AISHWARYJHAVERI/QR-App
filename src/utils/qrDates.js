@@ -77,15 +77,30 @@ export const buildQRDates = (days) => {
 
 // Builds the JSON stored inside the QR. `days` is replaced by `dates`.
 export const buildQRData = (item = {}, type = 'U') => {
-  if (type === 'A' || item.type === 'A') {
+  if (type === 'S' || item.type === 'S') {
+    const times = normalizeQRTimes(item.times);
     return JSON.stringify({
+      app: 'QRAPP',
+      type: 'S',
+      name: String(item.name || ''),
+      role: String(item.role || ''),
+      phone: String(item.phone || ''),
+      dates: [currentQRDate()],
+      times: times.length ? times : loadQRTimes(),
+      override: true,
+    });
+  }
+  if (type === 'A' || item.type === 'A') {
+    const payload = {
       app: 'QRAPP',
       type: 'A',
       name: String(item.name || ''),
       role: String(item.role || ''),
       phone: String(item.phone || ''),
       dates: [currentQRDate()],
-    });
+    };
+    if (item.scanOverride) payload.override = true;
+    return JSON.stringify(payload);
   }
 
   const dates = buildQRDates(item.days);
