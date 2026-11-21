@@ -36,7 +36,6 @@ const SuperAdmin = () => {
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState('');
 
-  const [qrData, setQrData] = useState('');
   const [qrUrl, setQrUrl] = useState('');
 
   const authHeaders = () => ({ Authorization: `Bearer ${token}` });
@@ -48,8 +47,7 @@ const SuperAdmin = () => {
       phone: '',
       times: currentTimes,
     }, 'S');
-    setQrData(data);
-    setQrUrl(buildQRImageUrl(data, 260));
+    setQrUrl(buildQRImageUrl(data, 300));
   };
 
   const loadSettings = async (activeToken) => {
@@ -97,7 +95,6 @@ const SuperAdmin = () => {
     localStorage.removeItem(TOKEN_KEY);
     setToken('');
     setAuthed(false);
-    setQrData('');
     setQrUrl('');
     navigate('/', { replace: true });
   };
@@ -270,23 +267,30 @@ const SuperAdmin = () => {
           <div className="sa-hint">“Scan anytime” lets that admin’s QR scan outside the saved days/times. “Page access” is off for everyone except you unless you turn it on.</div>
         </section>
 
-        <section className="sa-card super-qr-card">
-          <h2><i className="pi pi-qrcode"></i> Super Admin QR</h2>
-          <p>Scans anytime, anywhere, with no warning.</p>
-          {qrUrl && <img src={qrUrl} alt="Super Admin QR" className="super-qr-img" />}
-          {qrData && <code className="sa-qr-data">{qrData}</code>}
-          <div className="sa-qr-actions">
-            <button className="sa-primary" onClick={makeSuperQr}><i className="pi pi-refresh"></i> Regenerate</button>
-            <button
-              className="sa-secondary"
-              onClick={() => printQRCards({
-                items: [{ name: 'Aishwary', role: 'Super Admin', phone: '', times, days: [], group: 'Super Admin' }],
-                type: 'S',
-                eventDates: days.map(Number),
-              })}
-            >
-              <i className="pi pi-print"></i> Print QR
-            </button>
+        <section className="sa-card sa-wide super-qr-card">
+          <div className="super-qr-preview">
+            {qrUrl && <img src={qrUrl} alt="Super Admin QR" className="super-qr-img" />}
+          </div>
+          <div className="super-qr-details">
+            <h2><i className="pi pi-qrcode"></i> Super Admin QR</h2>
+            <p className="super-qr-subtitle">Scans anytime, anywhere, with no warning.</p>
+            <div className="super-qr-identity">
+              <strong>Aishwary</strong>
+              <span>Super Admin · Full access</span>
+            </div>
+            <div className="sa-qr-actions">
+              <button className="sa-primary" onClick={makeSuperQr}><i className="pi pi-refresh"></i> Regenerate</button>
+              <button
+                className="sa-secondary"
+                onClick={() => printQRCards({
+                  items: [{ name: 'Aishwary', role: 'Super Admin', phone: '', times, days: [], group: 'Super Admin' }],
+                  type: 'S',
+                  eventDates: days.map(Number),
+                })}
+              >
+                <i className="pi pi-print"></i> Print QR
+              </button>
+            </div>
           </div>
         </section>
       </div>
