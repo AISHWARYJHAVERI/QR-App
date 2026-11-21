@@ -82,6 +82,7 @@ function Users({ isLoggedIn }) {
         return [17, 18, 19, 20];
     });
     const [showDatesDialog, setShowDatesDialog] = useState(false);
+    const [syncingDates, setSyncingDates] = useState(false);
     const [datesDraft, setDatesDraft] = useState(['17', '18', '19', '20']);
     const [showTypePicker, setShowTypePicker] = useState(false);
     const [pickerCount, setPickerCount] = useState(0);
@@ -465,14 +466,23 @@ function Users({ isLoggedIn }) {
         }
     };
 
-    const handleDatesSave = () => {
+    const handleDatesSave = async () => {
         const nums = datesDraft.map(n => parseInt(n, 10));
         if (nums.some(n => !n || n < 1 || n > 31)) { showError('Dates must be numbers between 1 and 31.'); return; }
         if (new Set(nums).size !== 4) { showError('The 4 event dates must be different.'); return; }
         setEventDates(nums);
         localStorage.setItem('qr_event_dates', JSON.stringify(nums));
         setShowDatesDialog(false);
-        showSuccess('Event dates updated.');
+        setSyncingDates(true);
+        try {
+            await axios.post('/api/event-dates/sync', { days: nums });
+            showSuccess('Event dates updated and scanner window synced.');
+        } catch (err) {
+            const msg = err.response?.data?.error || err.message || 'Unknown error';
+            showError(`Event dates saved, but scanner sync failed: ${msg}`);
+        } finally {
+            setSyncingDates(false);
+        }
     };
 
     const switchToApiMode = () => {
@@ -1079,7 +1089,7 @@ function Users({ isLoggedIn }) {
                         </div>
                         <div className="type-picker-actions">
                             <button className="type-picker-cancel" onClick={() => setShowDatesDialog(false)}>Cancel</button>
-                            <button className="type-picker-create" onClick={handleDatesSave}>Save Dates</button>
+                            <button className="type-picker-create" onClick={handleDatesSave} disabled={syncingDates}>{syncingDates ? 'Syncing…' : 'Save Dates'}</button>
                         </div>
                     </div>
                 </div>
