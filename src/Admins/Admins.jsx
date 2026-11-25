@@ -322,21 +322,21 @@ function Admins({ showError, showSuccess }) {
                     }
                 }}
                 dataKey="id">
-                {showSelection && (
-                    <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
-                )}
-                <Column header="ID" body={(rowData, options) => options.rowIndex + 1} align="center" style={{ width: '6%' }}></Column>
-                <Column field="name" header="Name" align="left" style={{ width: '16%' }} className="pl-6"></Column>
-                <Column field="username" header="Username" align="left" style={{ width: '14%' }} className="pl-6"></Column>
-                <Column field="role" header="Role" align="left" style={{ width: '14%' }} className="pl-6"></Column>
-                <Column field="phone" header="Mobile Number" align="left" style={{ width: '14%' }} className="pl-6"></Column>
-                <Column field="city" header="City" align="left" style={{ width: '10%' }} className="pl-6"></Column>
-                <Column header="Account" align="center" style={{ width: '10%' }} body={(rowData) => (
+                {showSelection ? (
+                    <Column key="col-select" columnKey="col-select" selectionMode="multiple" headerStyle={{ width: '3.5rem' }} style={{ width: '3.5rem' }} />
+                ) : null}
+                <Column key="col-id" columnKey="col-id" header="ID" body={(rowData, options) => options.rowIndex + 1} align="center" style={{ width: showSelection ? '4%' : '5%' }}></Column>
+                <Column key="col-name" columnKey="col-name" field="name" header="Name" align="left" style={{ width: showSelection ? '15%' : '17%' }} className="pl-6"></Column>
+                <Column key="col-username" columnKey="col-username" field="username" header="Username" align="left" style={{ width: showSelection ? '13%' : '14%' }} className="pl-6"></Column>
+                <Column key="col-role" columnKey="col-role" field="role" header="Role" align="left" style={{ width: showSelection ? '13%' : '14%' }} className="pl-6"></Column>
+                <Column key="col-phone" columnKey="col-phone" field="phone" header="Mobile Number" align="left" style={{ width: showSelection ? '13%' : '14%' }} className="pl-6"></Column>
+                <Column key="col-city" columnKey="col-city" field="city" header="City" align="left" style={{ width: showSelection ? '9%' : '10%' }} className="pl-6"></Column>
+                <Column key="col-account" columnKey="col-account" header="Account" align="center" style={{ width: showSelection ? '9%' : '10%' }} body={(rowData) => (
                     <span className={`admin-type-badge ${rowData.qrOnly ? 'qr-only' : 'full'}`}>
                         {rowData.qrOnly ? 'QR only' : 'Full admin'}
                     </span>
                 )}></Column>
-                <Column body={actionBodyTemplate} header="Actions" align="center" style={{ width: '28%' }}></Column>
+                <Column key="col-actions" columnKey="col-actions" body={actionBodyTemplate} header="Actions" align="center" style={{ width: showSelection ? '24%' : '26%' }}></Column>
             </DataTable></div>
 
             {/* Auto QR Dialog after create */}
