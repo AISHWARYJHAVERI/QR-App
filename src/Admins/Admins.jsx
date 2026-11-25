@@ -11,6 +11,7 @@ import DeleteAdmin from './DeleteAdmin/DeleteAdmin';
 import GenerateQR from './GenerateQR/GenerateQR';
 import PrintQROptions from '../components/PrintQROptions';
 import { buildQRData } from '../utils/qrDates';
+import { adminAuthHeaders } from '../utils/adminAuth';
 
 const ROLES = [
   'President', 'Vice President', 'Secretary', 'Joint Secretary',
@@ -23,6 +24,7 @@ function Admins({ showError, showSuccess }) {
     const [name, setName] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [qrOnly, setQrOnly] = useState(false);
     const [role, setRole] = useState('President');
     const [phone, setPhone] = useState('');
     const [city, setCity] = useState('');
@@ -62,7 +64,9 @@ function Admins({ showError, showSuccess }) {
             try {
                 const parsed = JSON.parse(cached);
                 if (Array.isArray(parsed)) {
-                    setAdmins(parsed);
+                    const safe = parsed.map(({ password: _pwd, token: _token, ...rest }) => rest);
+                    setAdmins(safe);
+                    localStorage.setItem('admins_cache', JSON.stringify(safe));
                     setFetching(false);
                 }
             } catch { }
@@ -85,8 +89,8 @@ function Admins({ showError, showSuccess }) {
     const handleSaveAdmin = async (e) => {
         e.preventDefault();
         
-        if (!name || !username || !password || !phone || !city) {
-            showError("Please fill out all fields");
+        if (!name || !username || !phone || !city || (!qrOnly && !password)) {
+            showError(qrOnly ? "Please fill out all fields" : "Please fill out all fields including password");
             return;
         }
 
@@ -98,15 +102,24 @@ function Admins({ showError, showSuccess }) {
 
         setSaving(true);
         try {
-            const newAdmin = { name, username, password, role, phone, city };
-            const response = await axios.post('/admins', newAdmin);
-            showSuccess("New Administrator registered successfully!");
+            const newAdmin = {
+                name,
+                username,
+                password: qrOnly ? '' : password,
+                role,
+                phone,
+                city,
+                qrOnly,
+            };
+            const response = await axios.post('/admins', newAdmin, { headers: adminAuthHeaders() });
+            showSuccess(qrOnly ? "QR-only admin created successfully!" : "New Administrator registered successfully!");
             
             const saved = response.data;
             
             setName('');
             setUsername('');
             setPassword('');
+            setQrOnly(false);
             setRole('President');
             setPhone('');
             setCity('');
@@ -119,7 +132,7 @@ function Admins({ showError, showSuccess }) {
             setQrDialog(true);
         } catch (error) {
             console.error("Error creating admin: ", error);
-            showError("Failed to register new administrator");
+            showError(error.response?.data?.error || "Failed to register new administrator");
         } finally {
             setSaving(false);
         }
@@ -144,9 +157,9 @@ function Admins({ showError, showSuccess }) {
     const actionBodyTemplate = (rowData) => {
         return (
             <div className="action-buttons">
-                <EditAdmin rowData={rowData} onAdminUpdated={handleAdminUpdated} showError={showError} showSuccess={showSuccess} />
+                <EditAdmin rowData={rowData} canManage={!!rowData.qrOnly} onAdminUpdated={handleAdminUpdated} showError={showError} showSuccess={showSuccess} />
                 <GenerateQR rowData={rowData} onPrintClick={(item) => { setPrintCurrentItem(item); setPrintDialogVisible(true); }} />
-                <DeleteAdmin rowData={rowData} onAdminDeleted={handleAdminDeleted} showError={showError} showSuccess={showSuccess} />
+                <DeleteAdmin rowData={rowData} canManage={!!rowData.qrOnly} onAdminDeleted={handleAdminDeleted} showError={showError} showSuccess={showSuccess} />
                 <Button icon="pi pi-print" className="p-button-rounded p-button-text p-button-sm print-icon-btn" onClick={() => { setPrintCurrentItem(rowData); setPrintDialogVisible(true); }} title="Print QR" />
             </div>
         );
@@ -216,10 +229,11 @@ function Admins({ showError, showSuccess }) {
                                     type={showAdminPwd ? "text" : "password"}
                                     value={password} 
                                     onChange={(e) => setPassword(e.target.value)} 
-                                    placeholder="Enter secret password" 
+                                    placeholder={qrOnly ? "No password for QR-only admin" : "Enter secret password"} 
                                     className="w-full p-inputtext-sm"
+                                    disabled={qrOnly}
                                 />
-                                <button type="button" className="pwd-toggle-btn" onClick={() => setShowAdminPwd(!showAdminPwd)} tabIndex={-1}>
+                                <button type="button" className="pwd-toggle-btn" onClick={() => setShowAdminPwd(!showAdminPwd)} tabIndex={-1} disabled={qrOnly}>
                                     <i className={`pi ${showAdminPwd ? "pi-eye-slash" : "pi-eye"}`}></i>
                                 </button>
                             </div>
@@ -254,14 +268,26 @@ function Admins({ showError, showSuccess }) {
                                 className="w-full p-inputtext-sm"
                             />
                         </div>
+                        <div className="col-12">
+                            <label className="qr-only-toggle">
+                                <input
+                                    type="checkbox"
+                                    checked={qrOnly}
+                                    onChange={(e) => setQrOnly(e.target.checked)}
+                                />
+                                <span>
+                                    <strong>QR only</strong> — no password, no admin page access. Only an Admin QR can be made.
+                                </span>
+                            </label>
+                        </div>
                     </div>
                     <div className="d-flex justify-content-end gap-2 mt-4">
                         <button 
                             type="submit" 
                             className="btn-action-add"
-                            disabled={saving || !name || !username || !password || !phone || !city}
+                            disabled={saving || !name || !username || !phone || !city || (!qrOnly && !password)}
                         >
-                            {saving ? 'Saving...' : 'Save Admin'}
+                            {saving ? 'Saving...' : qrOnly ? 'Create QR-only Admin' : 'Save Admin'}
                         </button>
                     </div>
                 </form>
@@ -292,8 +318,13 @@ function Admins({ showError, showSuccess }) {
                 <Column field="username" header="Username" align="left" style={{ width: '14%' }} className="pl-6"></Column>
                 <Column field="role" header="Role" align="left" style={{ width: '14%' }} className="pl-6"></Column>
                 <Column field="phone" header="Mobile Number" align="left" style={{ width: '14%' }} className="pl-6"></Column>
-                <Column field="city" header="City" align="left" style={{ width: '12%' }} className="pl-6"></Column>
-                <Column body={actionBodyTemplate} header="Actions" align="center" style={{ width: '30%' }}></Column>
+                <Column field="city" header="City" align="left" style={{ width: '10%' }} className="pl-6"></Column>
+                <Column header="Account" align="center" style={{ width: '10%' }} body={(rowData) => (
+                    <span className={`admin-type-badge ${rowData.qrOnly ? 'qr-only' : 'full'}`}>
+                        {rowData.qrOnly ? 'QR only' : 'Full admin'}
+                    </span>
+                )}></Column>
+                <Column body={actionBodyTemplate} header="Actions" align="center" style={{ width: '28%' }}></Column>
             </DataTable></div>
 
             {/* Auto QR Dialog after create */}

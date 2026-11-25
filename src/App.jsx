@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Toast } from 'primereact/toast';
 import axios from 'axios';
+import { setAdminToken } from './utils/adminAuth';
 import './App.css';
 import './pages/Pages.css';
 import Users from "./Users/Users";
@@ -18,10 +19,11 @@ function App() {
   const location = useLocation();
 
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem('isAdminLoggedIn') === 'true';
+    return localStorage.getItem('isAdminLoggedIn') === 'true' && !!localStorage.getItem('qr_admin_token');
   });
   
   const [loggedInAdmin, setLoggedInAdmin] = useState(() => {
+    if (!localStorage.getItem('qr_admin_token')) return null;
     const savedAdmin = localStorage.getItem('loggedInAdmin');
     return savedAdmin ? JSON.parse(savedAdmin) : null;
   });
@@ -40,6 +42,7 @@ function App() {
   const [regRole, setRegRole] = useState('President');
   const [regPhone, setRegPhone] = useState('');
   const [regCity, setRegCity] = useState('');
+  const [registerStatus, setRegisterStatus] = useState({ open: true, remaining: 2, limit: 2 });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const appToast = useRef(null);
@@ -151,6 +154,24 @@ function App() {
     return () => clearInterval(keepAlive);
   }, []);
 
+  const fetchRegisterStatus = async () => {
+    try {
+      const response = await axios.get('/api/public-register/status');
+      setRegisterStatus(response.data);
+    } catch {
+      // Keep the tab usable if the status call fails.
+      setRegisterStatus({ open: true, remaining: 2, limit: 2 });
+    }
+  };
+
+  useEffect(() => {
+    fetchRegisterStatus();
+  }, []);
+
+  useEffect(() => {
+    if (showLogin) fetchRegisterStatus();
+  }, [showLogin]);
+
   // Private pages send visitors back here with ?login=1 to open the login modal.
   useEffect(() => {
     if (new URLSearchParams(location.search).get('login') === '1') {
@@ -191,39 +212,32 @@ function App() {
         }
       }
 
-      // Query json-server for matching admin username
-      const response = await axios.get(`/admins?username=${encodeURIComponent(username)}`);
-      
-      if (response.data.length > 0) {
-        const adminUser = response.data[0];
-        
-        // Match password (plaintext for mock server authentication)
-        if (adminUser.password === password) {
-          setIsLoggedIn(true);
-          setLoggedInAdmin(adminUser);
-          localStorage.setItem('isAdminLoggedIn', 'true');
-          localStorage.setItem('loggedInAdmin', JSON.stringify(adminUser));
-          
-          appToast.current?.show({ 
-            severity: 'success', 
-            summary: 'Login Successful', 
-            detail: `Welcome back, ${adminUser.name}!`, 
-            life: 3000 
-          });
+      // Login is checked on the server so QR-only admins can never sign in.
+      const response = await axios.post('/admins/login', {
+        username: username.trim(),
+        password,
+      });
+      const { token, admin } = response.data;
 
-          // Reset modal state
-          setShowLogin(false);
-          setUsername('');
-          setPassword('');
-        } else {
-          setLoginError("Incorrect password. Please try again.");
-        }
-      } else {
-        setLoginError("Admin username not found.");
-      }
+      setAdminToken(token);
+      setIsLoggedIn(true);
+      setLoggedInAdmin(admin);
+      localStorage.setItem('isAdminLoggedIn', 'true');
+      localStorage.setItem('loggedInAdmin', JSON.stringify(admin));
+      
+      appToast.current?.show({ 
+        severity: 'success', 
+        summary: 'Login Successful', 
+        detail: `Welcome back, ${admin.name}!`, 
+        life: 3000 
+      });
+
+      setShowLogin(false);
+      setUsername('');
+      setPassword('');
     } catch (error) {
       console.error("Login request failed:", error);
-      setLoginError("Authentication server error.");
+      setLoginError(error.response?.data?.error || "Authentication server error.");
     } finally {
       setSubmitting(false);
     }
@@ -231,6 +245,11 @@ function App() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (!registerStatus.open) {
+      setLoginMode('login');
+      setLoginError('Registration is closed. Only 2 public admin accounts are allowed.');
+      return;
+    }
     if (!regName.trim() || !regUsername.trim() || !regPassword.trim() || !regRole.trim() || !regPhone.trim() || !regCity.trim()) {
       setLoginError("Please fill in all fields");
       return;
@@ -240,15 +259,6 @@ function App() {
     setLoginError('');
 
     try {
-      // Check if username already exists
-      const checkResponse = await axios.get(`/admins?username=${encodeURIComponent(regUsername.trim())}`);
-      if (checkResponse.data.length > 0) {
-        setLoginError("Username already exists. Please choose another one.");
-        setSubmitting(false);
-        return;
-      }
-
-      // Create new admin object
       const newAdmin = {
         name: regName.trim(),
         username: regUsername.trim(),
@@ -258,24 +268,22 @@ function App() {
         city: regCity.trim()
       };
 
-      // Post to mock server
-      const response = await axios.post('/admins', newAdmin);
-      const registeredAdmin = response.data;
+      const response = await axios.post('/api/public-register', newAdmin);
+      const { token, admin } = response.data;
 
-      // Automatically log the new admin in
+      setAdminToken(token);
       setIsLoggedIn(true);
-      setLoggedInAdmin(registeredAdmin);
+      setLoggedInAdmin(admin);
       localStorage.setItem('isAdminLoggedIn', 'true');
-      localStorage.setItem('loggedInAdmin', JSON.stringify(registeredAdmin));
+      localStorage.setItem('loggedInAdmin', JSON.stringify(admin));
 
       appToast.current?.show({
         severity: 'success',
         summary: 'Account Created',
-        detail: `Welcome, ${registeredAdmin.name}! You are now signed in.`,
+        detail: `Welcome, ${admin.name}! You are now signed in.`,
         life: 3000
       });
 
-      // Clear state and close modal
       setShowLogin(false);
       setLoginMode('login');
       setRegName('');
@@ -284,9 +292,14 @@ function App() {
       setRegRole('President');
       setRegPhone('');
       setRegCity('');
+      fetchRegisterStatus();
     } catch (error) {
       console.error("Registration failed:", error);
-      setLoginError("Registration server error.");
+      if (error.response?.data?.code === 'REGISTRATION_CLOSED') {
+        setRegisterStatus({ open: false, remaining: 0, limit: 2 });
+        setLoginMode('login');
+      }
+      setLoginError(error.response?.data?.error || "Registration server error.");
     } finally {
       setSubmitting(false);
     }
@@ -297,9 +310,12 @@ function App() {
     setLoggedInAdmin(null);
     localStorage.removeItem('isAdminLoggedIn');
     localStorage.removeItem('loggedInAdmin');
+    setAdminToken('');
     
     window.location.reload();
   };
+
+  const registerDisabled = submitting || !registerStatus.open;
 
   return (
     <div className="App" style={{ position: 'relative' }}>
@@ -429,12 +445,30 @@ function App() {
                 </button>
                 <button 
                   type="button" 
-                  className={`login-tab-btn ${loginMode === 'register' ? 'active' : ''}`}
-                  onClick={() => { setLoginMode('register'); setLoginError(''); }}
+                  className={`login-tab-btn ${loginMode === 'register' ? 'active' : ''} ${!registerStatus.open ? 'disabled-register' : ''}`}
+                  onClick={() => {
+                    if (!registerStatus.open) {
+                      setLoginMode('login');
+                      setLoginError('Registration is closed. Only 2 public admin accounts are allowed.');
+                      return;
+                    }
+                    setLoginMode('register');
+                    setLoginError('');
+                  }}
+                  disabled={!registerStatus.open}
+                  aria-disabled={!registerStatus.open}
+                  title={!registerStatus.open ? 'Registration closed' : 'Register a new admin'}
                 >
                   Register
                 </button>
               </div>
+
+              {!registerStatus.open && (
+                <div className="register-closed-note">
+                  <i className="pi pi-lock mr-2"></i>
+                  Registration closed — 2 admin accounts are already registered.
+                </div>
+              )}
 
               <h2 className="login-title animated-gradient">
                 {loginMode === 'login' ? 'Admin Sign In' : 'Create Admin Account'}
@@ -494,7 +528,7 @@ function App() {
                   </button>
                 </form>
               ) : (
-                <form onSubmit={handleRegister}>
+                <form onSubmit={handleRegister} className={!registerStatus.open ? 'register-form-disabled' : ''}>
                   {loginError && (
                     <div className="login-error-alert animate-shake">
                       <i className="pi pi-exclamation-triangle mr-2"></i>
@@ -512,7 +546,7 @@ function App() {
                         onChange={(e) => setRegName(e.target.value)} 
                         placeholder="Enter full name"
                         required
-                        disabled={submitting}
+                        disabled={registerDisabled}
                       />
                     </div>
                   </div>
@@ -528,7 +562,7 @@ function App() {
                           onChange={(e) => setRegUsername(e.target.value)} 
                           placeholder="Username"
                           required
-                          disabled={submitting}
+                          disabled={registerDisabled}
                         />
                       </div>
                     </div>
@@ -543,9 +577,9 @@ function App() {
                           onChange={(e) => setRegPassword(e.target.value)} 
                           placeholder="Password"
                           required
-                          disabled={submitting}
+                          disabled={registerDisabled}
                         />
-                        <button type="button" className="pwd-toggle-btn" onClick={() => setShowRegPwd(!showRegPwd)} tabIndex={-1}>
+                        <button type="button" className="pwd-toggle-btn" onClick={() => setShowRegPwd(!showRegPwd)} tabIndex={-1} disabled={registerDisabled}>
                           <i className={`pi ${showRegPwd ? "pi-eye-slash" : "pi-eye"}`}></i>
                         </button>
                       </div>
@@ -563,7 +597,7 @@ function App() {
                           onChange={(e) => setRegPhone(e.target.value)} 
                           placeholder="Mobile No."
                           required
-                          disabled={submitting}
+                          disabled={registerDisabled}
                         />
                       </div>
                     </div>
@@ -578,7 +612,7 @@ function App() {
                           onChange={(e) => setRegCity(e.target.value)} 
                           placeholder="City"
                           required
-                          disabled={submitting}
+                          disabled={registerDisabled}
                         />
                       </div>
                     </div>
@@ -591,7 +625,7 @@ function App() {
                       onChange={(e) => setRegRole(e.target.value)}
                       className="login-role-select"
                       required
-                      disabled={submitting}
+                      disabled={registerDisabled}
                     >
                       <option value="President">President</option>
                       <option value="Vice President">Vice President</option>
@@ -605,7 +639,7 @@ function App() {
                     </select>
                   </div>
 
-                  <button type="submit" className="login-submit-btn" disabled={submitting || !regName || !regUsername || !regPassword || !regRole || !regPhone || !regCity}>
+                  <button type="submit" className="login-submit-btn" disabled={registerDisabled || !regName || !regUsername || !regPassword || !regRole || !regPhone || !regCity}>
                     {submitting ? (
                       <span><i className="pi pi-spin pi-spinner mr-2"></i> Registering...</span>
                     ) : (

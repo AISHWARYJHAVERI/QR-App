@@ -182,6 +182,82 @@
 
 .sa-fields-four input:focus { border-color: #a78bfa; }
 
+.sa-fields-four select {
+  width: 100%;
+  padding: 0.7rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(30, 41, 59, 0.95);
+  color: #fff;
+  outline: none;
+}
+
+.sa-fields-four select:focus { border-color: #a78bfa; }
+
+.sa-badge {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sa-badge.qr {
+  color: #c4b5fd;
+  background: rgba(124, 58, 237, 0.16);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+}
+
+.sa-badge.full {
+  color: #86efac;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+}
+
+.sa-promote-cell {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  min-width: 240px;
+}
+
+.sa-promote-cell input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.55rem 0.7rem;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  outline: none;
+}
+
+.sa-promote-cell input:focus { border-color: #a78bfa; }
+
+.sa-mini-btn {
+  border: 1px solid rgba(167, 139, 250, 0.35);
+  background: rgba(124, 58, 237, 0.2);
+  color: #ddd6fe;
+  border-radius: 9px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sa-mini-btn:hover { background: rgba(124, 58, 237, 0.35); }
+
+.sa-mini-btn.danger {
+  border-color: rgba(248, 113, 113, 0.35);
+  background: rgba(239, 68, 68, 0.14);
+  color: #fecaca;
+}
+
+.sa-mini-btn.danger:hover { background: rgba(239, 68, 68, 0.28); }
+.sa-mini-btn:disabled { opacity: 0.5; cursor: wait; }
+
 .sa-note {
   margin-top: 0.9rem;
   font-size: 0.85rem;

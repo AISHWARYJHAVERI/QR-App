@@ -38,6 +38,11 @@ const SuperAdmin = () => {
 
   const [qrUrl, setQrUrl] = useState('');
 
+  const [qrAdminForm, setQrAdminForm] = useState({ name: '', username: '', role: 'President', phone: '', city: '' });
+  const [promotePasswords, setPromotePasswords] = useState({});
+  const [adminBusy, setAdminBusy] = useState(false);
+  const [adminMessage, setAdminMessage] = useState('');
+
   const authHeaders = () => ({ Authorization: `Bearer ${token}` });
 
   const makeSuperQr = (currentTimes = times) => {
@@ -179,6 +184,66 @@ const SuperAdmin = () => {
     }
   };
 
+  const handleQrAdminField = (field, value) => {
+    setQrAdminForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCreateQrAdmin = async (e) => {
+    e.preventDefault();
+    setAdminMessage('');
+    const { name, username, phone, city } = qrAdminForm;
+    if (!name.trim() || !username.trim() || !phone.trim() || !city.trim()) {
+      setAdminMessage('Fill in name, username, mobile number and city.');
+      return;
+    }
+    setAdminBusy(true);
+    try {
+      await axios.post('/admins', { ...qrAdminForm, qrOnly: true, password: '' }, { headers: authHeaders() });
+      setQrAdminForm({ name: '', username: '', role: 'President', phone: '', city: '' });
+      setAdminMessage('QR-only admin added.');
+      await loadSettings(token);
+    } catch (err) {
+      setAdminMessage(err.response?.data?.error || 'Could not add QR-only admin.');
+    } finally {
+      setAdminBusy(false);
+    }
+  };
+
+  const handlePromoteAdmin = async (id) => {
+    const password = String(promotePasswords[id] || '');
+    if (password.length < 6) {
+      setAdminMessage('Promotion password must be at least 6 characters.');
+      return;
+    }
+    setAdminBusy(true);
+    setAdminMessage('');
+    try {
+      await axios.put(`/admins/${id}`, { promote: true, password }, { headers: authHeaders() });
+      setPromotePasswords(prev => ({ ...prev, [id]: '' }));
+      setAdminMessage('Admin promoted. They can now sign in with the new password.');
+      await loadSettings(token);
+    } catch (err) {
+      setAdminMessage(err.response?.data?.error || 'Could not promote admin.');
+    } finally {
+      setAdminBusy(false);
+    }
+  };
+
+  const handleDeleteAdmin = async (admin) => {
+    if (!window.confirm(`Delete ${admin.name || admin.username}?`)) return;
+    setAdminBusy(true);
+    setAdminMessage('');
+    try {
+      await axios.delete(`/admins/${admin.id}`, { headers: authHeaders() });
+      setAdminMessage('Admin deleted.');
+      await loadSettings(token);
+    } catch (err) {
+      setAdminMessage(err.response?.data?.error || 'Could not delete admin.');
+    } finally {
+      setAdminBusy(false);
+    }
+  };
+
   if (checking) {
     return <div className="super-admin-loading">Checking access…</div>;
   }
@@ -279,6 +344,55 @@ const SuperAdmin = () => {
             </table>
           </div>
           <div className="sa-hint">“Scan anytime” lets that admin’s QR scan outside the saved days/times. “Page access” is off for everyone except you unless you turn it on.</div>
+        </section>
+
+        <section className="sa-card sa-wide">
+          <h2><i className="pi pi-user-plus"></i> Add &amp; Manage QR-only Admins</h2>
+          <form onSubmit={handleCreateQrAdmin} className="sa-form">
+            <div className="sa-fields-four">
+              <label><span>Name</span><input type="text" value={qrAdminForm.name} onChange={e => handleQrAdminField('name', e.target.value)} placeholder="Full name" /></label>
+              <label><span>Username</span><input type="text" value={qrAdminForm.username} onChange={e => handleQrAdminField('username', e.target.value)} placeholder="Username" /></label>
+              <label><span>Role</span>
+                <select value={qrAdminForm.role} onChange={e => handleQrAdminField('role', e.target.value)}>
+                  {['President', 'Vice President', 'Secretary', 'Joint Secretary', 'Treasurer', 'Joint Treasurer', 'Committee Member', 'Project Convener', 'Project Co-convener'].map(role => (
+                    <option key={role} value={role}>{role}</option>
+                  ))}
+                </select>
+              </label>
+              <label><span>Mobile</span><input type="text" value={qrAdminForm.phone} onChange={e => handleQrAdminField('phone', e.target.value)} placeholder="Mobile number" /></label>
+              <label><span>City</span><input type="text" value={qrAdminForm.city} onChange={e => handleQrAdminField('city', e.target.value)} placeholder="City" /></label>
+            </div>
+            <button type="submit" className="sa-primary" disabled={adminBusy}>{adminBusy ? 'Saving…' : 'Add QR-only Admin'}</button>
+          </form>
+
+          <div className="sa-table-wrap" style={{ marginTop: '1.2rem' }}>
+            <table className="sa-table">
+              <thead>
+                <tr><th>Admin</th><th>Account</th><th>Promote with password</th><th>Delete</th></tr>
+              </thead>
+              <tbody>
+                {admins.length === 0 ? (
+                  <tr><td colSpan="4" className="sa-muted">No admins found.</td></tr>
+                ) : admins.map(admin => (
+                  <tr key={admin.id}>
+                    <td><strong>{admin.username}</strong><small>{admin.name || admin.role || ''}</small></td>
+                    <td><span className={`sa-badge ${admin.qrOnly ? 'qr' : 'full'}`}>{admin.qrOnly ? 'QR only' : 'Full admin'}</span></td>
+                    <td>
+                      {admin.qrOnly ? (
+                        <div className="sa-promote-cell">
+                          <input type="password" placeholder="New password" value={promotePasswords[admin.id] || ''} onChange={e => setPromotePasswords(prev => ({ ...prev, [admin.id]: e.target.value }))} />
+                          <button type="button" className="sa-mini-btn" disabled={adminBusy} onClick={() => handlePromoteAdmin(admin.id)}>Promote</button>
+                        </div>
+                      ) : <span className="sa-muted">Already full admin</span>}
+                    </td>
+                    <td><button type="button" className="sa-mini-btn danger" disabled={adminBusy} onClick={() => handleDeleteAdmin(admin)}>Delete</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {adminMessage && <div className="sa-note">{adminMessage}</div>}
+          <div className="sa-hint">QR-only admins have no password and cannot open the admin page. Promote one by setting a password here.</div>
         </section>
 
         <section className="sa-card sa-wide super-qr-card">

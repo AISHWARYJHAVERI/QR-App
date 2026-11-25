@@ -5,6 +5,7 @@ import SuperAdminSettings from '../models/SuperAdminSettings.js';
 import Admin from '../models/Admin.js';
 import { requireSuperAdmin } from '../middleware/superAdmin.js';
 import { syncScannerWindow } from '../utils/syncScanner.js';
+import { backfillLegacyOrigins } from '../utils/adminOrigins.js';
 
 const router = Router();
 const TIME_RE = /^\d{1,2}:\d{2}-\d{1,2}:\d{2}$/;
@@ -111,12 +112,22 @@ router.put('/password', requireSuperAdmin, async (req, res) => {
 router.get('/settings', requireSuperAdmin, async (req, res) => {
   try {
     const settings = await getSettings();
+    await backfillLegacyOrigins();
     const admins = await Admin.find({}).sort({ createdAt: -1 }).lean();
     res.json({
       days: settings.days || [],
       times: settings.times || [],
       permissions: settings.permissions || {},
-      admins: admins.map(a => ({ id: a._id.toString(), username: a.username, name: a.name, role: a.role, phone: a.phone || '' })),
+      admins: admins.map(a => ({
+        id: a._id.toString(),
+        username: a.username,
+        name: a.name,
+        role: a.role,
+        phone: a.phone || '',
+        city: a.city || '',
+        qrOnly: !!a.qrOnly,
+        origin: a.origin || 'qr',
+      })),
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -4,6 +4,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import axios from 'axios';
+import { adminAuthHeaders } from '../../utils/adminAuth';
 
 const ROLES = [
   'President', 'Vice President', 'Secretary', 'Joint Secretary',
@@ -11,7 +12,7 @@ const ROLES = [
   'Project Convener', 'Project Co-convener'
 ];
 
-const EditAdmin = ({ rowData, onAdminUpdated, showError, showSuccess }) => {
+const EditAdmin = ({ rowData, canManage = false, onAdminUpdated, showError, showSuccess }) => {
     const [adminDialog, setAdminDialog] = useState(false);
     const [admin, setAdmin] = useState({ name: '', username: '', password: '', role: 'President', phone: '', city: '', ...rowData });
     const [showEditPwd, setShowEditPwd] = useState(false);
@@ -36,14 +37,21 @@ const EditAdmin = ({ rowData, onAdminUpdated, showError, showSuccess }) => {
         setSubmitted(true);
 
         if (admin.name.trim() && admin.username.trim() && admin.phone.trim() && admin.city.trim()) {
-            let _admin = { ...admin };
+            const payload = {
+                name: admin.name,
+                username: admin.username,
+                role: admin.role,
+                phone: admin.phone,
+                city: admin.city,
+            };
+            if (!rowData.qrOnly && admin.password) payload.password = admin.password;
             try {
-                await axios.put(`/admins/${admin.id}`, _admin);
+                const response = await axios.put(`/admins/${admin.id}`, payload, { headers: adminAuthHeaders() });
                 showSuccess("Admin Updated Successfully");
-                onAdminUpdated(_admin);
+                onAdminUpdated(response.data);
                 setAdminDialog(false);
             } catch (error) {
-                showError("Error updating admin");
+                showError(error.response?.data?.error || "Error updating admin");
             }
         }
     };
@@ -64,9 +72,17 @@ const EditAdmin = ({ rowData, onAdminUpdated, showError, showSuccess }) => {
 
     return (
         <>
-            <Button label="Edit" icon="pi pi-pencil" outlined severity="success" onClick={openEdit} title="Edit Admin" />
+            <Button
+                label="Edit"
+                icon="pi pi-pencil"
+                outlined
+                severity="success"
+                onClick={openEdit}
+                disabled={!canManage}
+                title={canManage ? 'Edit Admin' : 'Only QR-only admins can be edited here'}
+            />
 
-            <Dialog visible={adminDialog} style={{ width: '450px' }} header={<div className="p-dialog-title gradient-text">Edit Admin Details</div>} modal className="p-fluid" footer={adminDialogFooter} onHide={hideDialog} closeIcon={<span className="pi pi-times"></span>} draggable={false} resizable={false}>
+            <Dialog visible={adminDialog} style={{ width: '450px' }} header={<div className="p-dialog-title gradient-text">Edit QR-only Admin</div>} modal className="p-fluid" footer={adminDialogFooter} onHide={hideDialog} closeIcon={<span className="pi pi-times"></span>} draggable={false} resizable={false}>
                 <div className="d-flex flex-column" style={{ gap: '1.5rem' }}>
                     <div className="form-section">
                         <div className="field">
@@ -79,16 +95,18 @@ const EditAdmin = ({ rowData, onAdminUpdated, showError, showSuccess }) => {
                             <InputText id={`admin-username-${admin.id}`} value={admin.username} onChange={(e) => onInputChange(e, 'username')} required className={classNames({ 'p-invalid': submitted && !admin.username })} />
                             {submitted && !admin.username && <small className="p-error">Username is required.</small>}
                         </div>
-                        <div className="field">
-                            <label htmlFor={`admin-password-${admin.id}`} className="font-bold">Password</label>
-                            <div className="pwd-input-wrap">
-                                <InputText id={`admin-password-${admin.id}`} type={showEditPwd ? "text" : "password"} value={admin.password} onChange={(e) => onInputChange(e, 'password')} required className={classNames({ 'p-invalid': submitted && !admin.password })} />
-                                <button type="button" className="pwd-toggle-btn" onClick={() => setShowEditPwd(!showEditPwd)} tabIndex={-1}>
-                                    <i className={`pi ${showEditPwd ? "pi-eye-slash" : "pi-eye"}`}></i>
-                                </button>
+                        {!rowData.qrOnly && (
+                            <div className="field">
+                                <label htmlFor={`admin-password-${admin.id}`} className="font-bold">Password</label>
+                                <div className="pwd-input-wrap">
+                                    <InputText id={`admin-password-${admin.id}`} type={showEditPwd ? "text" : "password"} value={admin.password || ''} onChange={(e) => onInputChange(e, 'password')} className="p-inputtext-sm" />
+                                    <button type="button" className="pwd-toggle-btn" onClick={() => setShowEditPwd(!showEditPwd)} tabIndex={-1}>
+                                        <i className={`pi ${showEditPwd ? "pi-eye-slash" : "pi-eye"}`}></i>
+                                    </button>
+                                </div>
+                                <small className="p-error">Leave blank to keep the current password.</small>
                             </div>
-                            {submitted && !admin.password && <small className="p-error">Password is required.</small>}
-                        </div>
+                        )}
                         <div className="field">
                             <label htmlFor={`admin-role-${admin.id}`} className="font-bold">Role</label>
                             <select id={`admin-role-${admin.id}`} value={admin.role} onChange={(e) => onInputChange(e, 'role')} className="admin-edit-role-select" style={{ width: '100%' }}>
