@@ -91,12 +91,19 @@ const SuperAdmin = () => {
   }, []);
 
   const handleLogout = async () => {
-    try { await axios.post('/api/super-admin/logout', {}, { headers: authHeaders() }); } catch { /* ignore */ }
-    localStorage.removeItem(TOKEN_KEY);
-    setToken('');
-    setAuthed(false);
-    setQrUrl('');
-    navigate('/', { replace: true });
+    try {
+      if (token) {
+        await axios.post('/api/super-admin/logout', {}, { headers: authHeaders() });
+      }
+    } catch {
+      /* ignore server error */
+    } finally {
+      localStorage.removeItem(TOKEN_KEY);
+      setToken('');
+      setAuthed(false);
+      setQrUrl('');
+      window.location.replace('/');
+    }
   };
 
   const handlePassword = async (e) => {
@@ -187,7 +194,14 @@ const SuperAdmin = () => {
           <h1>Super Admin Control</h1>
           <p>Signed in as <strong>{username}</strong></p>
         </div>
-        <button className="sa-secondary" onClick={handleLogout}><i className="pi pi-sign-out"></i> Log Out</button>
+        <button
+          type="button"
+          className="sa-secondary"
+          onClick={handleLogout}
+          title="Sign out of Super Admin"
+        >
+          <i className="pi pi-sign-out"></i> Log Out
+        </button>
       </div>
 
       <div className="sa-grid">
