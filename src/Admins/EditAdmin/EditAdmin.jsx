@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
@@ -17,10 +17,6 @@ const EditAdmin = ({ rowData, canManage = false, onAdminUpdated, showError, show
     const [admin, setAdmin] = useState({ name: '', username: '', password: '', role: 'President', phone: '', city: '', ...rowData });
     const [showEditPwd, setShowEditPwd] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-
-    useEffect(() => {
-        setAdmin({ name: '', username: '', password: '', role: 'President', phone: '', city: '', ...rowData });
-    }, [rowData]);
 
     const openEdit = () => {
         setAdmin({ name: '', username: '', password: '', role: 'President', phone: '', city: '', ...rowData });

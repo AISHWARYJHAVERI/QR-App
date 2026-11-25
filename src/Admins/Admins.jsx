@@ -64,12 +64,24 @@ function Admins({ showError, showSuccess }) {
             try {
                 const parsed = JSON.parse(cached);
                 if (Array.isArray(parsed)) {
-                    const safe = parsed.map(({ password: _pwd, token: _token, ...rest }) => rest);
+                    const safe = parsed.map(a => ({
+                        id: a.id,
+                        name: a.name,
+                        username: a.username,
+                        role: a.role,
+                        phone: a.phone || '',
+                        city: a.city || '',
+                        qrOnly: !!a.qrOnly,
+                        origin: a.origin || 'qr',
+                        createdAt: a.createdAt,
+                    }));
                     setAdmins(safe);
                     localStorage.setItem('admins_cache', JSON.stringify(safe));
                     setFetching(false);
                 }
-            } catch { }
+            } catch (error) {
+                console.warn('Ignoring stale admin cache:', error);
+            }
         }
 
         try {
