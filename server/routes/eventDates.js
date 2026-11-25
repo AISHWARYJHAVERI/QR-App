@@ -1,7 +1,20 @@
 import { Router } from 'express';
 import { syncScannerWindow } from '../utils/syncScanner.js';
+import SuperAdminSettings from '../models/SuperAdminSettings.js';
 
 const router = Router();
+
+// Public read-only endpoint so client UIs can fetch the currently active event dates & times
+router.get('/', async (req, res) => {
+  try {
+    let settings = await SuperAdminSettings.findOne({ key: 'main' });
+    const days = (settings && Array.isArray(settings.days) && settings.days.length === 4) ? settings.days : [17, 18, 19, 20];
+    const times = (settings && Array.isArray(settings.times) && settings.times.length === 4) ? settings.times : [];
+    res.json({ days, times });
+  } catch (err) {
+    res.json({ days: [17, 18, 19, 20], times: [] });
+  }
+});
 
 // Frontend calls this after saving Event Dates. The QR App server forwards the
 // values to the scanner with a server-side key, so the key never reaches the browser.

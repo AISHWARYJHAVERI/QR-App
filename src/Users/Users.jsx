@@ -83,10 +83,6 @@ function Users({ isLoggedIn }) {
         return [17, 18, 19, 20];
     });
     const [eventTimes, setEventTimes] = useState(loadQRTimes);
-    const [showDatesDialog, setShowDatesDialog] = useState(false);
-    const [syncingDates, setSyncingDates] = useState(false);
-    const [datesDraft, setDatesDraft] = useState(['17', '18', '19', '20']);
-    const [timesDraft, setTimesDraft] = useState(loadQRTimes);
     const [showTypePicker, setShowTypePicker] = useState(false);
     const [pickerCount, setPickerCount] = useState(0);
     const [pickerDays, setPickerDays] = useState([]);
@@ -139,6 +135,20 @@ function Users({ isLoggedIn }) {
         fetchUsers();
         loadFolders();
         restoreSession();
+
+        // Sync active event dates from server settings (controlled exclusively by Super Admin)
+        axios.get('/api/event-dates')
+            .then(res => {
+                if (res.data && Array.isArray(res.data.days) && res.data.days.length === 4) {
+                    setEventDates(res.data.days.map(Number));
+                    localStorage.setItem('qr_event_dates', JSON.stringify(res.data.days.map(Number)));
+                }
+                if (res.data && Array.isArray(res.data.times) && res.data.times.length === 4) {
+                    setEventTimes(res.data.times);
+                    saveQRTimes(res.data.times);
+                }
+            })
+            .catch(() => { /* keep cached dates */ });
     }, []);
 
     useEffect(() => {
@@ -469,29 +479,6 @@ function Users({ isLoggedIn }) {
         }
     };
 
-    const handleDatesSave = async () => {
-        const nums = datesDraft.map(n => parseInt(n, 10));
-        if (nums.some(n => !n || n < 1 || n > 31)) { showError('Dates must be numbers between 1 and 31.'); return; }
-        if (new Set(nums).size !== 4) { showError('The 4 event dates must be different.'); return; }
-        const times = normalizeQRTimes(timesDraft);
-        if (times.length !== 4) { showError('Enter 4 time ranges like 09:00-12:00.'); return; }
-        setEventDates(nums);
-        setEventTimes(times);
-        saveQRTimes(times);
-        localStorage.setItem('qr_event_dates', JSON.stringify(nums));
-        setShowDatesDialog(false);
-        setSyncingDates(true);
-        try {
-            await axios.post('/api/event-dates/sync', { days: nums, times });
-            showSuccess('Event dates and time slots saved; scanner schedule synced.');
-        } catch (err) {
-            const msg = err.response?.data?.error || err.message || 'Unknown error';
-            showError(`Saved locally, but scanner sync failed: ${msg}`);
-        } finally {
-            setSyncingDates(false);
-        }
-    };
-
     const switchToApiMode = () => {
         setActiveFolder(null);
         persistSession('api', null);
@@ -771,14 +758,6 @@ function Users({ isLoggedIn }) {
                                     <div className="folder-dropdown" ref={dropdownRef} style={ddStyle}>
                                         <div className="folder-dropdown-head">
                                             <span className="folder-dropdown-title">Event Folders</span>
-                                            <button
-                                                type="button"
-                                                className="event-dates-btn"
-                                                onClick={(e) => { e.stopPropagation(); setDatesDraft(eventDates.map(String)); setTimesDraft(eventTimes); setShowDatesDialog(true); }}
-                                                title="Edit event dates"
-                                            >
-                                                <i className="pi pi-calendar"></i> Dates
-                                            </button>
                                         </div>
                                         <div className="paper-cards-row">
                                             <div className="paper-card paper-card-new" onClick={startNewFolder} title="New Folder">
@@ -1072,49 +1051,6 @@ function Users({ isLoggedIn }) {
                 </div>
             )}
 
-            {showDatesDialog && (
-                <div className="type-picker-overlay" onClick={() => setShowDatesDialog(false)}>
-                    <div className="type-picker-dialog" onClick={e => e.stopPropagation()}>
-                        <div className="type-picker-icon">
-                            <i className="pi pi-calendar"></i>
-                        </div>
-                        <h4>Event Dates &amp; Time Slots</h4>
-                        <p className="type-picker-sub">Set the 4 event days and their scan times (IST). These times are embedded in every QR.</p>
-                        <div className="dates-input-row">
-                            {datesDraft.map((v, i) => (
-                                <label key={i} className="dates-input-item">
-                                    <span>Day {i + 1}</span>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        max="31"
-                                        value={v}
-                                        onChange={e => setDatesDraft(prev => prev.map((x, j) => (j === i ? e.target.value : x)))}
-                                    />
-                                </label>
-                            ))}
-                        </div>
-                        <p className="type-picker-sub" style={{ marginTop: '0.9rem' }}>Time slots — format HH:mm-HH:mm</p>
-                        <div className="dates-input-row">
-                            {timesDraft.map((v, i) => (
-                                <label key={`t${i}`} className="dates-input-item">
-                                    <span>{['Morning', 'Afternoon', 'Evening', 'Night'][i]}</span>
-                                    <input
-                                        type="text"
-                                        placeholder="09:00-12:00"
-                                        value={v}
-                                        onChange={e => setTimesDraft(prev => prev.map((x, j) => (j === i ? e.target.value : x)))}
-                                    />
-                                </label>
-                            ))}
-                        </div>
-                        <div className="type-picker-actions">
-                            <button className="type-picker-cancel" onClick={() => setShowDatesDialog(false)}>Cancel</button>
-                            <button className="type-picker-create" onClick={handleDatesSave} disabled={syncingDates}>{syncingDates ? 'Syncing…' : 'Save Dates'}</button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
