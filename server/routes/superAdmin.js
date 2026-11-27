@@ -163,13 +163,13 @@ router.get('/sync-from-scanner', requireSuperAdmin, async (req, res) => {
     const scannerPermissions = scanner.permissions || {};
     const permissions = Object.keys(scannerPermissions).length
       ? normalizePermissions(admins.map(admin => {
-        const match = scannerPermissions[admin.id.toString()]
+        const match = scannerPermissions[admin._id.toString()]
           || scannerPermissions[admin.username]
           || scannerPermissions[admin.name]
           || scannerPermissions[admin.phone]
           || {};
         return {
-          id: admin.id.toString(),
+          id: admin._id.toString(),
           username: admin.username,
           name: admin.name,
           phone: admin.phone || '',
