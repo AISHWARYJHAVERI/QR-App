@@ -159,8 +159,24 @@ router.get('/sync-from-scanner', requireSuperAdmin, async (req, res) => {
     const month = normalizeMonth(scanner.month) || settings.month;
     const year = normalizeYear(scanner.year) || settings.year;
     const times = normalizeTimes(scanner.times) || settings.times;
-    const permissions = Object.keys(scanner.permissions || {}).length
-      ? normalizePermissions(scanner.permissions)
+    const admins = await Admin.find({}).lean();
+    const scannerPermissions = scanner.permissions || {};
+    const permissions = Object.keys(scannerPermissions).length
+      ? normalizePermissions(admins.map(admin => {
+        const match = scannerPermissions[admin.id.toString()]
+          || scannerPermissions[admin.username]
+          || scannerPermissions[admin.name]
+          || scannerPermissions[admin.phone]
+          || {};
+        return {
+          id: admin.id.toString(),
+          username: admin.username,
+          name: admin.name,
+          phone: admin.phone || '',
+          scanOverride: !!match.scanOverride,
+          pageAccess: !!match.pageAccess,
+        };
+      }))
       : settings.permissions || {};
 
     settings.days = days;
