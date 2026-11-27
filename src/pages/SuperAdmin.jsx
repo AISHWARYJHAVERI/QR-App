@@ -7,6 +7,8 @@ import './SuperAdmin.css';
 
 const TOKEN_KEY = 'qr_superadmin_token';
 const DEFAULT_DAYS = ['17', '18', '19', '20'];
+const DEFAULT_EVENT_MONTH = 12;
+const DEFAULT_EVENT_YEAR = 2026;
 
 const readLocal = (key, fallback) => {
   try {
@@ -24,6 +26,8 @@ const SuperAdmin = () => {
   const [username, setUsername] = useState('aishwary');
 
   const [days, setDays] = useState(() => readLocal('qr_event_dates', DEFAULT_DAYS));
+  const [month, setMonth] = useState(() => readLocal('qr_event_month', [String(DEFAULT_EVENT_MONTH)])[0]);
+  const [year, setYear] = useState(() => readLocal('qr_event_year', [String(DEFAULT_EVENT_YEAR)])[0]);
   const [times, setTimes] = useState(() => readLocal('qr_event_times', DEFAULT_QR_TIMES));
   const [admins, setAdmins] = useState([]);
   const [permissions, setPermissions] = useState({});
@@ -59,14 +63,20 @@ const SuperAdmin = () => {
     const response = await axios.get('/api/super-admin/settings', {
       headers: { Authorization: `Bearer ${activeToken}` },
     });
-    const { days: savedDays, times: savedTimes, permissions: savedPermissions, admins: savedAdmins } = response.data;
+    const { days: savedDays, month: savedMonth, year: savedYear, times: savedTimes, permissions: savedPermissions, admins: savedAdmins } = response.data;
     const nextDays = Array.isArray(savedDays) && savedDays.length === 4 ? savedDays.map(String) : readLocal('qr_event_dates', DEFAULT_DAYS);
+    const nextMonth = String(savedMonth || DEFAULT_EVENT_MONTH);
+    const nextYear = String(savedYear || DEFAULT_EVENT_YEAR);
     const nextTimes = Array.isArray(savedTimes) && savedTimes.length === 4 ? savedTimes.map(String) : readLocal('qr_event_times', DEFAULT_QR_TIMES);
     setDays(nextDays);
+    setMonth(nextMonth);
+    setYear(nextYear);
     setTimes(nextTimes);
     setPermissions(savedPermissions || {});
     setAdmins(savedAdmins || []);
     localStorage.setItem('qr_event_dates', JSON.stringify(nextDays.map(Number)));
+    localStorage.setItem('qr_event_month', JSON.stringify([nextMonth]));
+    localStorage.setItem('qr_event_year', JSON.stringify([nextYear]));
     localStorage.setItem('qr_event_times', JSON.stringify(nextTimes));
     makeSuperQr(nextTimes);
   };
@@ -149,6 +159,10 @@ const SuperAdmin = () => {
     const nums = days.map(Number);
     if (nums.some(n => !n || n < 1 || n > 31)) { setSettingsMessage('Days must be between 1 and 31.'); return; }
     if (new Set(nums).size !== 4) { setSettingsMessage('The 4 days must be different.'); return; }
+    const eventMonth = Number(month);
+    const eventYear = Number(year);
+    if (!Number.isInteger(eventMonth) || eventMonth < 1 || eventMonth > 12) { setSettingsMessage('Month must be between 1 and 12.'); return; }
+    if (!Number.isInteger(eventYear) || eventYear < 2000 || eventYear > 2100) { setSettingsMessage('Year must be between 2000 and 2100.'); return; }
     const cleanTimes = times.map(t => String(t || '').replace(/\s+/g, ''));
     if (cleanTimes.some(t => !/^\d{1,2}:\d{2}-\d{1,2}:\d{2}$/.test(t))) {
       setSettingsMessage('Use time ranges like 09:00-12:00.');
@@ -167,12 +181,18 @@ const SuperAdmin = () => {
     try {
       const response = await axios.put('/api/super-admin/settings', {
         days: nums,
+        month: eventMonth,
+        year: eventYear,
         times: cleanTimes,
         permissions: payloadPermissions,
       }, { headers: authHeaders() });
       localStorage.setItem('qr_event_dates', JSON.stringify(nums));
+      localStorage.setItem('qr_event_month', JSON.stringify([String(eventMonth)]));
+      localStorage.setItem('qr_event_year', JSON.stringify([String(eventYear)]));
       localStorage.setItem('qr_event_times', JSON.stringify(cleanTimes));
       setDays(nums.map(String));
+      setMonth(String(eventMonth));
+      setYear(String(eventYear));
       setTimes(cleanTimes);
       makeSuperQr(cleanTimes);
       setSettingsMessage('Saved and synced to the scanner.');
@@ -300,6 +320,17 @@ const SuperAdmin = () => {
         <section className="sa-card">
           <h2><i className="pi pi-calendar"></i> Days &amp; Time Slots</h2>
           <form onSubmit={handleSettingsSave} className="sa-form">
+            <div className="sa-section-label">Event month &amp; year</div>
+            <div className="sa-fields-four">
+              <label>
+                <span>Month</span>
+                <input type="number" min="1" max="12" value={month} onChange={e => setMonth(e.target.value)} />
+              </label>
+              <label>
+                <span>Year</span>
+                <input type="number" min="2000" max="2100" value={year} onChange={e => setYear(e.target.value)} />
+              </label>
+            </div>
             <div className="sa-section-label">Event days (day of month)</div>
             <div className="sa-fields-four">
               {days.map((day, i) => (

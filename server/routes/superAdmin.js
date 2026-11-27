@@ -18,6 +18,16 @@ const normalizeDays = (days) => {
   return nums;
 };
 
+const normalizeMonth = (value) => {
+  const month = Number(value);
+  return Number.isInteger(month) && month >= 1 && month <= 12 ? month : null;
+};
+
+const normalizeYear = (value) => {
+  const year = Number(value);
+  return Number.isInteger(year) && year >= 2000 && year <= 2100 ? year : null;
+};
+
 const normalizeTimes = (times) => {
   if (!Array.isArray(times) || times.length !== 4) return null;
   const list = times.map(v => String(v || '').replace(/\s+/g, ''));
@@ -116,6 +126,8 @@ router.get('/settings', requireSuperAdmin, async (req, res) => {
     const admins = await Admin.find({}).sort({ createdAt: -1 }).lean();
     res.json({
       days: settings.days || [],
+      month: settings.month || 12,
+      year: settings.year || 2026,
       times: settings.times || [],
       permissions: settings.permissions || {},
       admins: admins.map(a => ({
@@ -144,6 +156,16 @@ router.put('/settings', requireSuperAdmin, async (req, res) => {
       if (!days) return res.status(400).json({ error: 'Provide 4 different day numbers between 1 and 31' });
       settings.days = days;
     }
+    if (body.month !== undefined) {
+      const month = normalizeMonth(body.month);
+      if (!month) return res.status(400).json({ error: 'Provide a month between 1 and 12' });
+      settings.month = month;
+    }
+    if (body.year !== undefined) {
+      const year = normalizeYear(body.year);
+      if (!year) return res.status(400).json({ error: 'Provide a year between 2000 and 2100' });
+      settings.year = year;
+    }
     if (body.times !== undefined) {
       const times = normalizeTimes(body.times);
       if (!times) return res.status(400).json({ error: 'Provide 4 time ranges like 09:00-12:00' });
@@ -158,6 +180,8 @@ router.put('/settings', requireSuperAdmin, async (req, res) => {
     if (settings.days.length === 4) {
       sync = await syncScannerWindow({
         days: settings.days,
+        month: settings.month,
+        year: settings.year,
         ...(settings.times.length === 4 ? { times: settings.times } : {}),
         permissions: settings.permissions,
       });
@@ -166,6 +190,8 @@ router.put('/settings', requireSuperAdmin, async (req, res) => {
     res.json({
       ok: true,
       days: settings.days,
+      month: settings.month,
+      year: settings.year,
       times: settings.times,
       permissions: settings.permissions,
       sync,
