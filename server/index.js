@@ -15,6 +15,12 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://aishwaryzaveri_db_user
 app.use(cors());
 app.use(express.json());
 
+// Lightweight keep-alive/health check. Registered before the DB middleware so
+// uptime cron jobs do not fail during a temporary database issue.
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
 let cachedDb = null;
 let connecting = null;
 
