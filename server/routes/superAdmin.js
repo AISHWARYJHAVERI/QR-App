@@ -4,7 +4,7 @@ import SuperAdmin from '../models/SuperAdmin.js';
 import SuperAdminSettings from '../models/SuperAdminSettings.js';
 import Admin from '../models/Admin.js';
 import { requireSuperAdmin } from '../middleware/superAdmin.js';
-import { syncScannerWindow } from '../utils/syncScanner.js';
+import { readScannerWindow, syncScannerWindow } from '../utils/syncScanner.js';
 import { backfillLegacyOrigins } from '../utils/adminOrigins.js';
 
 const router = Router();
@@ -70,6 +70,28 @@ const getSettings = async () => {
   return doc;
 };
 
+const buildSettingsPayload = async (settings) => {
+  await backfillLegacyOrigins();
+  const admins = await Admin.find({}).sort({ createdAt: -1 }).lean();
+  return {
+    days: settings.days || [],
+    month: settings.month || 12,
+    year: settings.year || 2026,
+    times: settings.times || [],
+    permissions: settings.permissions || {},
+    admins: admins.map(a => ({
+      id: a._id.toString(),
+      username: a.username,
+      name: a.name,
+      role: a.role,
+      phone: a.phone || '',
+      city: a.city || '',
+      qrOnly: !!a.qrOnly,
+      origin: a.origin || 'qr',
+    })),
+  };
+};
+
 router.post('/login', async (req, res) => {
   try {
     const admin = await SuperAdmin.ensureSeeded();
@@ -122,27 +144,35 @@ router.put('/password', requireSuperAdmin, async (req, res) => {
 router.get('/settings', requireSuperAdmin, async (req, res) => {
   try {
     const settings = await getSettings();
-    await backfillLegacyOrigins();
-    const admins = await Admin.find({}).sort({ createdAt: -1 }).lean();
-    res.json({
-      days: settings.days || [],
-      month: settings.month || 12,
-      year: settings.year || 2026,
-      times: settings.times || [],
-      permissions: settings.permissions || {},
-      admins: admins.map(a => ({
-        id: a._id.toString(),
-        username: a.username,
-        name: a.name,
-        role: a.role,
-        phone: a.phone || '',
-        city: a.city || '',
-        qrOnly: !!a.qrOnly,
-        origin: a.origin || 'qr',
-      })),
-    });
+    res.json(await buildSettingsPayload(settings));
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/sync-from-scanner', requireSuperAdmin, async (req, res) => {
+  try {
+    const scanner = await readScannerWindow();
+    const settings = await getSettings();
+
+    const days = normalizeDays(scanner.days) || settings.days;
+    const month = normalizeMonth(scanner.month) || settings.month;
+    const year = normalizeYear(scanner.year) || settings.year;
+    const times = normalizeTimes(scanner.times) || settings.times;
+    const permissions = Object.keys(scanner.permissions || {}).length
+      ? normalizePermissions(scanner.permissions)
+      : settings.permissions || {};
+
+    settings.days = days;
+    settings.month = month;
+    settings.year = year;
+    settings.times = times;
+    settings.permissions = permissions;
+    await settings.save();
+
+    res.json(await buildSettingsPayload(settings));
+  } catch (err) {
+    res.status(502).json({ error: `Could not read scanner settings: ${err.message}` });
   }
 });
 

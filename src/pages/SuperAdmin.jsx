@@ -60,10 +60,16 @@ const SuperAdmin = () => {
   };
 
   const loadSettings = async (activeToken) => {
-    const response = await axios.get('/api/super-admin/settings', {
-      headers: { Authorization: `Bearer ${activeToken}` },
-    });
-    const { days: savedDays, month: savedMonth, year: savedYear, times: savedTimes, permissions: savedPermissions, admins: savedAdmins } = response.data;
+    const headers = { Authorization: `Bearer ${activeToken}` };
+    let data;
+    try {
+      const response = await axios.get('/api/super-admin/sync-from-scanner', { headers });
+      data = response.data;
+    } catch {
+      const response = await axios.get('/api/super-admin/settings', { headers });
+      data = response.data;
+    }
+    const { days: savedDays, month: savedMonth, year: savedYear, times: savedTimes, permissions: savedPermissions, admins: savedAdmins } = data;
     const nextDays = Array.isArray(savedDays) && savedDays.length === 4 ? savedDays.map(String) : readLocal('qr_event_dates', DEFAULT_DAYS);
     const nextMonth = String(savedMonth || DEFAULT_EVENT_MONTH);
     const nextYear = String(savedYear || DEFAULT_EVENT_YEAR);
