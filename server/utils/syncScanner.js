@@ -1,7 +1,7 @@
 const SYNC_KEY = process.env.EVENT_SYNC_KEY || 'qrapp-event-sync-2026';
 const SCANNER_API = (process.env.SCANNER_API_URL || 'https://qr-scan-rho-green.vercel.app').replace(/\/$/, '');
 
-export const syncScannerWindow = async ({ days, times, permissions }) => {
+export const syncScannerWindow = async ({ days, month, year, times, permissions }) => {
   const response = await fetch(`${SCANNER_API}/api/internal/sync-window`, {
     method: 'POST',
     headers: {
@@ -10,6 +10,8 @@ export const syncScannerWindow = async ({ days, times, permissions }) => {
     },
     body: JSON.stringify({
       days,
+      ...(month !== undefined ? { month } : {}),
+      ...(year !== undefined ? { year } : {}),
       ...(times ? { times } : {}),
       ...(permissions ? { permissions } : {}),
     }),
